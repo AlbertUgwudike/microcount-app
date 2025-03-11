@@ -1,0 +1,101 @@
+classdef AppView < Component
+
+    properties ( Access = private )
+        HomeTab HomeView
+        TabGroup matlab.ui.container.TabGroup
+        Listener(:, 1) event.listener {mustBeScalarOrEmpty}
+    end
+
+    methods
+
+        function obj = AppView(model, tab_group, namedArgs)
+
+            arguments
+                model Model
+                tab_group
+                namedArgs.?AppView 
+            end 
+
+            obj@Component(model) 
+
+            obj.TabGroup = tab_group;
+
+            % Listen for changes to the data. 
+            obj.Listener = listener( obj.Model, ... 
+                "DataChanged", @obj.onDataChanged );
+
+            % Set any user-specified properties.
+            set( obj, namedArgs ) 
+
+            % Refresh the view. 
+            onDataChanged( obj ) 
+
+        end 
+
+    end 
+
+    methods ( Access = protected ) 
+
+        function setup(view) 
+            % Create HomeTab
+            view.TabGroup = uitabgroup();
+
+            view.HomeTab = uitab(view.TabGroup);
+            view.HomeTab.Title = 'Home';
+            hv = HomeView()
+
+            % % Create GridLayout7
+            % comp.GridLayout7 = uigridlayout(comp.HomeTab);
+            % comp.GridLayout7.ColumnWidth = {'0.25x', '1x', '0.25x'};
+            % comp.GridLayout7.RowHeight = {'1.5x', '1x', '1x', '0.5x', '0.5x', '0.5x', '1.5x'};
+            % 
+            % % Create LoadWorkspaceButton
+            % comp.LoadWorkspaceButton = uibutton(comp.GridLayout7, 'push');
+            % comp.LoadWorkspaceButton.ButtonPushedFcn = matlab.apps.createCallbackFcn(comp, @LoadWorkspace, true);
+            % comp.LoadWorkspaceButton.FontSize = 24;
+            % comp.LoadWorkspaceButton.Layout.Row = 3;
+            % comp.LoadWorkspaceButton.Layout.Column = 2;
+            % comp.LoadWorkspaceButton.Text = 'Load Workspace';
+            % 
+            % % Create CreateWorkspaceButton
+            % comp.CreateWorkspaceButton = uibutton(comp.GridLayout7, 'push');
+            % comp.CreateWorkspaceButton.ButtonPushedFcn = matlab.apps.createCallbackFcn(comp, @CreateWorkspace, true);
+            % comp.CreateWorkspaceButton.FontSize = 24;
+            % comp.CreateWorkspaceButton.Layout.Row = 2;
+            % comp.CreateWorkspaceButton.Layout.Column = 2;
+            % comp.CreateWorkspaceButton.Text = 'Create Workspace';
+            % 
+            % % Create CurrentWorkspaceLabel
+            % comp.CurrentWorkspaceLabel = uilabel(comp.GridLayout7);
+            % comp.CurrentWorkspaceLabel.HorizontalAlignment = 'center';
+            % comp.CurrentWorkspaceLabel.FontSize = 18;
+            % comp.CurrentWorkspaceLabel.Layout.Row = 5;
+            % comp.CurrentWorkspaceLabel.Layout.Column = 2;
+            % comp.CurrentWorkspaceLabel.Text = 'Current Workspace';
+            % 
+            % % Create CurrentWorkspaceName
+            % comp.CurrentWorkspaceName = uilabel(comp.GridLayout7);
+            % comp.CurrentWorkspaceName.HorizontalAlignment = 'center';
+            % comp.CurrentWorkspaceName.Layout.Row = 6;
+            % comp.CurrentWorkspaceName.Layout.Column = 2;
+            % comp.CurrentWorkspaceName.Text = '';
+
+        end
+
+        function update( ~ ) 
+            %UPDATE Update the view. This method is empty because there are 
+            %no public properties of the view. 
+
+        end
+
+    end
+
+    methods ( Access = private ) 
+
+        function onDataChanged(view, ~, ~) 
+            disp(view.Model)
+        end
+
+    end
+
+end
