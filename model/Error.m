@@ -7,6 +7,7 @@ classdef Error
         NOT_WS
         WS_NOT_EMPTY
         NO_WS_SELECTED
+        NO_IMG_SELECTED
     end
 end
 

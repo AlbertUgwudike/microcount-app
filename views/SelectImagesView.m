@@ -1,13 +1,16 @@
 classdef SelectImagesView < Component
 
     properties ( Access = private )
-        Listener(:, 1) event.listener {mustBeScalarOrEmpty}
+        WorkspaceListener(:, 1) event.listener {mustBeScalarOrEmpty}
+        ImageSetListener(:, 1) event.listener {mustBeScalarOrEmpty}
+
         MainGrid
         SelectAllButton
         RemoveButton
         ConvertandDownsampleButton
         AddImagesButton
         ImageSetTable
+        SaveButton
     end
 
     methods
@@ -22,33 +25,29 @@ classdef SelectImagesView < Component
 
             obj@Component(model, controller) 
 
-            % Listen for changes to the data. 
-            obj.Listener = addlistener( obj.Model, ... 
-                "DataChanged", @obj.onDataChanged );
+            obj.WorkspaceListener = listener(obj.Model, "WorkspaceUpdated", @obj.on_workspace_updated);       
 
-            % Set any user-specified properties.
-            set( obj, namedArgs ) 
-
-            % Refresh the view. 
-            onDataChanged( obj ) 
-
+            set(obj, namedArgs) 
         end 
 
     end 
 
     methods ( Access = private ) 
 
-        function onDataChanged(view, ~, ~) 
-            disp("SelectImagesView Update!")
+        function on_workspace_updated(view, ~, ~) 
+            disp("SelectImagesView::on_workspace_updated")
+            
+            img_mds = view.Model.WS.Images;
+            source_fns  = [img_mds.SourceFn];
+            converted   = [img_mds.Converted];
+            downsampled = [img_mds.DownSampled];
+            new_data = [source_fns' converted' downsampled'];
+            view.ImageSetTable.Data = new_data;
         end
 
     end
 
     methods ( Access = protected ) 
-
-        function update(view) 
-            
-        end
 
         function setup(view) 
 
@@ -73,7 +72,7 @@ classdef SelectImagesView < Component
 
             % Create ConvertandDownsampleButton
             view.ConvertandDownsampleButton = uibutton(view.MainGrid, 'push');
-            view.ConvertandDownsampleButton.ButtonPushedFcn = @(~, ~) @(~, ~) view.Contr.handle_event(SelectImagesEvent.ButtonConvertDownsample);
+            view.ConvertandDownsampleButton.ButtonPushedFcn = @(~, ~) view.Contr.handle_event(SelectImagesEvent.ButtonConvertDownsample);
             view.ConvertandDownsampleButton.Layout.Row = 2;
             view.ConvertandDownsampleButton.Layout.Column = 4;
             view.ConvertandDownsampleButton.Text = 'Convert and Downsample';
@@ -93,6 +92,13 @@ classdef SelectImagesView < Component
             view.ImageSetTable.SelectionType = 'row';
             view.ImageSetTable.Layout.Row = [3 7];
             view.ImageSetTable.Layout.Column = [1 4];
+
+            % Create SaveButton
+            view.SaveButton = uibutton(view.MainGrid, 'push');
+            view.SaveButton.ButtonPushedFcn = @(~, ~) view.Contr.handle_event(AppEvent.ButtonSave);
+            view.SaveButton.Layout.Row = 8;
+            view.SaveButton.Layout.Column = 1;
+            view.SaveButton.Text = 'Save';
 
         end
 

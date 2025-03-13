@@ -3,6 +3,7 @@ classdef AppView < Component
     properties ( Access = private )
         HomeTab matlab.ui.container.Tab
         SelectTab matlab.ui.container.Tab
+        RegisterTab matlab.ui.container.Tab
         TabGroup matlab.ui.container.TabGroup
         Listener(:, 1) event.listener {mustBeScalarOrEmpty}
     end
@@ -18,25 +19,18 @@ classdef AppView < Component
             end 
 
             obj@Component(model, controller) 
-
-            % Listen for changes to the data. 
-            obj.Listener = addlistener( obj.Model, ... 
-                "DataChanged", @obj.onDataChanged );
+            obj.Listener = listener(obj.Model, "WorkspaceUpdated", @obj.on_workspace_updated);
 
             % Set any user-specified properties.
             set( obj, namedArgs ) 
-
-            % Refresh the view. 
-            onDataChanged( obj ) 
-
         end 
 
     end 
 
     methods ( Access = private ) 
 
-        function onDataChanged(view, ~, ~) 
-            disp("AppView Update!")
+        function on_workspace_updated(~, ~, ~) 
+            disp("AppView::on_workspace_updated")
         end
 
     end
@@ -57,12 +51,11 @@ classdef AppView < Component
             view.SelectTab.Title = 'Select Images';
             sic = SelectImagesController(view.Model);
             SelectImagesView(view.Model, sic, 'Parent', view.SelectTab);
-        end
 
-        function update( ~ ) 
-            %UPDATE Update the view. This method is empty because there are 
-            %no public properties of the view. 
-
+            view.RegisterTab = uitab(view.TabGroup);
+            view.RegisterTab.Title = 'Register';
+            rc = RegisterController(view.Model);
+            RegisterView(view.Model, rc, 'Parent', view.RegisterTab);
         end
 
     end

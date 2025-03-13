@@ -32,4 +32,11 @@ classdef ( Abstract ) Component < matlab.ui.componentcontainer.ComponentContaine
 
     end 
 
+    methods (Access=protected)
+        function update(~)
+            % Default implementation is empty as
+            % we do not rely on this for updates
+        end
+    end
+
 end

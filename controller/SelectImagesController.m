@@ -28,11 +28,16 @@ classdef SelectImagesController
         end
 
         function onConvertDownsampleButtonPushed(con, ~, ~)
-            disp("ConvertDownsampleButton")
+            disp("showman")
+            con.Model.io_convert_and_downsample()
         end
 
         function onAddImagesButtonPushed(con, ~, ~)
-            disp("AddImagesButton")
+            con.Model.io_add_image()
+        end
+
+        function onSaveButtonPushed(con, ~, ~)
+            con.Model.io_save()
         end
         
     end
@@ -53,6 +58,9 @@ classdef SelectImagesController
 
                 case (SelectImagesEvent.ButtonAddImages)
                     con.onAddImagesButtonPushed()
+
+                case (AppEvent.ButtonSave)
+                    con.onSaveButtonPushed()
             end
         end
         

@@ -5,7 +5,6 @@ classdef HomeView < Component
         MainGrid
         LoadWorkspaceButton
         CreateWorkspaceButton
-        CurrentWorkspaceLabel
         CurrentWorkspaceName
     end
 
@@ -20,36 +19,27 @@ classdef HomeView < Component
             end 
 
             obj@Component(model, controller) 
+            obj.Listener = listener( obj.Model, "WorkspaceUpdated", @obj.on_workspace_updated);
 
-            % Listen for changes to the data. 
-            obj.Listener = addlistener( obj.Model, ... 
-                "DataChanged", @obj.onDataChanged );
-
-            % Set any user-specified properties.
             set( obj, namedArgs ) 
-
-            % Refresh the view. 
-            onDataChanged( obj ) 
-
         end 
 
     end 
 
     methods ( Access = private ) 
 
-        function onDataChanged(view, ~, ~) 
-            disp("HomeView Update!")
+        function on_workspace_updated(view, ~, ~) 
+            disp("HomeView::on_workspace_updated")
+            if isempty(view.Model.WS)
+                return
+            end
+
+            view.CurrentWorkspaceName.Text = view.Model.WS.DirName;
         end
 
     end
 
     methods ( Access = protected ) 
-
-        function update(view) 
-            if ~isempty(view.Model.WS)
-                view.CurrentWorkspaceName.Text = view.Model.WS.DirName;
-            end
-        end
 
         function setup(view) 
 
