@@ -2,6 +2,7 @@ classdef AppView < Component
 
     properties ( Access = private )
         HomeTab matlab.ui.container.Tab
+        SelectTab matlab.ui.container.Tab
         TabGroup matlab.ui.container.TabGroup
         Listener(:, 1) event.listener {mustBeScalarOrEmpty}
     end
@@ -49,9 +50,13 @@ classdef AppView < Component
 
             view.HomeTab = uitab(view.TabGroup);
             view.HomeTab.Title = 'Home';
-
             hc = HomeController(view.Model);
-            hv = HomeView(view.Model, hc, 'Parent', view.HomeTab);
+            HomeView(view.Model, hc, 'Parent', view.HomeTab);
+
+            view.SelectTab = uitab(view.TabGroup);
+            view.SelectTab.Title = 'Select Images';
+            sic = SelectImagesController(view.Model);
+            SelectImagesView(view.Model, sic, 'Parent', view.SelectTab);
         end
 
         function update( ~ ) 

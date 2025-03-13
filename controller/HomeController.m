@@ -38,7 +38,7 @@ classdef HomeController
                     con.onLoadButtonPushed()
 
                 case (HomeEvent.ButtonCreateWorkspace)
-                    con.onLoadButtonPushed()
+                    con.onCreateButtonPushed()
             end
         end
         

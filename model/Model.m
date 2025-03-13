@@ -74,6 +74,22 @@ classdef Model < handle
             notify(mdl, 'DataChanged')
         end
 
+        function io_add_image(mdl)
+            [file, path, ~] = uigetfile( ...
+                {'*.tif;*.tiff;*.czi', 'Image files' }, ...
+                "Select your images", ...
+                MultiSelect="on" ...
+            );
+
+            names = convertCharsToStrings(fullfile(path, file))';
+            new_set = unique(cat(1, comp.CurrentWorkspaceData.ImageFileNames, names));
+            
+            mdl.WS.Images
+            %% ----------------------  BOOKMARK -------------------------- %%
+            % trigger UI updates
+            comp.CurrentWorkspaceData.ImageFileNames = new_set;
+        end
+
         function panic(mdl, err_enum)
             mdl.ErrorCache = err_enum;
             notify(mdl, 'Error')

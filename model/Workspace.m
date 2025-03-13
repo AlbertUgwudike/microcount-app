@@ -1,20 +1,19 @@
 classdef Workspace
-    %WORKSPACE Summary of this class goes here
-    %   Detailed explanation goes here
-    
+
     properties
         DirName char
-        ImageFileNames (:, 1) string = []
+        Images (:, 1) ImageMetadata = []
     end
     
     methods
-        function obj = Workspace(dir_name)
+        function ws = Workspace(dir_name)
             arguments
                 dir_name char
             end
 
-            obj.DirName = dir_name;
+            ws.DirName = dir_name;
         end
+        
     end
 end
 

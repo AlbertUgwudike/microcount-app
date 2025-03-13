@@ -1,10 +1,12 @@
 classdef HomeView < Component
 
     properties ( Access = private )
-        HomeTab matlab.ui.container.Tab
         Listener(:, 1) event.listener {mustBeScalarOrEmpty}
-        GridLayout7
+        MainGrid
         LoadWorkspaceButton
+        CreateWorkspaceButton
+        CurrentWorkspaceLabel
+        CurrentWorkspaceName
     end
 
     methods
@@ -43,49 +45,49 @@ classdef HomeView < Component
 
     methods ( Access = protected ) 
 
+        function update(view) 
+            if ~isempty(view.Model.WS)
+                view.CurrentWorkspaceName.Text = view.Model.WS.DirName;
+            end
+        end
+
         function setup(view) 
 
-            % Create GridLayout7
-            view.GridLayout7 = uigridlayout(view);
-            view.GridLayout7.ColumnWidth = {'0.25x', '1x', '0.25x'};
-            view.GridLayout7.RowHeight = {'1.5x', '1x', '1x', '0.5x', '0.5x', '0.5x', '1.5x'};
+            % Create MainGrid
+            view.MainGrid = uigridlayout(view);
+            view.MainGrid.ColumnWidth = {'0.25x', '1x', '0.25x'};
+            view.MainGrid.RowHeight = {'1.5x', '1x', '1x', '0.5x', '0.5x', '0.5x', '1.5x'};
 
             % Create LoadWorkspaceButton
-            view.LoadWorkspaceButton = uibutton(view.GridLayout7, 'push');
+            view.LoadWorkspaceButton = uibutton(view.MainGrid, 'push');
             view.LoadWorkspaceButton.ButtonPushedFcn = @(~, ~) view.Contr.handle_event(HomeEvent.ButtonLoadWorkspace);
             view.LoadWorkspaceButton.FontSize = 24;
             view.LoadWorkspaceButton.Layout.Row = 3;
             view.LoadWorkspaceButton.Layout.Column = 2;
             view.LoadWorkspaceButton.Text = 'Load Workspace';
 
-            % % Create CreateWorkspaceButton
-            % comp.CreateWorkspaceButton = uibutton(comp.GridLayout7, 'push');
-            % comp.CreateWorkspaceButton.ButtonPushedFcn = matlab.apps.createCallbackFcn(comp, @CreateWorkspace, true);
-            % comp.CreateWorkspaceButton.FontSize = 24;
-            % comp.CreateWorkspaceButton.Layout.Row = 2;
-            % comp.CreateWorkspaceButton.Layout.Column = 2;
-            % comp.CreateWorkspaceButton.Text = 'Create Workspace';
-            % 
-            % % Create CurrentWorkspaceLabel
-            % comp.CurrentWorkspaceLabel = uilabel(comp.GridLayout7);
-            % comp.CurrentWorkspaceLabel.HorizontalAlignment = 'center';
-            % comp.CurrentWorkspaceLabel.FontSize = 18;
-            % comp.CurrentWorkspaceLabel.Layout.Row = 5;
-            % comp.CurrentWorkspaceLabel.Layout.Column = 2;
-            % comp.CurrentWorkspaceLabel.Text = 'Current Workspace';
-            % 
-            % % Create CurrentWorkspaceName
-            % comp.CurrentWorkspaceName = uilabel(comp.GridLayout7);
-            % comp.CurrentWorkspaceName.HorizontalAlignment = 'center';
-            % comp.CurrentWorkspaceName.Layout.Row = 6;
-            % comp.CurrentWorkspaceName.Layout.Column = 2;
-            % comp.CurrentWorkspaceName.Text = '';
-
-        end
-
-        function update( ~ ) 
-            %UPDATE Update the view. This method is empty because there are 
-            %no public properties of the view. 
+            % Create CreateWorkspaceButton
+            view.CreateWorkspaceButton = uibutton(view.MainGrid, 'push');
+            view.CreateWorkspaceButton.ButtonPushedFcn = @(~, ~) view.Contr.handle_event(HomeEvent.ButtonCreateWorkspace);
+            view.CreateWorkspaceButton.FontSize = 24;
+            view.CreateWorkspaceButton.Layout.Row = 2;
+            view.CreateWorkspaceButton.Layout.Column = 2;
+            view.CreateWorkspaceButton.Text = 'Create Workspace';
+            
+            % Create CurrentWorkspaceLabel
+            workspace_label = uilabel(view.MainGrid);
+            workspace_label.HorizontalAlignment = 'center';
+            workspace_label.FontSize = 18;
+            workspace_label.Layout.Row = 5;
+            workspace_label.Layout.Column = 2;
+            workspace_label.Text = 'Current Workspace';
+            
+            % Create CurrentWorkspaceName
+            view.CurrentWorkspaceName = uilabel(view.MainGrid);
+            view.CurrentWorkspaceName.HorizontalAlignment = 'center';
+            view.CurrentWorkspaceName.Layout.Row = 6;
+            view.CurrentWorkspaceName.Layout.Column = 2;
+            view.CurrentWorkspaceName.Text = 'None Selected';
 
         end
 
