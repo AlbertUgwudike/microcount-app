@@ -1,17 +1,14 @@
-classdef SelectImagesController
-
-    properties ( SetAccess = immutable, GetAccess = protected )
-        Model Model
-    end 
+classdef SelectImagesController < ControllerBase
     
     methods
         
-        function ctl = SelectImagesController(model)
+        function ctl = SelectImagesController(model, view)
             arguments
                 model Model
+                view SelectImagesView
             end
             
-            ctl.Model = model;
+            ctl@ControllerBase(model, view)
             
         end
         
@@ -19,32 +16,41 @@ classdef SelectImagesController
     
     methods ( Access = private )
 
-        function onSelectAllButtonPushed(con, ~, ~)
+        function onSelectAllButtonPushed(con)
             disp("SelectAllButton")
         end
 
-        function onRemoveButtonPushed(con, ~, ~)
+        function onRemoveButtonPushed(con)
             disp("RemoveButton")
         end
 
-        function onConvertDownsampleButtonPushed(con, ~, ~)
-            disp("showman")
+        function onConvertDownsampleButtonPushed(con)
             con.Model.io_convert_and_downsample()
         end
 
-        function onAddImagesButtonPushed(con, ~, ~)
+        function onAddImagesButtonPushed(con)
             con.Model.io_add_image()
         end
 
-        function onSaveButtonPushed(con, ~, ~)
+        function onSaveButtonPushed(con)
             con.Model.io_save()
+        end
+
+        function onWorkspaceUpdated(con)
+            disp("SelectImagesController::on_workspace_updated")
+            img_mds = con.Model.WS.Images;
+            source_fns  = [img_mds.SourceFn];
+            converted   = [img_mds.Converted];
+            downsampled = [img_mds.DownSampled];
+            new_data    = [source_fns' converted' downsampled'];
+            con.View.ImageSetTable.Data = new_data;
         end
         
     end
 
-    methods (Access = public)
+    methods (Access = protected)
         
-        function handle_event(con, event)
+        function handle_event(con, event, ~)
             switch event
 
                 case (SelectImagesEvent.ButtonSelectAll)
@@ -61,6 +67,9 @@ classdef SelectImagesController
 
                 case (AppEvent.ButtonSave)
                     con.onSaveButtonPushed()
+
+                case (ModelEvents.WorkspaceUpdated)
+                    con.onWorkspaceUpdated()
             end
         end
         

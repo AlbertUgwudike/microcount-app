@@ -1,7 +1,6 @@
 classdef HomeView < Component
 
-    properties ( Access = private )
-        Listener(:, 1) event.listener {mustBeScalarOrEmpty}
+    properties
         MainGrid
         LoadWorkspaceButton
         CreateWorkspaceButton
@@ -10,34 +9,17 @@ classdef HomeView < Component
 
     methods
 
-        function obj = HomeView(model, controller, namedArgs)
+        function obj = HomeView(namedArgs)
 
             arguments
-                model Model
-                controller HomeController
                 namedArgs.?HomeView 
-            end 
+            end
 
-            obj@Component(model, controller) 
-            obj.Listener = listener( obj.Model, "WorkspaceUpdated", @obj.on_workspace_updated);
-
-            set( obj, namedArgs ) 
+            obj@Component() 
+            set(obj, namedArgs)
         end 
 
     end 
-
-    methods ( Access = private ) 
-
-        function on_workspace_updated(view, ~, ~) 
-            disp("HomeView::on_workspace_updated")
-            if isempty(view.Model.WS)
-                return
-            end
-
-            view.CurrentWorkspaceName.Text = view.Model.WS.DirName;
-        end
-
-    end
 
     methods ( Access = protected ) 
 
@@ -50,7 +32,7 @@ classdef HomeView < Component
 
             % Create LoadWorkspaceButton
             view.LoadWorkspaceButton = uibutton(view.MainGrid, 'push');
-            view.LoadWorkspaceButton.ButtonPushedFcn = @(~, ~) view.Contr.handle_event(HomeEvent.ButtonLoadWorkspace);
+            view.LoadWorkspaceButton.ButtonPushedFcn = @(~, ~) view.call_registrar(HomeEvent.ButtonLoadWorkspace);
             view.LoadWorkspaceButton.FontSize = 24;
             view.LoadWorkspaceButton.Layout.Row = 3;
             view.LoadWorkspaceButton.Layout.Column = 2;
@@ -58,7 +40,7 @@ classdef HomeView < Component
 
             % Create CreateWorkspaceButton
             view.CreateWorkspaceButton = uibutton(view.MainGrid, 'push');
-            view.CreateWorkspaceButton.ButtonPushedFcn = @(~, ~) view.Contr.handle_event(HomeEvent.ButtonCreateWorkspace);
+            view.CreateWorkspaceButton.ButtonPushedFcn = @(~, ~) view.call_registrar(HomeEvent.ButtonCreateWorkspace);
             view.CreateWorkspaceButton.FontSize = 24;
             view.CreateWorkspaceButton.Layout.Row = 2;
             view.CreateWorkspaceButton.Layout.Column = 2;

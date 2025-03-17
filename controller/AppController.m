@@ -1,37 +1,23 @@
-classdef AppController
-
-    properties (Constant)
-        
-    end
-
-    properties ( SetAccess = immutable, GetAccess = protected )
-        Model Model
-    end 
-    
+classdef AppController < ControllerBase
+   
     methods
         
-        function ctl = AppController(model)
+        function ctl = AppController(model, view)
             
             arguments
                 model Model
+                view AppView
             end
-            
-            ctl.Model = model;
+
+            ctl@ControllerBase(model, view);
             
         end
         
     end
-    
-    methods ( Access = private )
-        
-    end
 
-    methods ( Access = public )
+    methods ( Access = protected )
         
-        function handle_event(con, event)
-            switch event
-                
-            end
+        function handle_event(~, ~, ~)
         end
         
     end

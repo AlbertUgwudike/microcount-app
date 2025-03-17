@@ -7,7 +7,7 @@ classdef ImageMetadata < handle
         Aligned (1, 1) logical = false
         DownSampled (1, 1) logical = false
         RegionCodes (:, 1) string
-        TransformationData (1, 1) TransformationData = TransformationData.default()
+        TransformationData TransformationData
     end
     
     methods

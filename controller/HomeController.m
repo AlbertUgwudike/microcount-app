@@ -1,17 +1,17 @@
-classdef HomeController
-
-    properties ( SetAccess = immutable, GetAccess = protected )
-        Model Model
-    end 
-    
+classdef HomeController < ControllerBase
+    properties
+        homeView HomeView
+    end
     methods
         
-        function ctl = HomeController(model)
+        function ctl = HomeController(model, view)
             arguments
                 model Model
+                view HomeView
             end
             
-            ctl.Model = model;
+            ctl@ControllerBase(model, view);
+            ctl.homeView = view;
             
         end
         
@@ -26,12 +26,20 @@ classdef HomeController
         function onLoadButtonPushed(con, ~, ~)
             con.Model.io_load_workspace()
         end
+
+        function onWorkSpaceUpdated(con)
+            disp("HomeController::on_workspace_updated")
+            if isempty(con.Model.WS)
+                return
+            end
+            con.View.CurrentWorkspaceName.Text = con.Model.WS.DirName;
+        end
         
     end
 
-    methods (Access = public)
+    methods (Access = protected)
         
-        function handle_event(con, event)
+        function handle_event(con, event, ~)
             switch event
 
                 case (HomeEvent.ButtonLoadWorkspace)
@@ -39,6 +47,9 @@ classdef HomeController
 
                 case (HomeEvent.ButtonCreateWorkspace)
                     con.onCreateButtonPushed()
+
+                case (ModelEvents.WorkspaceUpdated)
+                    con.onWorkSpaceUpdated()
             end
         end
         

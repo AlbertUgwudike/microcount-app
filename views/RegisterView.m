@@ -1,9 +1,6 @@
 classdef RegisterView < Component
 
-    properties ( Access = private )
-        WorkspaceListener(:, 1) event.listener {mustBeScalarOrEmpty}
-        RegistrationListener(:, 1) event.listener {mustBeScalarOrEmpty}
-
+    properties ( Access = public )
         MainGrid
         TopGrid
         AlignmentTable
@@ -16,48 +13,34 @@ classdef RegisterView < Component
         BottomGrid
         AtlasSliceAxes
         HistSliceAxes
+
+        CurrentAtlasSliceIdx = 150
+    end
+
+    properties (Access = private)
+        Atlas Atlas = Atlas()
     end
 
     methods
 
-        function obj = RegisterView(model, controller, namedArgs)
+        function obj = RegisterView(namedArgs)
 
             arguments
-                model Model
-                controller RegisterController
                 namedArgs.?RegisterView 
-            end 
+            end
 
-            obj@Component(model, controller) 
-
-            obj.WorkspaceListener = listener(obj.Model, "WorkspaceUpdated", @obj.on_workspace_updated);
-
-            set(obj, namedArgs) 
+            obj@Component() 
+            set(obj, namedArgs)
         end 
 
     end 
 
-    methods ( Access = private ) 
-
-        function on_workspace_updated(view, ~, ~) 
-            disp("RegisterView::on_workspace_updated")
-
-            % Table 
-            down_idx  = [view.Model.WS.Images.DownSampled];
-            down_imgs = view.Model.WS.Images(down_idx);
-            new_data  = [[down_imgs.SourceFn]' [down_imgs.Aligned]'];
-            view.AlignmentTable.Data = new_data;
-
-            % Slider Position
-
-            % Alignment Hexs
-
-            % Overlay
-        end
-
-    end
-
     methods ( Access = protected ) 
+
+        function update(view)
+            img = view.Atlas.ReferenceAtlas(:, :, view.CurrentAtlasSliceIdx);
+            imshow(imadjust(img), 'Parent', view.AtlasSliceAxes)
+        end
 
         function setup(view) 
 
@@ -79,7 +62,7 @@ classdef RegisterView < Component
             view.AlignmentTable.ColumnWidth = {'4x', '1x'};
             view.AlignmentTable.RowName = {};
             view.AlignmentTable.SelectionType = 'row';
-            view.AlignmentTable.CellSelectionCallback = @(~, ~) view.Contr.handle_event(RegisterEvent.SelectionAlignmentTable);
+            view.AlignmentTable.CellSelectionCallback = @(~, ~) view.call_registrar(RegisterEvent.SelectionAlignmentTable);
             view.AlignmentTable.Multiselect = 'off';
             view.AlignmentTable.Layout.Row = 1;
             view.AlignmentTable.Layout.Column = 1;
@@ -120,36 +103,36 @@ classdef RegisterView < Component
 
             % Create AlignColorButton
             view.AlignColorButton = uibutton(view.ButtonGrid, 'push');
-            view.AlignColorButton.ButtonPushedFcn = @(~, ~) view.Contr.handle_event(RegisterEvent.ButtonAlignColor);
+            view.AlignColorButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegisterEvent.ButtonAlignColor);
             view.AlignColorButton.Layout.Row = 1;
             view.AlignColorButton.Layout.Column = 1;
             view.AlignColorButton.Text = 'Align Color';
 
             % Create AlignControlButton
             view.AlignControlButton = uibutton(view.ButtonGrid, 'push');
-            view.AlignControlButton.ButtonPushedFcn = @(~, ~) view.Contr.handle_event(RegisterEvent.ButtonAlignControl);
+            view.AlignControlButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegisterEvent.ButtonAlignControl);
             view.AlignControlButton.Layout.Row = 1;
             view.AlignControlButton.Layout.Column = 2;
             view.AlignControlButton.Text = 'Align Control';
 
             % Create ToggleOverlayButton
             view.ToggleOverlayButton = uibutton(view.ButtonGrid, 'push');
-            view.ToggleOverlayButton.ButtonPushedFcn = @(~, ~) view.Contr.handle_event(RegisterEvent.ButtonToggleOverlay);
+            view.ToggleOverlayButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegisterEvent.ButtonToggleOverlay);
             view.ToggleOverlayButton.Layout.Row = 1;
             view.ToggleOverlayButton.Layout.Column = 3;
             view.ToggleOverlayButton.Text = 'Toggle Overlay';
 
             % Create AtlasSliceSlider
             view.AtlasSliceSlider = uislider(view.SliderGrid);
-            atlas_sz = size(view.Model.Atlas.ReferenceAtlas);
-            view.AtlasSliceSlider.Limits = [1 atlas_sz(3)];
-            view.AtlasSliceSlider.MajorTicks = [1 atlas_sz(3)];
-            view.AtlasSliceSlider.ValueChangingFcn = @(~, ~) view.Contr.handle_event(RegisterEvent.SliderAtlasSlice);
+            view.AtlasSliceSlider.Limits = [1 300];
+            view.AtlasSliceSlider.MajorTicks = [1 300];
+            view.AtlasSliceSlider.ValueChangingFcn = @(~, e) view.call_registrar(RegisterEvent.SliderAtlasSlice, e.Value);
             view.AtlasSliceSlider.MinorTicks = [];
             view.AtlasSliceSlider.Layout.Row = 2;
             view.AtlasSliceSlider.Layout.Column = 1;
             view.AtlasSliceSlider.FontSize = 8;
-            view.AtlasSliceSlider.Value = atlas_sz(3) / 2;
+            view.AtlasSliceSlider.Value = view.CurrentAtlasSliceIdx;
+            imshow(view.Atlas.ReferenceAtlas(:, :, view.CurrentAtlasSliceIdx), 'Parent', view.AtlasSliceAxes);
 
         end
 

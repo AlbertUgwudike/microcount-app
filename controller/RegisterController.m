@@ -1,17 +1,14 @@
-classdef RegisterController
-
-    properties (SetAccess = immutable, GetAccess = protected)
-        Model Model
-    end 
+classdef RegisterController < ControllerBase
     
     methods
         
-        function ctl = RegisterController(model)
+        function ctl = RegisterController(model, view)
             arguments
                 model Model
+                view RegisterView
             end
             
-            ctl.Model = model;
+            ctl@ControllerBase(model, view);
             
         end
         
@@ -19,31 +16,48 @@ classdef RegisterController
     
     methods ( Access = private )
 
-        function onAligmentTableSelection(con, ~, ~)
+        function onAligmentTableSelection(con)
             disp("RegisterController::onAligmentTableSelection")
+            disp(con.View.AlignmentTable.Selection)
         end
 
-        function onAlignColorButtonPushed(con, ~, ~)
+        function onAlignColorButtonPushed(con)
             disp("RegisterController::onAlignColorButtonPushed")
         end
 
-        function onAlignControlButtonPushed(con, ~, ~)
+        function onAlignControlButtonPushed(con)
             disp("RegisterController::onAlignControlButtonPushed")
         end
 
-        function onToggleOverlayButtonPushed(con, ~, ~)
+        function onToggleOverlayButtonPushed(con)
             disp("RegisterController::onToggleOverlayButtonPushed")
         end
 
-        function onAtlasSliceSliderChanged(con, ~, ~)
-            disp("RegisterController::onAtlasSliceSliderChanged")
+        function onAtlasSliceSliderChanged(con, slider_pos)
+            con.View.CurrentAtlasSliceIdx = round(slider_pos);
+        end
+
+        function onWorkspaceUpdated(con) 
+            disp("RegisterController::on_workspace_updated")
+
+            % Table 
+            down_idx  = [con.Model.WS.Images.DownSampled];
+            down_imgs = con.Model.WS.Images(down_idx);
+            new_data  = [[down_imgs.SourceFn]' [down_imgs.Aligned]'];
+            con.View.AlignmentTable.Data = new_data;
+
+            % Slider Position
+
+            % Alignment Hexs
+
+            % Overlay
         end
         
     end
 
-    methods (Access = public)
+    methods (Access = protected)
         
-        function handle_event(con, event)
+        function handle_event(con, event, data)
             switch event
 
                 case (RegisterEvent.SelectionAlignmentTable)
@@ -59,7 +73,10 @@ classdef RegisterController
                     con.onToggleOverlayButtonPushed()
 
                 case (RegisterEvent.SliderAtlasSlice)
-                    con.onAtlasSliceSliderChanged()
+                    con.onAtlasSliceSliderChanged(data)
+
+                case (ModelEvents.WorkspaceUpdated)
+                    con.onWorkspaceUpdated()
             end
         end
         

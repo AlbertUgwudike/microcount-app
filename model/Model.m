@@ -2,13 +2,11 @@ classdef Model < handle
 
     properties ( SetAccess = private ) 
         WS Workspace = Workspace.empty 
-        Atlas Atlas = Atlas
         ErrorCache Error 
     end
 
-    events ( NotifyAccess = private ) 
-        WorkspaceUpdated
-        Error
+    properties ( SetAccess = public ) 
+        RegistrarFcns
     end
 
     methods (Access = public)
@@ -75,7 +73,7 @@ classdef Model < handle
 
             mdl.WS = ws;
             
-            notify(mdl, 'WorkspaceUpdated')
+            mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 
         function io_add_image(mdl)
@@ -104,7 +102,7 @@ classdef Model < handle
                 mdl.WS.Images = updated_img_set(idx);
             end
 
-            notify(mdl, 'WorkspaceUpdated')
+            mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 
         function io_save(mdl)
@@ -124,8 +122,8 @@ classdef Model < handle
                 if (~img.DownSampled)
                     mdl.io_downsample_img(img)
                 end
-
             end
+            mdl.io_save()
         end
 
     end
@@ -145,7 +143,7 @@ classdef Model < handle
             dn_img = imresize(img, RESIZE);
             imwrite(imadjust(dn_img'), down_fn);
             img_md.DownSampled = true;
-            notify(mdl, 'WorkspaceUpdated')
+            mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 
 
@@ -158,7 +156,7 @@ classdef Model < handle
             img = imread(img_md.SourceFn);
             imwrite(img, conv_fn);
             img_md.Converted = true;
-            notify(mdl, 'WorkspaceUpdated')
+            mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 
         function is_valid = is_valid_img(mdl, fn)
@@ -168,7 +166,13 @@ classdef Model < handle
 
         function panic(mdl, err_enum)
             mdl.ErrorCache = err_enum;
-            notify(mdl, 'Error')
+            mdl.call_registrars(ModelEvents.Error)
+        end
+
+        function call_registrars(mdl, event)
+            for i = 1:numel(mdl.RegistrarFcns)
+                mdl.RegistrarFcns{i}(event)
+            end
         end
 
     end
