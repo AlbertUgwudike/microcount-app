@@ -1,5 +1,10 @@
 classdef RegisterController < ControllerBase
     
+    properties (Access = private)
+        ImageSet (:, 1) ImageMetadata
+        SelectedImage ImageMetadata
+    end
+
     methods
         
         function ctl = RegisterController(model, view)
@@ -18,7 +23,15 @@ classdef RegisterController < ControllerBase
 
         function onAligmentTableSelection(con)
             disp("RegisterController::onAligmentTableSelection")
-            disp(con.View.AlignmentTable.Selection)
+
+            if height(con.View.AlignmentTable.Data) == 0
+                return
+            end
+            
+            idx = con.View.AlignmentTable.Selection;
+            con.SelectedImage = con.ImageSet(idx);
+            img = con.Model.io_get_down_img(con.SelectedImage);
+            imshow(img, 'Parent', con.View.HistSliceAxes);
         end
 
         function onAlignColorButtonPushed(con)
@@ -42,8 +55,8 @@ classdef RegisterController < ControllerBase
 
             % Table 
             down_idx  = [con.Model.WS.Images.DownSampled];
-            down_imgs = con.Model.WS.Images(down_idx);
-            new_data  = [[down_imgs.SourceFn]' [down_imgs.Aligned]'];
+            con.ImageSet = con.Model.WS.Images(down_idx);
+            new_data  = [[con.ImageSet.SourceFn]' [con.ImageSet.Aligned]'];
             con.View.AlignmentTable.Data = new_data;
 
             % Slider Position

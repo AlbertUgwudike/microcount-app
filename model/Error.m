@@ -8,6 +8,7 @@ classdef Error
         WS_NOT_EMPTY
         NO_WS_SELECTED
         NO_IMG_SELECTED
+        INVALID_FN
     end
 end
 

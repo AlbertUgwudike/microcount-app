@@ -126,19 +126,7 @@ classdef Model < handle
             mdl.io_save()
         end
 
-        function img = io_get_down_img(mdl, img_md)
-            arguments
-                mdl Model
-                img_md ImageMetadata
-            end
-            img_fn = img_md.get_down_fn(mdl.WS.DirName);
-            if ~isfile(img_fn)
-                mdl.panic(Error.INVALID_FN)
-                img = zeros(10, 10);
-                return
-            end
-            img = imread(img_fn);
-        end
+        function io_
 
     end
 
