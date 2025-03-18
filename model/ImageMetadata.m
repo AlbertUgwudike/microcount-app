@@ -2,6 +2,7 @@ classdef ImageMetadata < handle
     
     properties
         SourceFn (1, 1) string
+        Size (1, 2) uint16
         ID (1, 1) string
         Converted (1, 1) logical = false
         Aligned (1, 1) logical = false
@@ -18,6 +19,8 @@ classdef ImageMetadata < handle
             img_md.SourceFn = source_fn;
             [~, fn, ~] = fileparts(source_fn);
             img_md.ID = fn;
+            info = imfinfo(source_fn);
+            img_md.Size = [info.Height, info.Width];
             disp(img_md.ID)
         end
         

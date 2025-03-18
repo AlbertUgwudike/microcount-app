@@ -2,7 +2,7 @@ classdef RegisterController < ControllerBase
     
     properties (Access = private)
         ImageSet (:, 1) ImageMetadata
-        SelectedImage ImageMetadata
+        SelectedImageIdx uint16
     end
 
     methods
@@ -28,11 +28,20 @@ classdef RegisterController < ControllerBase
                 return
             end
             
-            idx = con.View.AlignmentTable.Selection;
-            con.SelectedImage = con.ImageSet(idx);
+            con.SelectedImageIdx  = con.View.AlignmentTable.Selection;
+            = con.ImageSet(idx);
             img = con.Model.io_get_down_img(con.SelectedImage);
             imshow(img, 'Parent', con.View.HistSliceAxes);
-            con.draw_hexs()
+
+            tf_data = con.SelectedImage.TransformationData;
+
+            if isempty(tf_data)
+                tf_data = TransformationData.default(size(img), con.View.Atlas.Size);
+            end
+
+            con.View.CurrentAtlasSliceIdx = tf_data.SliceIdx;
+            con.View.CurrentAtlasHex = con.draw_hex(tf_data.AtlasHex, con.View.AtlasSliceAxes);
+            con.View.CurrentHistHex = con.draw_hex(tf_data.AtlasHex,con.View.AtlasSliceAxes);
         end
 
         function onAlignColorButtonPushed(con)
@@ -51,12 +60,6 @@ classdef RegisterController < ControllerBase
             n_slices = con.View.Atlas.Size(3);
             idx = max(0, min(n_slices, round(slider_pos)));
             con.View.CurrentAtlasSliceIdx = idx;
-            img = con.View.Atlas.ReferenceAtlas(:, :, con.View.CurrentAtlasSliceIdx);
-            imshow(imadjust(img), 'Parent', con.View.AtlasSliceAxes)
-        end
-
-        function onSliderStop(con)
-            con.draw_hexs()
         end
 
         function onWorkspaceUpdated(con) 
@@ -97,9 +100,6 @@ classdef RegisterController < ControllerBase
                 case (RegisterEvent.SliderAtlasSlice)
                     con.onAtlasSliceSliderChanged(data)
 
-                case (RegisterEvent.SliderStop)
-                    con.onSliderStop()
-
                 case (ModelEvents.WorkspaceUpdated)
                     con.onWorkspaceUpdated()
             end
@@ -111,22 +111,6 @@ classdef RegisterController < ControllerBase
 
         function poly = draw_hex(~, pos, parent)
             poly = drawpolygon('Position', pos, 'Parent', parent);
-        end
-
-        function draw_hexs(con)
-            tf_data = con.SelectedImage.TransformationData;
-            img_sz = double(con.SelectedImage.Size);
-
-            if isempty(tf_data)
-                tf_data = TransformationData.default(img_sz, con.View.Atlas.Size);
-                con.SelectedImage.TransformationData = tf_data;
-                disp("recompute")
-            end
-
-            con.View.CurrentAtlasSliceIdx = tf_data.SliceIdx;
-            con.View.AtlasHex = con.draw_hex(tf_data.AtlasHex, con.View.AtlasSliceAxes);
-            con.View.HistHex = con.draw_hex(tf_data.HistHex, con.View.HistSliceAxes);
-            disp(con.View.HistHex.Position)
         end
 
     end
