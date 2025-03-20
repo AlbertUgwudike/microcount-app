@@ -19,8 +19,6 @@ classdef RegisterView < Component
         Atlas Atlas = Atlas()
 
         CurrentAtlasSliceIdx = 150
-        AtlasHexCoords
-        HistHexCoords
     end
 
     methods
@@ -37,18 +35,12 @@ classdef RegisterView < Component
 
     end 
 
-    methods ( Access = protected ) 
+    methods ( Access = protected )
 
         function update(view)
-            img = view.Atlas.ReferenceAtlas(:, :, view.CurrentAtlasSliceIdx);
-            imshow(imadjust(img), 'Parent', view.AtlasSliceAxes)
-
-            if isempty(view.AtlasHexCoords)
-                return
-            end
-            view.AtlasHex = view.draw_hex(view.AtlasHexCoords, view.AtlasSliceAxes);
-            view.HistHex = view.draw_hex(tf_data.HistHexCoords, view.HistSliceAxes);
+           view.AtlasSliceSlider.Value
         end
+        
 
         function setup(view) 
 
@@ -135,6 +127,7 @@ classdef RegisterView < Component
             view.AtlasSliceSlider.Limits = [1 view.Atlas.Size(3)];
             view.AtlasSliceSlider.MajorTicks = [1 view.Atlas.Size(3)];
             view.AtlasSliceSlider.ValueChangingFcn = @(~, e) view.call_registrar(RegisterEvent.SliderAtlasSlice, e.Value);
+            view.AtlasSliceSlider.ValueChangedFcn = @(~, e) view.call_registrar(RegisterEvent.SliderStop, e.Value);
             view.AtlasSliceSlider.MinorTicks = [];
             view.AtlasSliceSlider.Layout.Row = 2;
             view.AtlasSliceSlider.Layout.Column = 1;
@@ -142,14 +135,6 @@ classdef RegisterView < Component
             view.AtlasSliceSlider.Value = view.Atlas.Size(3) / 2;
             imshow(view.Atlas.ReferenceAtlas(:, :, view.Atlas.Size(3) / 2), 'Parent', view.AtlasSliceAxes);
 
-        end
-
-    end
-
-    methods (Access=private)
-
-        function poly = draw_hex(~, pos, parent)
-            poly = drawpolygon('Position', pos, 'Parent', parent);
         end
 
     end

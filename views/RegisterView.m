@@ -19,8 +19,6 @@ classdef RegisterView < Component
         Atlas Atlas = Atlas()
 
         CurrentAtlasSliceIdx = 150
-        % AtlasHexCoords
-        % HistHexCoords
     end
 
     methods
@@ -38,7 +36,7 @@ classdef RegisterView < Component
     end 
 
     methods ( Access = protected )
-
+        
         function setup(view) 
 
             % Create MainGrid
