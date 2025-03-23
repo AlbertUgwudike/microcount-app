@@ -7,5 +7,7 @@ classdef Constants < handle
         DIR_SLUG_PROC char = 'ws_processed';
         
         FILE_WS_MAT char = 'ws.mat';
+
+        PAD (1, 1) uint16 = 100
     end
 end

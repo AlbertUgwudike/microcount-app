@@ -15,10 +15,12 @@ function launch(f)
     homeView = HomeView('Parent', appView.HomeTab);
     selectView = SelectImagesView('Parent', appView.SelectTab);
     registerView = RegisterView('Parent', appView.RegisterTab);
+    regionsView = RegionsView('Parent', appView.RegionsTab);
     
     AppController(model, appView);
     HomeController(model, homeView);
     SelectImagesController(model, selectView);
     RegisterController(model, registerView);
+    RegionsController(model, regionsView);
 
 end

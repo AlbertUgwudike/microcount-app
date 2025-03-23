@@ -6,6 +6,7 @@ classdef Model < handle
     end
 
     properties ( SetAccess = public ) 
+        Atlas Atlas = Atlas()
         RegistrarFcns
     end
 
@@ -138,6 +139,36 @@ classdef Model < handle
                 return
             end
             img = imread(img_fn);
+        end
+
+
+        function io_align_image(mdl, img_md, atlas_vertices, hist_vertices, slice_idx)
+            arguments
+                mdl Model
+                img_md ImageMetadata
+                atlas_vertices (6, 2) double
+                hist_vertices (6, 2) double
+                slice_idx (1, 1) double
+            end
+            tform = fitgeotform2d(atlas_vertices, hist_vertices, 'affine');
+            t_data = TransformationData(hist_vertices, atlas_vertices, tform, slice_idx);
+            img_md.TransformationData = t_data;
+            img_md.Aligned = true;
+            mdl.io_save()
+            mdl.call_registrars(ModelEvents.WorkspaceUpdated)
+        end
+
+        function io_toggle_region(mdl, img_md, raw_idx)
+            arguments
+                mdl Model
+                img_md ImageMetadata
+                raw_idx uint8
+            end
+            region_key = RegionKey(mod(raw_idx - 1, 6));
+            laterality = Laterality(idivide(uint8(raw_idx - 1), 6));
+            img_md.toggle_region(region_key, laterality);
+            mdl.io_save()
+            mdl.call_registrars(ModelEvents.WorkspaceUpdated);
         end
 
     end

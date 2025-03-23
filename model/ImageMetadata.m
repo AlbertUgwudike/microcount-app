@@ -7,8 +7,8 @@ classdef ImageMetadata < handle
         Converted (1, 1) logical = false
         Aligned (1, 1) logical = false
         DownSampled (1, 1) logical = false
-        RegionCodes (:, 1) string
         TransformationData TransformationData
+        Regions (12, 1) Region
     end
     
     methods
@@ -21,7 +21,6 @@ classdef ImageMetadata < handle
             img_md.ID = fn;
             info = imfinfo(source_fn);
             img_md.Size = [info.Height, info.Width];
-            disp(img_md.ID)
         end
         
         function mask_fn = get_mask_fn(img_md, ws_dir, laterality, region_code)
@@ -81,6 +80,47 @@ classdef ImageMetadata < handle
                 img_md.ID, ...
                 "conv" ...
             );
+        end
+
+        function toggle_region(img_mg, region_key, laterality)
+
+            arguments
+                img_mg ImageMetadata
+                region_key RegionKey
+                laterality Laterality
+            end
+
+            idx = img_mg.calc_idx(region_key, laterality);
+            region = img_mg.Regions(idx);
+
+            if isempty(region)
+                img_mg.Regions(idx) = Region.default(img_mg.ID, region_key, laterality);
+            else
+                img_mg.Regions(idx) = Region.empty;
+            end
+
+        end
+
+        function selected = is_region_selected(img_mg, region_key, laterality)
+
+            arguments
+                img_mg ImageMetadata
+                region_key RegionKey
+                laterality Laterality
+            end
+                
+            idx = img_mg.calc_idx(region_key, laterality);
+            selected = ~isempty(img_mg.Regions(idx));
+        end
+
+        function idx = calc_idx(region_key, laterality)
+            arguments
+                region_key RegionKey
+                laterality Laterality 
+            end
+            region_idx = uint8(region_key);
+            lat_idx = uint8(laterality);
+            idx = lat_idx * 6 + region_idx;
         end
         
     end

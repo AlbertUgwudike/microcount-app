@@ -1,7 +1,7 @@
-classdef Laterality
+classdef Laterality < uint8
     enumeration
-        LEFT
-        RIGHT
+        LEFT (0)
+        RIGHT (1)
     end
 end
 
