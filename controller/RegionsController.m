@@ -32,21 +32,28 @@ classdef RegionsController < ControllerBase
             con.View.HistologyImage.ImageSource = cat(3, img, img, img);
         end
 
-        function onRegionSelected(con)
+        function onRegionSelected(con, laterality)
             disp("RegionsController::onRegionSelected")
+            region_idx = con.View.RightTable.Selection(2)
+            if laterality == Laterality.LEFT
+                region_idx = con.View.RightTable.Selection(2)
+            else
+
+            end
             idx = con.View.ImageTable.Selection(2);
             if (idx == 1)
                 return
             end
-            con.Model.io_toggle_region(con.SelectedImage, idx - 1);
+            con.Model.io_toggle_region(con.SelectedImage, mod(idx - 1, 6));
         end
 
         function onWorkspaceUpdated(con) 
             disp("RegionsController::on_workspace_updated")
             reg_idx         = [con.Model.WS.Images.Aligned];
             con.ImageSet    = con.Model.WS.Images(reg_idx);
-            region_codes    = ~isempty([con.ImageSet.Regions]');
-            region_markers  = Utility.apply_check(region_codes);
+            disp([con.ImageSet.Regions]')
+            region_codes    = ~cellfun('isempty', [con.ImageSet.Regions]');
+            region_markers  = Utility.check_or_none(region_codes);
             fns             = Utility.path2name([con.ImageSet.SourceFn]');
             new_data        = [fns region_markers];
             con.View.ImageTable.Data = new_data;
@@ -65,8 +72,11 @@ classdef RegionsController < ControllerBase
                 case (RegionsEvent.SelectionImageTable)
                     con.onImageSelected()
 
-                case (RegionsEvent.RegionSelection)
-                    con.onRegionSelected()
+                case (RegionsEvent.LeftSelection)
+                    con.onRegionSelected(Laterality.LEFT)
+
+                case (RegionsEvent.RightSelection)
+                    con.onRegionSelected(Laterality.RIGHT)
 
                 case (ModelEvents.WorkspaceUpdated)
                     con.onWorkspaceUpdated()
@@ -77,8 +87,8 @@ classdef RegionsController < ControllerBase
 
     methods (Access=private)
         function abrs = get_selected_abrs(con)
-            all_abrs = { 'HIP', 'HY', 'TH', 'SS', 'AUD', 'CTXsp' };
-            idx = [con.SelectedImage.RegionCodes];
+            all_abrs = { 'HIP', 'HY', 'TH', 'SS', 'AUD', 'CTXsp','HIP', 'HY', 'TH', 'SS', 'AUD', 'CTXsp' };
+            idx = ~cellfun('isempty', [con.SelectedImage.Regions]);
             if any(idx)
                 abrs = { all_abrs{idx} };
                 disp({ all_abrs{idx} })

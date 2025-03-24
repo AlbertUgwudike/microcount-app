@@ -63,7 +63,7 @@ classdef RegionsView < Component
             view.LeftTable.Layout.Row = 1;
             view.LeftTable.Layout.Column = 2;
             view.LeftTable.Multiselect = 'off';
-            view.LeftTable.CellSelectionCallback = @(~, ~) view.call_registrar(RegionsEvent.LeftSelection);
+            view.LeftTable.CellSelectionCallback = @(~, ~) view.call_registrar(RegionsEvent.RegionSelection);
 
             % Create RightTable
             view.RightTable = uitable(view.GridLayout11);
@@ -71,18 +71,18 @@ classdef RegionsView < Component
             view.RightTable.ColumnWidth = {'1x', '1x', '1x', '1x', '1x', '1x'};
             view.RightTable.RowName = {};
             view.RightTable.Layout.Row = 1;
-            view.RightTable.Multiselect = 'off';
+            view.LeftTable.Multiselect = 'off';
             view.RightTable.Layout.Column = 3;
-            view.RightTable.CellSelectionCallback = @(~, ~) view.call_registrar(RegionsEvent.RightSelection);
+            view.RTable.CellSelectionCallback = @(~, ~) view.call_registrar(RegionsEvent.RegionSelection);
 
             % Create LabelGrid
-            view.LabelGrid = uigridlayout(view.MainGrid);
-            view.LabelGrid.ColumnWidth = {'1x', '1x', '1x'};
-            view.LabelGrid.RowHeight = {'1x'};
-            view.LabelGrid.ColumnSpacing = 1;
-            view.LabelGrid.RowSpacing = 1;
-            view.LabelGrid.Layout.Row = 1;
-            view.LabelGrid.Layout.Column = 1;
+            view.GridLayout12 = uigridlayout(view.MainGrid);
+            view.GridLayout12.ColumnWidth = {'1x', '1x', '1x'};
+            view.GridLayout12.RowHeight = {'1x'};
+            view.GridLayout12.ColumnSpacing = 1;
+            view.GridLayout12.RowSpacing = 1;
+            view.GridLayout12.Layout.Row = 1;
+            view.GridLayout12.Layout.Column = 1;
 
             % Create LeftLabel
             view.LeftLabel = uilabel(view.GridLayout12);

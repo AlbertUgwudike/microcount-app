@@ -5,6 +5,11 @@ classdef Utility
             output = arrayfun(@(n) emojis(n + 1), idxs);
         end
 
+        function output = check_or_none(idxs)
+            emojis = ["", "✅"];
+            output = arrayfun(@(n) emojis(n + 1), idxs);
+        end
+
         function names = path2name(paths)
             arguments
                 paths (:, 1) string

@@ -8,7 +8,7 @@ classdef ImageMetadata < handle
         Aligned (1, 1) logical = false
         DownSampled (1, 1) logical = false
         TransformationData TransformationData
-        Regions (12, 1) Region
+        Regions (12, 1) cell = arrayfun(@(~) Region.empty(), 1:12, 'UniformOutput', false)
     end
     
     methods
@@ -91,12 +91,15 @@ classdef ImageMetadata < handle
             end
 
             idx = img_mg.calc_idx(region_key, laterality);
-            region = img_mg.Regions(idx);
+            region = img_mg.Regions{idx};
+            disp(region)
 
             if isempty(region)
-                img_mg.Regions(idx) = Region.default(img_mg.ID, region_key, laterality);
+                img_mg.Regions{idx} = Region.default_settings(img_mg.ID, region_key, laterality) ;
+                disp("yeeter")
             else
-                img_mg.Regions(idx) = Region.empty;
+                img_mg.Regions{idx} = Region.empty;
+                disp("yeetek")
             end
 
         end
@@ -110,11 +113,12 @@ classdef ImageMetadata < handle
             end
                 
             idx = img_mg.calc_idx(region_key, laterality);
-            selected = ~isempty(img_mg.Regions(idx));
+            selected = ~isempty(img_mg.Regions{idx});
         end
 
-        function idx = calc_idx(region_key, laterality)
+        function idx = calc_idx(~, region_key, laterality)
             arguments
+                ~ 
                 region_key RegionKey
                 laterality Laterality 
             end

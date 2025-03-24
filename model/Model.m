@@ -164,7 +164,7 @@ classdef Model < handle
                 img_md ImageMetadata
                 raw_idx uint8
             end
-            region_key = RegionKey(mod(raw_idx - 1, 6));
+            region_key = RegionKey(mod(raw_idx - 1, 6) + 1);
             laterality = Laterality(idivide(uint8(raw_idx - 1), 6));
             img_md.toggle_region(region_key, laterality);
             mdl.io_save()

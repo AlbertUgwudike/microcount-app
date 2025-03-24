@@ -17,8 +17,8 @@ classdef Region
     end
 
     methods (Static)
-        function default_region = default(idenitifer, region_key, laterality)
-            default_region = Region(idenitifer, region_key, laterality, 0.35, 0.5, 10000);
+        function region = default_settings(idenitifer, region_key, laterality)
+            region = Region(idenitifer, region_key, laterality, 0.35, 0.5, 10000);
         end
 
         function id = generate_id(identifier, region_key, laterality)
