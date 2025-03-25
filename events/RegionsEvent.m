@@ -1,8 +1,7 @@
 classdef RegionsEvent
     enumeration
         SelectionImageTable
-        LeftSelection
-        RightSelection
+        RegionSelection
     end
 end
 

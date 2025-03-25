@@ -5,10 +5,7 @@ classdef RegionsView < Component
         LabelGrid
         LeftLabel
         RightLabel
-        TableGrid
         ImageTable
-        LeftTable
-        RightTable
         HistologyImage
         Atlas Atlas = Atlas()
     end
@@ -35,45 +32,18 @@ classdef RegionsView < Component
             view.MainGrid = uigridlayout(view);
             view.MainGrid.ColumnWidth = {'1x'};
             view.MainGrid.RowHeight = {'0.15x', '0.6x', '1.3x'};
-            view.MainGrid.RowSpacing = 1;
-
-            % Create TableGrid
-            view.TableGrid = uigridlayout(view.MainGrid);
-            view.TableGrid.ColumnWidth = {'1x', '1x', '1x'};
-            view.TableGrid.RowHeight = {'1x'};
-            view.TableGrid.ColumnSpacing = 1;
-            view.TableGrid.RowSpacing = 1;
-            view.TableGrid.Layout.Row = 2;
-            view.TableGrid.Layout.Column = 1;
+            view.MainGrid.RowSpacing = 5;
 
             % Create ImageTable
-            view.ImageTable = uitable(view.GridLayout11);
-            view.ImageTable.ColumnName = {'Images'};
+            view.ImageTable = uitable(view.MainGrid);
+            view.ImageTable.ColumnName = {'Images'; ''; 'HIP'; 'HY'; 'TH'; 'SS'; 'AU'; 'AM'; ''; 'HIP'; 'HY'; 'TH'; 'SS'; 'AU'; 'AM'};
+            view.ImageTable.ColumnWidth = {'60x', '1x', '10x', '10x', '10x', '10x', '10x', '10x', '1x', '10x', '10x', '10x', '10x', '10x', '10x'};
             view.ImageTable.RowName = {};
-            view.ImageTable.Layout.Row = 1;
+            view.ImageTable.Layout.Row = 2;
             view.ImageTable.Layout.Column = 1;
             view.ImageTable.Multiselect = 'off';
             view.ImageTable.CellSelectionCallback = @(~, ~) view.call_registrar(RegionsEvent.SelectionImageTable);
-
-            % Create LeftTable
-            view.LeftTable = uitable(view.GridLayout11);
-            view.LeftTable.ColumnName = {'HIP'; 'HY'; 'TH'; 'SS'; 'AU'; 'AM'};
-            view.LeftTable.ColumnWidth = {'1x', '1x', '1x', '1x', '1x', '1x'};
-            view.LeftTable.RowName = {};
-            view.LeftTable.Layout.Row = 1;
-            view.LeftTable.Layout.Column = 2;
-            view.LeftTable.Multiselect = 'off';
-            view.LeftTable.CellSelectionCallback = @(~, ~) view.call_registrar(RegionsEvent.LeftSelection);
-
-            % Create RightTable
-            view.RightTable = uitable(view.GridLayout11);
-            view.RightTable.ColumnName = {'HIP'; 'HY'; 'TH'; 'SS'; 'AU'; 'AM'};
-            view.RightTable.ColumnWidth = {'1x', '1x', '1x', '1x', '1x', '1x'};
-            view.RightTable.RowName = {};
-            view.RightTable.Layout.Row = 1;
-            view.RightTable.Multiselect = 'off';
-            view.RightTable.Layout.Column = 3;
-            view.RightTable.CellSelectionCallback = @(~, ~) view.call_registrar(RegionsEvent.RightSelection);
+            view.ImageTable.DoubleClickedFcn = @(~, ~) view.call_registrar(RegionsEvent.RegionSelection);
 
             % Create LabelGrid
             view.LabelGrid = uigridlayout(view.MainGrid);
@@ -85,7 +55,7 @@ classdef RegionsView < Component
             view.LabelGrid.Layout.Column = 1;
 
             % Create LeftLabel
-            view.LeftLabel = uilabel(view.GridLayout12);
+            view.LeftLabel = uilabel(view.LabelGrid);
             view.LeftLabel.HorizontalAlignment = 'center';
             view.LeftLabel.FontSize = 18;
             view.LeftLabel.Layout.Row = 1;
@@ -93,7 +63,7 @@ classdef RegionsView < Component
             view.LeftLabel.Text = 'Left';
 
             % Create RightLabel
-            view.RightLabel = uilabel(view.GridLayout12);
+            view.RightLabel = uilabel(view.LabelGrid);
             view.RightLabel.HorizontalAlignment = 'center';
             view.RightLabel.FontSize = 18;
             view.RightLabel.Layout.Row = 1;
@@ -101,9 +71,9 @@ classdef RegionsView < Component
             view.RightLabel.Text = 'Right';
 
             % Create Image
-            view.Image = uiimage(view.MainGrid);
-            view.Image.Layout.Row = 3;
-            view.Image.Layout.Column = 1;
+            view.HistologyImage = uiimage(view.MainGrid);
+            view.HistologyImage.Layout.Row = 3;
+            view.HistologyImage.Layout.Column = 1;
 
         end
 

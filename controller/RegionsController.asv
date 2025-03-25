@@ -27,29 +27,21 @@ classdef RegionsController < ControllerBase
             d_img = con.Model.io_get_down_img(con.SelectedImage);
             p_img = padarray(d_img, double([Constants.PAD, Constants.PAD]), 0);
             tform_d = con.SelectedImage.TransformationData;
-            [l_abrs, r_abrs] = con.get_selected_abrs();
-            img = p_img + con.Model.Atlas.calc_borders(size(d_img), tform_d, l_abrs, r_abrs);
+            abrs = con.get_selected_abrs();
+            img = p_img + con.Model.Atlas.calc_borders(size(d_img), tform_d, abrs);
             con.View.HistologyImage.ImageSource = cat(3, img, img, img);
         end
 
         function onRegionSelected(con)
             disp("RegionsController::onRegionSelected")
-
             idx = con.View.ImageTable.Selection(2);
-
-            if ismember(idx, [1, 2, 9, 16])
-                return
-            end
-
-            if idx > 9
-                lat = Laterality.RIGHT;
-                p_idx = idx - 9;
+            if ismember(idx, [2]
+            if laterality == Laterality.LEFT
+                idx = con.View.LeftTable.Selection(2);
             else
-                lat = Laterality.LEFT;
-                p_idx = idx - 2;
+                idx = con.View.RightTable.Selection(2);
             end
-
-            con.Model.io_toggle_region(con.SelectedImage, lat, p_idx);
+            con.Model.io_toggle_region(con.SelectedImage, laterality, idx);
         end
 
         function onWorkspaceUpdated(con) 
@@ -61,12 +53,13 @@ classdef RegionsController < ControllerBase
             left_markers    = Utility.check_or_none(region_codes(:, 1:6));
             right_markers   = Utility.check_or_none(region_codes(:, 7:12));
             fns             = Utility.path2name([con.ImageSet.SourceFn]');
-            spacer          = arrayfun(@(~) "", 1:numel(fns))';
 
-            con.View.ImageTable.Data = [fns spacer left_markers spacer right_markers];
+            con.View.ImageTable.Data = fns;
+            con.View.LeftTable.Data  = left_markers;
+            con.View.RightTable.Data = right_markers;
 
             if ~isempty(con.SelectedImage)
-                con.onImageSelected()
+                con.onImageSelected(con.View.ImageTable.Selection(1))
             end
         end
         
@@ -92,15 +85,14 @@ classdef RegionsController < ControllerBase
     end
 
     methods (Access=private)
-        function [l_abrs, r_abrs] = get_selected_abrs(con)
-            all_abrs = { 'HIP', 'HY', 'TH', 'SS', 'AUD', 'CTXsp' };
+        function abrs = get_selected_abrs(con)
+            all_abrs = { 'HIP', 'HY', 'TH', 'SS', 'AUD', 'CTXsp','HIP', 'HY', 'TH', 'SS', 'AUD', 'CTXsp' };
             idx = ~cellfun('isempty', [con.SelectedImage.Regions]);
             if any(idx)
-                l_abrs = { all_abrs{idx(1:6)} };
-                r_abrs = { all_abrs{idx(7:12)} };
+                abrs = { all_abrs{idx} };
+                disp({ all_abrs{idx} })
             else
-                l_abrs = {};
-                r_abrs = {};
+                abrs = {};
             end
         end
     end

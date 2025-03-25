@@ -28,16 +28,16 @@ classdef Atlas
             disp('Done.')
         end
 
-        function borders = calc_borders(atlas, out_sz, tform_data, l_abrs, r_abrs)
+        function borders = calc_borders(atlas, out_sz, tform_data, l_regions, r_regions)
             arguments
                 atlas Atlas
                 out_sz
                 tform_data TransformationData
-                l_abrs = {}
-                r_abrs = {}
+                l_regions = {}
+                r_regions = {}
             end
             ann_image  = atlas.AnnotationAtlas(:, :, tform_data.SliceIdx);
-            half_image = true(height(ann_image), width(ann_image) / 2);
+            half_image = true(height(ann_image), width(ann_image / 2));
             mask_image = [half_image ~half_image];
 
             ref_img = imref2d(uint16(out_sz) + [2 * Constants.PAD, 2 * Constants.PAD]);
@@ -49,12 +49,11 @@ classdef Atlas
             filtered = conv2(ali_image, ones(3) ./ 9, 'same');
             borders = 65536 * uint16(round(filtered) ~= ali_image);
 
-            if ~isempty(l_abrs)
-                borders = borders + 65536 * atlas.fill_region(l_abrs, ali_image) .* uint16(lat_image);
+            if ~isempty(l_regions)
+                borders = borders + 65536 * atlas.fill_region(l_regions, ali_image .* uint16(lat_image));
             end
-
-            if ~isempty(r_abrs)
-                borders = borders + 65536 * atlas.fill_region(r_abrs, ali_image) .* uint16(~lat_image);
+            if ~isempty(r_regions)
+                borders = borders + 65536 * atlas.fill_region(r_regions, ali_image .* uint16(~lat_image));
             end
         end
 

@@ -158,14 +158,14 @@ classdef Model < handle
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 
-        function io_toggle_region(mdl, img_md, raw_idx)
+        function io_toggle_region(mdl, img_md, laterality, idx)
             arguments
                 mdl Model
                 img_md ImageMetadata
-                raw_idx uint8
+                laterality Laterality
+                idx uint8
             end
-            region_key = RegionKey(mod(raw_idx - 1, 6) + 1);
-            laterality = Laterality(idivide(uint8(raw_idx - 1), 6));
+            region_key = RegionKey(idx);
             img_md.toggle_region(region_key, laterality);
             mdl.io_save()
             mdl.call_registrars(ModelEvents.WorkspaceUpdated);
