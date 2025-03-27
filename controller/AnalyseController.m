@@ -25,6 +25,11 @@ classdef AnalyseController < ControllerBase
             disp("AnalyseController::on_region_selected")
             idx = con.View.RegionTable.Selection(1);
             con.SelectedRegion = con.RegionSet(idx);
+            fn = con.SelectedRegion.get_processed_img_fn(con.Model.WS.DirName);
+            if (isfile(fn))
+                img = imread(fn);
+                con.View.ProcessedImage.ImageSource = img;
+            end
         end
 
         function on_cell_edited(con, event)

@@ -197,7 +197,7 @@ classdef Model < handle
             data = microcount_algo(bfr_img, mask, settings);
             [result, output_img] = data2result(data);
             region.Result = result;
-            fn = region.get_processed_img_fn(mdl.WS.DirName);
+            fn = region.get_processed_img_fn(mdl.WS);
             imwrite(output_img, fn);
             region.Processed = true;
             mdl.io_save();

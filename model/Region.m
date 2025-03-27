@@ -9,7 +9,7 @@ classdef Region < handle
         CD68Threshold (1, 1) double
         MaxCD68Size (1, 1) uint32
         Processed (1, 1) logical
-        Result MicrocountData = MicrocountData.empty
+        Result MicrocountResult = MicrocountResult.empty
     end
     
     methods
@@ -48,6 +48,20 @@ classdef Region < handle
                 region.MaxCD68Size ...
             );
 
+        end
+
+        function fn = get_processed_img_fn(region, ws_dir)
+            arguments
+                region Region
+                ws_dir string
+            end
+
+            fn = sprintf( ...
+                "%s/%s/%s.tiff", ...
+                ws_dir, ...
+                Constants.DIR_SLUG_PROC, ...
+                region.ID ...
+            );
         end
     end
 
