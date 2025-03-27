@@ -28,55 +28,46 @@ classdef Atlas
             disp('Done.')
         end
 
-        function borders = calc_borders(atlas, out_sz, tform_data, l_abrs, r_abrs)
+        function borders = calc_borders(atlas, tform_data, l_abrs, r_abrs)
             arguments
                 atlas Atlas
-                out_sz
                 tform_data TransformationData
                 l_abrs = {}
                 r_abrs = {}
             end
-            ann_image  = atlas.AnnotationAtlas(:, :, tform_data.SliceIdx);
-            half_image = true(height(ann_image), width(ann_image) / 2);
-            mask_image = [half_image ~half_image];
 
-            ref_img = imref2d(uint16(out_sz) + [2 * Constants.PAD, 2 * Constants.PAD]);
-            tform_mat = tform_data.Transform;
+            [ali_img, lat_img] = atlas.transform_atlas_slice(tform_data);
 
-            ali_image = imwarp(ann_image , tform_mat, 'nearest', 'Outputview', ref_img);
-            lat_image = imwarp(mask_image, tform_mat, 'nearest', 'Outputview', ref_img);
-
-            filtered = conv2(ali_image, ones(3) ./ 9, 'same');
-            borders = 65536 * uint16(round(filtered) ~= ali_image);
+            filtered = conv2(ali_img, ones(3) ./ 9, 'same');
+            borders = 65536 * uint16(round(filtered) ~= ali_img);
 
             if ~isempty(l_abrs)
-                borders = borders + 65536 * atlas.fill_region(l_abrs, ali_image) .* uint16(lat_image);
+                borders = borders + 65536 * atlas.fill_region(l_abrs, ali_img) .* uint16(lat_img);
             end
 
             if ~isempty(r_abrs)
-                borders = borders + 65536 * atlas.fill_region(r_abrs, ali_image) .* uint16(~lat_image);
+                borders = borders + 65536 * atlas.fill_region(r_abrs, ali_img) .* uint16(~lat_img);
             end
         end
-
-        function idx_set = abr_to_idx_set(atlas, abbr)
-            idx = atlas.AbrMap(abbr);
-            idx_set = [idx, atlas.IdxMap(idx)];
-        end
-
-        function mask = fill_region(atlas, abbrs, ann_slice)
-            find_fun  = @(abbr) atlas.abr_to_idx_set(abbr);
-            idx_sets  = cellfun(find_fun, abbrs, UniformOutput=false);
-            mask      = uint16(zeros(size(ann_slice)));
-
-            for i = 1:numel(idx_sets)
-                idx_set = idx_sets{i};
-                parent_idx = idx_set(1);
-                tmp = ismember(ann_slice, idx_set);
-                mask(tmp) = parent_idx;
+        
+        function mask = create_full_size_mask(atlas, region)
+            arguments
+                atlas Atlas
+                region Region
             end
+            
+            tform_data = region.Parent.TransformationData;
+            [ali_img, lat_img] = atlas.transform_atlas_slice(tform_data);
 
+            ali_img = isocrop(ali_img, Constants.PAD);
+            lat_img = isocrop(lat_img, Constants.PAD);
+            lat_img = (region.Side == Laterality.LEFT) == lat_img;
+
+            dn_mask = atlas.fill_region({ string(region.Key) }, ali_img);
+            dn_mask = lat_img & dn_mask;
+
+            mask = imresize(dn_mask, region.Parent.Size);
         end
-
 
     end
 
@@ -104,6 +95,46 @@ classdef Atlas
             recursive_find = @(i) Atlas.child_idxs_from_table(st_table, i);
             others = arrayfun(recursive_find, child_idxs, 'UniformOutput', false);
             idxs = [child_idxs, cell2mat(others)];
+        end
+
+    end
+
+    methods (Access = private)
+
+        function [ali_image, lat_image] = transform_atlas_slice(atlas, tform_data)
+            arguments
+                atlas Atlas
+                tform_data TransformationData
+            end
+            
+            ann_image  = atlas.AnnotationAtlas(:, :, tform_data.SliceIdx);
+            half_image = true(height(ann_image), width(ann_image) / 2);
+            mask_image = [half_image ~half_image];
+
+            ref_img = imref2d(tform_data.ImageSize);
+            tform_mat = tform_data.Transform;
+
+            ali_image = imwarp(ann_image , tform_mat, 'nearest', 'Outputview', ref_img);
+            lat_image = imwarp(mask_image, tform_mat, 'nearest', 'Outputview', ref_img);
+        end
+
+        function idx_set = abr_to_idx_set(atlas, abbr)
+            idx = atlas.AbrMap(abbr);
+            idx_set = [idx, atlas.IdxMap(idx)];
+        end
+
+        function mask = fill_region(atlas, abbrs, ann_slice)
+            find_fun  = @(abbr) atlas.abr_to_idx_set(abbr);
+            idx_sets  = cellfun(find_fun, abbrs, UniformOutput=false);
+            mask      = uint16(zeros(size(ann_slice)));
+
+            for i = 1:numel(idx_sets)
+                idx_set = idx_sets{i};
+                parent_idx = idx_set(1);
+                tmp = ismember(ann_slice, idx_set);
+                mask(tmp) = parent_idx;
+            end
+
         end
 
     end

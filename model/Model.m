@@ -142,16 +142,17 @@ classdef Model < handle
         end
 
 
-        function io_align_image(mdl, img_md, atlas_vertices, hist_vertices, slice_idx)
+        function io_align_image(mdl, img_md, atlas_vertices, hist_vertices, img_sz, slice_idx)
             arguments
                 mdl Model
                 img_md ImageMetadata
                 atlas_vertices (6, 2) double
                 hist_vertices (6, 2) double
+                img_sz (1, 2) double
                 slice_idx (1, 1) double
             end
             tform = fitgeotform2d(atlas_vertices, hist_vertices, 'affine');
-            t_data = TransformationData(hist_vertices, atlas_vertices, tform, slice_idx);
+            t_data = TransformationData(hist_vertices, atlas_vertices, tform, img_sz, slice_idx);
             img_md.TransformationData = t_data;
             img_md.Aligned = true;
             mdl.io_save()
@@ -169,6 +170,33 @@ classdef Model < handle
             img_md.toggle_region(region_key, laterality);
             mdl.io_save()
             mdl.call_registrars(ModelEvents.WorkspaceUpdated);
+        end
+
+        function regions = get_all_regions(mdl)
+            images = mdl.WS.Images;
+            regions = Utility.flatten([images.Regions]);
+            if isempty(regions)
+                regions = [];
+                return
+            end
+            f_idx = ~cellfun('isempty', regions);
+            f_regions = regions(f_idx);
+            regions = [f_regions{:}];
+        end
+
+        function io_process_region(mdl, region)
+            arguments
+                mdl Model
+                region Region
+            end
+            
+            mask = mdl.Atlas.create_full_size_mask(region);
+            file_name_chrs = convertStringsToChars(region.Parent.SourceFn);
+            bfr_img = BioformatsImage(file_name_chrs);
+            settings = region.get_microcount_settings();
+            data = microcount_algo(bfr_img, mask, settings);
+            imshow(imadjust(uint8(data.region_mask)))
+            disp(region.Parent.Size)
         end
 
     end

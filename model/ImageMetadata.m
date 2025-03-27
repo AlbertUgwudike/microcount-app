@@ -92,14 +92,11 @@ classdef ImageMetadata < handle
 
             idx = img_mg.calc_idx(region_key, laterality);
             region = img_mg.Regions{idx};
-            disp(region)
 
             if isempty(region)
-                img_mg.Regions{idx} = Region.default_settings(img_mg.ID, region_key, laterality) ;
-                disp("yeeter")
+                img_mg.Regions{idx} = Region.default_settings(img_mg, region_key, laterality);
             else
                 img_mg.Regions{idx} = Region.empty;
-                disp("yeetek")
             end
 
         end

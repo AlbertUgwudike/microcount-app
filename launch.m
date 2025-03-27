@@ -11,16 +11,18 @@ function launch(f)
     model = Model();
     
     % Create the home view and controller.
-    appView = AppView('Parent', f);
-    homeView = HomeView('Parent', appView.HomeTab);
-    selectView = SelectImagesView('Parent', appView.SelectTab);
-    registerView = RegisterView('Parent', appView.RegisterTab);
-    regionsView = RegionsView('Parent', appView.RegionsTab);
+    app_view = AppView('Parent', f);
+    home_view = HomeView('Parent', app_view.HomeTab);
+    select_view = SelectImagesView('Parent', app_view.SelectTab);
+    register_view = RegisterView('Parent', app_view.RegisterTab);
+    regions_view = RegionsView('Parent', app_view.RegionsTab);
+    analyse_view = AnalyseView('Parent', app_view.AnalyseTab);
     
-    AppController(model, appView);
-    HomeController(model, homeView);
-    SelectImagesController(model, selectView);
-    RegisterController(model, registerView);
-    RegionsController(model, regionsView);
+    AppController(model, app_view);
+    HomeController(model, home_view);
+    SelectImagesController(model, select_view);
+    RegisterController(model, register_view);
+    RegionsController(model, regions_view);
+    AnalyseController(model, analyse_view);
 
 end

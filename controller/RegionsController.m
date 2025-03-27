@@ -28,7 +28,7 @@ classdef RegionsController < ControllerBase
             p_img = padarray(d_img, double([Constants.PAD, Constants.PAD]), 0);
             tform_d = con.SelectedImage.TransformationData;
             [l_abrs, r_abrs] = con.get_selected_abrs();
-            img = p_img + con.Model.Atlas.calc_borders(size(d_img), tform_d, l_abrs, r_abrs);
+            img = p_img + con.Model.Atlas.calc_borders(tform_d, l_abrs, r_abrs);
             con.View.HistologyImage.ImageSource = cat(3, img, img, img);
         end
 
@@ -56,6 +56,11 @@ classdef RegionsController < ControllerBase
             disp("RegionsController::on_workspace_updated")
             reg_idx         = [con.Model.WS.Images.Aligned];
             con.ImageSet    = con.Model.WS.Images(reg_idx);
+            
+            if (isempty(con.ImageSet))
+                return;
+            end
+
             region_codes    = ~cellfun('isempty', [con.ImageSet.Regions]');
 
             left_markers    = Utility.check_or_none(region_codes(:, 1:6));

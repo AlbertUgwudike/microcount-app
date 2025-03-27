@@ -37,6 +37,7 @@ classdef RegisterController < ControllerBase
 
             if (isempty(con.SelectedImage.TransformationData))
                 img_sz = double(con.SelectedImage.Size) / 20;
+                img_sz = img_sz + double(2 * Constants.PAD);
                 tf_data = TransformationData.default(img_sz, con.View.Atlas.Size);
                 con.SelectedImage.TransformationData = tf_data;
             end
@@ -56,8 +57,10 @@ classdef RegisterController < ControllerBase
             disp("RegisterController::onAlignControlButtonPushed")
             atlas_vertices = con.View.AtlasHex.Position;
             hist_vertices = con.View.HistHex.Position;
+            img_sz = double(con.SelectedImage.Size) / 20;
+            img_sz = img_sz + double(2 * Constants.PAD);
             slice_idx = round(con.View.AtlasSliceSlider.Value);
-            con.Model.io_align_image(con.SelectedImage, atlas_vertices, hist_vertices, slice_idx);
+            con.Model.io_align_image(con.SelectedImage, atlas_vertices, hist_vertices, img_sz, slice_idx);
             con.toggleOverlayOn()
         end
 
@@ -74,7 +77,9 @@ classdef RegisterController < ControllerBase
             d_img = con.Model.io_get_down_img(con.SelectedImage);
             p_img = padarray(d_img, double([Constants.PAD, Constants.PAD]), 0);
             tform_d = con.SelectedImage.TransformationData;
-            borders = con.Model.Atlas.calc_borders(size(d_img), tform_d);
+            borders = con.Model.Atlas.calc_borders(tform_d);
+            disp(size(p_img))
+            disp(size(borders))
             imshow(p_img + borders, 'Parent', con.View.HistSliceAxes)
             con.ShowOverlay = true;
             con.draw_hexs()

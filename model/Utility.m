@@ -17,6 +17,10 @@ classdef Utility
             [~, a, b] = fileparts(paths);
             names = a + b;
         end
+
+        function flat = flatten(arr)
+            flat = reshape(arr, [], 1);
+        end
     end
 end
 
