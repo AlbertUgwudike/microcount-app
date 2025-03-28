@@ -36,8 +36,11 @@ classdef RegisterController < ControllerBase
             imshow(img, 'Parent', con.View.HistSliceAxes);
 
             if (isempty(con.SelectedImage.TransformationData))
+                disp("new selection")
+                disp(con.SelectedImage.Size)
                 img_sz = double(con.SelectedImage.Size) / 20;
                 img_sz = img_sz + double(2 * Constants.PAD);
+                disp(img_sz)
                 tf_data = TransformationData.default(img_sz, con.View.Atlas.Size);
                 con.SelectedImage.TransformationData = tf_data;
             end
@@ -65,7 +68,6 @@ classdef RegisterController < ControllerBase
         end
 
         function onToggleOverlayButtonPushed(con)
-            disp("RegisterController::onToggleOverlayButtonPushed")
             if con.ShowOverlay
                 con.toggleOverlayOff()
             else
@@ -74,6 +76,7 @@ classdef RegisterController < ControllerBase
         end
 
         function toggleOverlayOn(con) 
+            disp("RegisterController::onToggleOverlayOn")
             d_img = con.Model.io_get_down_img(con.SelectedImage);
             p_img = padarray(d_img, double([Constants.PAD, Constants.PAD]), 0);
             tform_d = con.SelectedImage.TransformationData;
@@ -86,6 +89,7 @@ classdef RegisterController < ControllerBase
         end
 
         function toggleOverlayOff(con) 
+            disp("RegisterController::onToggleOverlayOff")
             d_img = con.Model.io_get_down_img(con.SelectedImage);
             img = padarray(d_img, double([Constants.PAD, Constants.PAD]), 0);
             imshow(img, 'Parent', con.View.HistSliceAxes)

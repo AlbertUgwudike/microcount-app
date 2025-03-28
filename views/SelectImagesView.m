@@ -12,14 +12,13 @@ classdef SelectImagesView < Component
 
     methods
 
-        function obj = SelectImagesView(namedArgs)
+        function obj = SelectImagesView(parent)
 
             arguments
-                namedArgs.?SelectImagesView 
+                parent 
             end
 
-            obj@Component() 
-            set(obj, namedArgs)
+            obj@Component(parent) 
         end 
 
     end 

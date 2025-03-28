@@ -23,14 +23,13 @@ classdef RegisterView < Component
 
     methods
 
-        function obj = RegisterView(namedArgs)
+        function obj = RegisterView(parent)
 
             arguments
-                namedArgs.?RegisterView 
+                parent
             end
 
-            obj@Component() 
-            set(obj, namedArgs)
+            obj@Component(parent) 
         end 
 
     end 

@@ -9,14 +9,13 @@ classdef HomeView < Component
 
     methods
 
-        function obj = HomeView(namedArgs)
+        function obj = HomeView(parent)
 
             arguments
-                namedArgs.?HomeView 
+                parent
             end
 
-            obj@Component() 
-            set(obj, namedArgs)
+            obj@Component(parent) 
         end 
 
     end 

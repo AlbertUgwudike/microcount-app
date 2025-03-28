@@ -36,9 +36,9 @@ classdef RegionsView < Component
             % Create ImageTable
             view.ImageTable = uitable(view.MainGrid);
             view.ImageTable.Units = 'normalized';
-            view.ImageTable.Position = [1, 1, 1, 1];
+            view.ImageTable.Position(3:4) = [1 1];
             view.ImageTable.ColumnName = {'Images'; ''; 'HIP'; 'HY'; 'TH'; 'SS'; 'AU'; 'AM'; ''; 'HIP'; 'HY'; 'TH'; 'SS'; 'AU'; 'AM'};
-            view.ImageTable.ColumnWidth = {'30x', '1x', '5x', '5x', '5x', '5x', '5x', '5x', '1x', '5x', '5x', '5x', '5x', '5x', '5x'};
+            view.ImageTable.ColumnWidth = {'30', '1x', '5x', '5x', '5x', '5x', '5x', '5x', '1x', '10x', '10x', '10x', '10x', '10x', '10x'};
             view.ImageTable.RowName = {};
             view.ImageTable.Layout.Row = 2;
             view.ImageTable.Layout.Column = 1;

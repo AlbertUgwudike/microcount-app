@@ -127,12 +127,12 @@ classdef AnalyseController < ControllerBase
                 result MicrocountResult
             end
 
-            con.View.PercentageIba1AreaTextArea.Value = string(result.PercentageIba1Area);
-            con.View.CellCountTextArea.Value = string(result.MicrogliaDensity);
-            con.View.PercentageCD68AreaTextArea.Value = string(result.PercentageCD68Area);
-            con.View.PercentageCD68NumTextArea.Value = string(result.PercentageActivatedMicroglia);
-            con.View.BranchCountTextArea.Value = string(result.AverageBranchCount);
-            con.View.ConvexityTextArea.Value = string(result.AverageRotundity);
+            con.View.PercentageIba1AreaTextArea = string(result.PercentageIba1Area);
+            con.View.CellCountTextArea = string(result.MicrogliaDensity);
+            con.View.PercentageCD68AreaTextArea = string(result.PercentageCD68Area);
+            con.View.PercentageCD68NumTextArea = string(result.PercentageActivatedMicroglia);
+            con.View.BranchCountTextArea = string(result.AverageBranchCount);
+            con.View.ConvexityTextArea = string(result.AverageRotundity);
 
         end
 
@@ -140,13 +140,13 @@ classdef AnalyseController < ControllerBase
             arguments
                 con AnalyseController
             end
-            disp("yaas")
-            con.View.PercentageIba1AreaTextArea.Value = "--";
-            con.View.CellCountTextArea.Value = "--";
-            con.View.PercentageCD68AreaTextArea.Value = "--";
-            con.View.PercentageCD68NumTextArea.Value = "--";
-            con.View.BranchCountTextArea.Value = "--";
-            con.View.ConvexityTextArea.Value = "--";
+            disp
+            con.View.PercentageIba1AreaTextArea = "--";
+            con.View.CellCountTextArea = "--";
+            con.View.PercentageCD68AreaTextArea = "--";
+            con.View.PercentageCD68NumTextArea = "--";
+            con.View.BranchCountTextArea = "--";
+            con.View.ConvexityTextArea = "--";
 
         end
     end

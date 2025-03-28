@@ -11,14 +11,13 @@ classdef AppView < Component
 
     methods
 
-        function obj = AppView(namedArgs)
+        function obj = AppView(parent)
 
             arguments
-                namedArgs.?AppView 
+                parent
             end
 
-            obj@Component() 
-            set(obj, namedArgs)
+            obj@Component(parent) 
         end 
 
     end 

@@ -31,14 +31,13 @@ classdef AnalyseView < Component
 
     methods
 
-        function obj = AnalyseView(namedArgs)
+        function obj = AnalyseView(parent)
 
             arguments
-                namedArgs.?AnalyseView 
+                parent
             end
 
-            obj@Component() 
-            set(obj, namedArgs)
+            obj@Component(parent) 
         end 
 
     end 

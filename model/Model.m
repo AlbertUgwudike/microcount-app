@@ -201,6 +201,7 @@ classdef Model < handle
             imwrite(output_img, fn);
             region.Processed = true;
             mdl.io_save();
+            mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 
     end
@@ -218,7 +219,7 @@ classdef Model < handle
             img = imread(img_md.SourceFn, 1);
             img = img(:, :, CHN_BRT);
             dn_img = imresize(img, RESIZE);
-            imwrite(imadjust(dn_img'), down_fn);
+            imwrite(imadjust(dn_img), down_fn);
             img_md.DownSampled = true;
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
