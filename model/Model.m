@@ -223,20 +223,20 @@ classdef Model < handle
             end
             
             mdl.io_cancel_microcount_processes();
-            mdl.MicrocountFutures = createArray(size(regions), 'parallel.FevalFuture');
-
-            for i = numel(regions)
-                fut = parfeval(@mdl.run_microcount, 0, regions(i));
-                mdl.MicrocountFutures(i) = fut;
+            mdl.MicrocountFutures = repmat(parallel.FevalFuture, size(regions));
+            
+            for i = 1:numel(regions)
+               fut = parfeval(@mdl.run_microcount, 0, regions(i));
+               mdl.MicrocountFutures(i) = fut;
             end
-
+            
+            disp(mdl.MicrocountFutures)
             afterAll(mdl.MicrocountFutures, @mdl.microcount_complete, 0, "PassFuture", true);
         end
 
         function io_cancel_microcount_processes(mdl)
-            if (~isempty(mdl.MicrocountFutures))
-                cancel(mdl.MicrocountFutures)
-            end
+            idx = [mdl.MicrocountFutures.ID] ~= -1;
+            cancel(mdl.MicrocountFutures(idx));
         end
 
     end

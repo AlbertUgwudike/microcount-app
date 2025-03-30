@@ -4,7 +4,6 @@ classdef AnalyseController < ControllerBase
         RegionSet (:, 1) Region
         SelectedRegion Region
         ImageSubviewRect images.roi.Rectangle
-        Futures = { [], [], [], [] }
     end
 
     methods
@@ -74,8 +73,8 @@ classdef AnalyseController < ControllerBase
 
         function on_export_button_pushed(con) 
             disp("AnalyseController::on_export_button_pushed")
-            for i = 1:numel(con.Futures)
-                fut = con.Futures{i};
+            for i = 1:numel(con.Model.MicrocountFutures)
+                fut = con.Model.MicrocountFutures(i);
                 disp(fut)
             end
         end
@@ -91,7 +90,7 @@ classdef AnalyseController < ControllerBase
             iba1_col = [con.RegionSet.Iba1Threshold]';
             cd68_col = [con.RegionSet.CD68Threshold]';
             max_col = [con.RegionSet.MaxCD68Size]';
-            pro_col = Utility.check_or_none([con.RegionSet.ProcessStatus]');
+            pro_col = string([con.RegionSet.ProcessStatus]');
             con.View.RegionTable.Data = [region_ids iba1_col cd68_col max_col pro_col];
 
             if height(con.RegionSet) > 0 && isempty(con.View.RegionTable.Selection)
