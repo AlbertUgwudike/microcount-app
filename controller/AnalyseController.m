@@ -3,6 +3,8 @@ classdef AnalyseController < ControllerBase
     properties (Access = private)
         RegionSet (:, 1) Region
         SelectedRegion Region
+        ImageSubviewRect images.roi.Rectangle
+        Futures = { [], [], [], [] }
     end
 
     methods
@@ -26,12 +28,13 @@ classdef AnalyseController < ControllerBase
             idx = con.View.RegionTable.Selection(1);
             con.SelectedRegion = con.RegionSet(idx);
             result = con.SelectedRegion.Result;
+            con.draw_image_subview();
             if (isempty(result))
                 con.View.ProcessedImage.ImageSource = "";
                 con.set_text_areas_empty()
             else
                 fn = con.SelectedRegion.get_processed_img_fn(con.Model.WS.DirName);
-                con.View.ProcessedImage.ImageSource = imread(fn);
+                % con.View.ProcessedImage.ImageSource = imread(fn);
                 con.set_text_areas(result)
             end
         end
@@ -57,7 +60,13 @@ classdef AnalyseController < ControllerBase
 
         function on_process_selected_button_pushed(con) 
             disp("AnalyseController::on_process_selected_button_pushed")
-            con.Model.io_process_region(con.SelectedRegion)
+            selection = con.View.RegionTable.Selection;
+            for i = 1:numel(selection)
+                idx = selection(i);
+                foo = @() con.Model.io_process_region(con.RegionSet(idx));
+                con.Futures{idx} = parfeval(backgroundPool, @() foo(), 0);
+                fprintf("Yeeting: %d\n", idx)
+            end
         end
 
         function on_process_all_button_pushed(con) 
@@ -66,6 +75,10 @@ classdef AnalyseController < ControllerBase
 
         function on_export_button_pushed(con) 
             disp("AnalyseController::on_export_button_pushed")
+            for i = 1:numel(con.Futures)
+                fut = con.Futures{i};
+                disp(fut)
+            end
         end
 
         function on_workspace_update(con) 
@@ -86,6 +99,15 @@ classdef AnalyseController < ControllerBase
                 con.View.RegionTable.Selection = 1;
                 con.on_region_selected()
             end
+        end
+
+        function on_image_subview_moved(con, ~, event)
+            disp("AnalyseController::on_image_subview_moved")
+            bbox = round(20 * event.CurrentPosition);
+            ws_dir = con.Model.WS.DirName;
+            proc_img_fn = con.SelectedRegion.get_processed_img_fn(ws_dir);
+            pixel_region = { [bbox(2), bbox(2) + bbox(4)], [bbox(1), bbox(1) + bbox(3)] };
+            con.View.ProcessedImage.ImageSource = imread(proc_img_fn, PixelRegion = pixel_region);
         end
         
     end
@@ -121,6 +143,22 @@ classdef AnalyseController < ControllerBase
     end
 
     methods (Access=private)
+
+        function draw_image_subview(con)
+            arguments
+                con AnalyseController
+            end
+
+            mask_fn = con.SelectedRegion.get_mask_fn(con.Model.WS.DirName);
+            dn_mask = imread(mask_fn);
+            imshow(imadjust(uint8(dn_mask)), 'Parent', con.View.Thumbnail, 'InitialMagnification', 20);
+            if ~isempty(con.ImageSubviewRect)
+                delete(con.ImageSubviewRect);
+            end
+            con.ImageSubviewRect = drawrectangle("Position", [10, 10, 100, 100], "Parent", con.View.Thumbnail);
+            con.ImageSubviewRect.addlistener('ROIMoved', @(s, e) con.on_image_subview_moved(s, e));
+        end
+
         function set_text_areas(con, result)
             arguments
                 con AnalyseController
@@ -147,7 +185,6 @@ classdef AnalyseController < ControllerBase
             con.View.PercentageCD68NumTextArea.Value = "--";
             con.View.BranchCountTextArea.Value = "--";
             con.View.ConvexityTextArea.Value = "--";
-
         end
     end
     

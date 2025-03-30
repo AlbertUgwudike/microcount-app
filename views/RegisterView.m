@@ -6,6 +6,7 @@ classdef RegisterView < Component
         AlignmentTable
         ButtonGrid
         ToggleOverlayButton
+        RotateButton
         AlignColorButton
         AlignControlButton
         SliderGrid
@@ -90,7 +91,7 @@ classdef RegisterView < Component
 
             % Create ButtonGrid
             view.ButtonGrid = uigridlayout(view.SliderGrid);
-            view.ButtonGrid.ColumnWidth = {'1x', '1x', '1x'};
+            view.ButtonGrid.ColumnWidth = {'1x', '1x', '1x', '1x'};
             view.ButtonGrid.RowHeight = {'1x'};
             view.ButtonGrid.Layout.Row = 1;
             view.ButtonGrid.Layout.Column = 1;
@@ -115,6 +116,13 @@ classdef RegisterView < Component
             view.ToggleOverlayButton.Layout.Row = 1;
             view.ToggleOverlayButton.Layout.Column = 3;
             view.ToggleOverlayButton.Text = 'Toggle Overlay';
+
+            % Create RotateButton
+            view.RotateButton = uibutton(view.ButtonGrid, 'push');
+            view.RotateButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegisterEvent.ButtonRotateImage);
+            view.RotateButton.Layout.Row = 1;
+            view.RotateButton.Layout.Column = 4;
+            view.RotateButton.Text = 'Rotate';
 
             % Create AtlasSliceSlider
             view.AtlasSliceSlider = uislider(view.SliderGrid);

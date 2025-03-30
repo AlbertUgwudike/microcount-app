@@ -50,7 +50,7 @@ classdef Atlas
             end
         end
         
-        function mask = create_full_size_mask(atlas, region)
+        function r_mask = create_dn_size_mask(atlas, region)
             arguments
                 atlas Atlas
                 region Region
@@ -66,7 +66,18 @@ classdef Atlas
             dn_mask = atlas.fill_region({ string(region.Key) }, ali_img);
             dn_mask = lat_img & dn_mask;
 
-            mask = imresize(dn_mask, region.Parent.Size);
+            agl = tform_data.Direction.reverse_angle();
+            r_mask = imrotate(dn_mask, agl);
+        end
+        
+        function mask = create_full_size_mask(atlas, region)
+            arguments
+                atlas Atlas
+                region Region
+            end
+            
+            r_mask = atlas.create_dn_size_mask(region);
+            mask = imresize(r_mask, region.Parent.Size);
         end
 
     end

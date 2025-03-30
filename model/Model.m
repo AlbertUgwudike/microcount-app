@@ -35,9 +35,8 @@ classdef Model < handle
             
             mkdir(full_path(Constants.DIR_SLUG_CONVERT));
             mkdir(full_path(Constants.DIR_SLUG_DOWN));
-            mkdir(full_path(Constants.DIR_SLUG_TRANSFORM));
-            mkdir(full_path(Constants.DIR_SLUG_MASK));
             mkdir(full_path(Constants.DIR_SLUG_PROC));
+            mkdir(full_path(Constants.DIR_SLUG_MASK));
 
             disp("Workspace updated.")
         end
@@ -124,7 +123,6 @@ classdef Model < handle
                     mdl.io_downsample_img(img)
                 end
             end
-            mdl.io_save()
         end
 
         function img = io_get_down_img(mdl, img_md)
@@ -142,32 +140,61 @@ classdef Model < handle
         end
 
 
-        function io_align_image(mdl, img_md, atlas_vertices, hist_vertices, img_sz, slice_idx)
+        function io_align_image(mdl, img_md, atlas_vertices, hist_vertices, slice_idx)
             arguments
                 mdl Model
                 img_md ImageMetadata
                 atlas_vertices (6, 2) double
                 hist_vertices (6, 2) double
-                img_sz (1, 2) double
                 slice_idx (1, 1) double
             end
+            img_sz = img_md.TransformationData.ImageSize;
+            dir = img_md.TransformationData.Direction;
             tform = fitgeotform2d(atlas_vertices, hist_vertices, 'affine');
-            t_data = TransformationData(hist_vertices, atlas_vertices, tform, img_sz, slice_idx);
+            t_data = TransformationData(hist_vertices, atlas_vertices, tform, img_sz, slice_idx, dir);
             img_md.TransformationData = t_data;
             img_md.Aligned = true;
             mdl.io_save()
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 
+        function io_rotate_image(mdl, img_md)
+            arguments
+                mdl Model
+                img_md ImageMetadata
+            end
+            down_fn = img_md.get_down_fn(mdl.WS.DirName);
+            img = imread(down_fn);
+            r_img = imrotate(img, 90);
+            imwrite(r_img, down_fn);
+            direction = img_md.TransformationData.Direction;
+            img_md.TransformationData.Direction = direction.rotate();
+            img_md.TransformationData.ImageSize = flip(img_md.TransformationData.ImageSize);
+            mdl.io_save()
+            mdl.call_registrars(ModelEvents.WorkspaceUpdated)
+        end
+
         function io_toggle_region(mdl, img_md, laterality, idx)
+
             arguments
                 mdl Model
                 img_md ImageMetadata
                 laterality Laterality
                 idx uint8
             end
+
             region_key = RegionKey(idx);
             img_md.toggle_region(region_key, laterality);
+
+            if (img_md.region_selected(region_key, laterality))
+                region = img_md.get_region(region_key, laterality);
+                dn_mask = mdl.Atlas.create_dn_size_mask(region);
+                bbox = bounding_box(dn_mask);
+                c_mask = imcrop(dn_mask, bbox - [0, 0, 1, 1]);
+                mask_fn = region.get_mask_fn(mdl.WS.DirName);
+                imwrite(c_mask, mask_fn);
+            end
+
             mdl.io_save()
             mdl.call_registrars(ModelEvents.WorkspaceUpdated);
         end
@@ -189,7 +216,8 @@ classdef Model < handle
                 mdl Model
                 region Region
             end
-            
+            fprintf("Processing region: %s\n", region.ID)
+            tic
             mask = mdl.Atlas.create_full_size_mask(region);
             file_name_chrs = convertStringsToChars(region.Parent.SourceFn);
             bfr_img = BioformatsImage(file_name_chrs);
@@ -200,6 +228,7 @@ classdef Model < handle
             fn = region.get_processed_img_fn(mdl.WS.DirName);
             imwrite(output_img, fn);
             region.Processed = true;
+            toc
             mdl.io_save();
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
@@ -214,13 +243,15 @@ classdef Model < handle
                 img_md ImageMetadata
             end
             down_fn = img_md.get_down_fn(mdl.WS.DirName);
-            RESIZE = 0.05; % TODO - Allow user selection
+            RESIZE = 20; % TODO - Allow user selection
             CHN_BRT = 1; % TODO - Allow user selection
             img = imread(img_md.SourceFn, 1);
             img = img(:, :, CHN_BRT);
-            dn_img = imresize(img, RESIZE);
+            new_sz = idivide(uint16(size(img)), uint16(RESIZE));
+            dn_img = imresize(img, new_sz);
             imwrite(imadjust(dn_img), down_fn);
             img_md.DownSampled = true;
+            mdl.io_save()
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 
@@ -234,6 +265,7 @@ classdef Model < handle
             img = imread(img_md.SourceFn);
             imwrite(img, conv_fn);
             img_md.Converted = true;
+            mdl.io_save()
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 

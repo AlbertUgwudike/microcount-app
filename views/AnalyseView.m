@@ -13,6 +13,7 @@ classdef AnalyseView < Component
         ApplySettingButton
         ExportButton
         BottomGrid
+        Thumbnail
         ProcessedImage
         ResultGrid
         PercentageIba1AreaTextAreaLabel
@@ -99,23 +100,30 @@ classdef AnalyseView < Component
             view.ExportButton.Layout.Column = 4;
             view.ExportButton.Text = 'Export';
 
-            % Create BottomGrid_2
+            % Create BottomGrid
             view.BottomGrid = uigridlayout(view.MainGrid);
-            view.BottomGrid.ColumnWidth = {'0.7x', '0.3x'};
+            view.BottomGrid.ColumnWidth = {'0.3x', '0.4x', '0.3x'};
             view.BottomGrid.RowHeight = {'1x'};
             view.BottomGrid.Layout.Row = 4;
             view.BottomGrid.Layout.Column = 1;
 
+            % Create Thumbnail
+            view.Thumbnail = uiaxes(view.BottomGrid);
+            view.Thumbnail.Layout.Row = 1;
+            view.Thumbnail.Layout.Column = 1;
+            view.Thumbnail.XTick = [];
+            view.Thumbnail.YTick = [];
+
             % Create ProcessedImage
             view.ProcessedImage = uiimage(view.BottomGrid);
             view.ProcessedImage.Layout.Row = 1;
-            view.ProcessedImage.Layout.Column = 1;
+            view.ProcessedImage.Layout.Column = 2;
 
-            % Create GridLayout10
+            % Create ResultGrid
             view.ResultGrid = uigridlayout(view.BottomGrid);
             view.ResultGrid.RowHeight = {'1x', '1x', '1x', '1x', '1x', '1x'};
             view.ResultGrid.Layout.Row = 1;
-            view.ResultGrid.Layout.Column = 2;
+            view.ResultGrid.Layout.Column = 3;
 
             % Create PercentageIba1AreaTextAreaLabel
             view.PercentageIba1AreaTextAreaLabel = uilabel(view.ResultGrid);

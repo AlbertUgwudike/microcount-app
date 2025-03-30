@@ -27,15 +27,16 @@ function [result, img] = data2result(data)
     cd68_adj = imadjust(data.cd68, [0.001; 0.005], []);
     iba1_adj = imadjust(data.iba1); %, [0.0714; 0.3392], []);
 
-    left = zeros([size(data.cd68), 3]);
-    left(:, :, 1) = iba1_adj;
-    left(:, :, 2) = cd68_adj;
+    % left = zeros([size(data.cd68), 3]);
+    % left(:, :, 1) = iba1_adj;
+    % left(:, :, 2) = cd68_adj;
 
     right = zeros([size(data.cd68), 3]);
     right(:, :, 1) = iba1_adj;
     right(:, :, 2) = cd68_adj .* uint16(comboMask);
     right(:, :, 3) = data.poly_mask * MASK_INTENSITY;
 
-    img = uint16(cat(2, left, right));
+    % img = uint16(cat(2, left, right));
+    img = uint16(right);
 end
 

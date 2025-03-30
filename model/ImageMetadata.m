@@ -24,33 +24,6 @@ classdef ImageMetadata < handle
             W = [info.Width];
             img_md.Size = [H(1), W(1)];
         end
-        
-        function mask_fn = get_mask_fn(img_md, ws_dir, laterality, region_code)
-
-            arguments
-                img_md ImageMetadata
-                ws_dir string
-                laterality Laterality
-                region_code string
-            end
-
-            switch laterality
-                case Laterality.LEFT
-                    lat_str = "LEFT";
-
-                case Laterality.RIGHT
-                    lat_str = "RIGHT";
-            end
-
-            mask_fn = sprintf( ...
-                "%s/%s/%s_%s_%s.tiff", ...
-                ws_dir, ...
-                Constants.DIR_SLUG_MASK, ...
-                img_md.ID, ...
-                region_code, ...
-                lat_str ...
-            );
-        end
 
         function down_fn = get_down_fn(img_md, ws_dir)
 
@@ -103,16 +76,28 @@ classdef ImageMetadata < handle
 
         end
 
-        function selected = is_region_selected(img_mg, region_key, laterality)
+        function region = get_region(img_md, region_key, laterality)
 
             arguments
-                img_mg ImageMetadata
+                img_md ImageMetadata
                 region_key RegionKey
                 laterality Laterality
             end
                 
-            idx = img_mg.calc_idx(region_key, laterality);
-            selected = ~isempty(img_mg.Regions{idx});
+            idx = img_md.calc_idx(region_key, laterality);
+            region = img_md.Regions{idx};
+        end
+
+        function is_selected = region_selected(img_md, region_key, laterality)
+
+            arguments
+                img_md ImageMetadata
+                region_key RegionKey
+                laterality Laterality
+            end
+                
+            idx = img_md.calc_idx(region_key, laterality);
+            is_selected = ~isempty(img_md.Regions{idx});
         end
 
         function idx = calc_idx(~, region_key, laterality)

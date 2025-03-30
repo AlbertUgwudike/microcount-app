@@ -63,6 +63,23 @@ classdef Region < handle
                 region.ID ...
             );
         end
+
+        
+        function mask_fn = get_mask_fn(region, ws_dir)
+
+            arguments
+                region Region
+                ws_dir string
+            end
+
+            mask_fn = sprintf( ...
+                "%s/%s/%s.tiff", ...
+                ws_dir, ...
+                Constants.DIR_SLUG_MASK, ...
+                region.ID ...
+            );
+        end
+
     end
 
     methods (Static)

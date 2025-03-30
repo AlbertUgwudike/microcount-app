@@ -16,7 +16,7 @@ classdef MicrocountSettings
             obj.MaxCD68Size = cd68_sz;
             obj.MinOverlap = 5000;
             obj.ChannelCD68 = 2;
-            obj.ChannelIba1 = 1;
+            obj.ChannelIba1 = 3;
         end
     end
 end
