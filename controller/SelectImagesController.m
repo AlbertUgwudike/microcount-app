@@ -17,11 +17,11 @@ classdef SelectImagesController < ControllerBase
     methods ( Access = private )
 
         function onSelectAllButtonPushed(con)
-            disp("SelectAllButton")
+            disp("SelectImagesController::onSelectAllButtonPushed")
         end
 
         function onRemoveButtonPushed(con)
-            disp("RemoveButton")
+            disp("SelectImagesController::onRemoveButtonPushed")
         end
 
         function onConvertDownsampleButtonPushed(con)

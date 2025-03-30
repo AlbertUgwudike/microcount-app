@@ -6,6 +6,7 @@ classdef AnalyseEvent
         ButtonProcessSelected
         ButtonProcessAll
         ButtonExport
+        ButtonCancel
     end
 end
 

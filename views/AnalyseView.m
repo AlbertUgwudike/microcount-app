@@ -11,6 +11,7 @@ classdef AnalyseView < Component
         ProcessSelectedButton
         ProcessAllButton
         ApplySettingButton
+        CancelButton
         ExportButton
         BottomGrid
         Thumbnail
@@ -67,7 +68,7 @@ classdef AnalyseView < Component
 
             % Create ButtonGrid
             view.ButtonGrid = uigridlayout(view.MainGrid);
-            view.ButtonGrid.ColumnWidth = {'1x', '1x', '1x', '1x'};
+            view.ButtonGrid.ColumnWidth = {'1x', '1x', '1x', '1x', '1x'};
             view.ButtonGrid.RowHeight = {'1x'};
             view.ButtonGrid.Layout.Row = 3;
             view.ButtonGrid.Layout.Column = 1;
@@ -93,11 +94,18 @@ classdef AnalyseView < Component
             view.ApplySettingButton.Layout.Column = 1;
             view.ApplySettingButton.Text = 'Apply Setting';
 
+            % Create CancelButton
+            view.CancelButton = uibutton(view.ButtonGrid, 'push');
+            view.CancelButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonCancel);
+            view.CancelButton.Layout.Row = 1;
+            view.CancelButton.Layout.Column = 4;
+            view.CancelButton.Text = 'Export';
+
             % Create ExportButton
             view.ExportButton = uibutton(view.ButtonGrid, 'push');
             view.ExportButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonExport);
             view.ExportButton.Layout.Row = 1;
-            view.ExportButton.Layout.Column = 4;
+            view.ExportButton.Layout.Column = 5;
             view.ExportButton.Text = 'Export';
 
             % Create BottomGrid

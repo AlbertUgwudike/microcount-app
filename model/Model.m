@@ -3,6 +3,7 @@ classdef Model < handle
     properties ( SetAccess = private ) 
         WS Workspace = Workspace.empty 
         ErrorCache Error 
+        MicrocountFutures (:, 1) parallel.FevalFuture
     end
 
     properties ( SetAccess = public ) 
@@ -77,10 +78,14 @@ classdef Model < handle
         end
 
         function io_add_image(mdl)
+
+            [home_dir, ~, ~] = fileparts(mdl.WS.DirName);
+
             [file, path, ~] = uigetfile( ...
                 {'*.tif;*.tiff;*.czi', 'Image files' }, ...
                 "Select your images", ...
-                MultiSelect="on" ...
+                home_dir, ...
+                MultiSelect = "on" ...
             );
 
             if isequal(file, 0) || isequal(path, 0)
@@ -211,26 +216,27 @@ classdef Model < handle
             regions = [f_regions{:}];
         end
 
-        function io_process_region(mdl, region)
+        function io_process_region(mdl, regions)
             arguments
                 mdl Model
-                region Region
+                regions (:, 1) Region
             end
-            fprintf("Processing region: %s\n", region.ID)
-            tic
-            mask = mdl.Atlas.create_full_size_mask(region);
-            file_name_chrs = convertStringsToChars(region.Parent.SourceFn);
-            bfr_img = BioformatsImage(file_name_chrs);
-            settings = region.get_microcount_settings();
-            data = microcount_algo(bfr_img, mask, settings);
-            [result, output_img] = data2result(data);
-            region.Result = result;
-            fn = region.get_processed_img_fn(mdl.WS.DirName);
-            imwrite(output_img, fn);
-            region.Processed = true;
-            toc
-            mdl.io_save();
-            mdl.call_registrars(ModelEvents.WorkspaceUpdated)
+            
+            mdl.io_cancel_microcount_processes();
+            mdl.MicrocountFutures = createArray(size(regions), 'parallel.FevalFuture');
+
+            for i = numel(regions)
+                fut = parfeval(@mdl.run_microcount, 0, regions(i));
+                mdl.MicrocountFutures(i) = fut;
+            end
+
+            afterAll(mdl.MicrocountFutures, @mdl.microcount_complete, 0, "PassFuture", true);
+        end
+
+        function io_cancel_microcount_processes(mdl)
+            if (~isempty(mdl.MicrocountFutures))
+                cancel(mdl.MicrocountFutures)
+            end
         end
 
     end
@@ -245,10 +251,11 @@ classdef Model < handle
             down_fn = img_md.get_down_fn(mdl.WS.DirName);
             RESIZE = 20; % TODO - Allow user selection
             CHN_BRT = 1; % TODO - Allow user selection
-            img = imread(img_md.SourceFn, 1);
-            img = img(:, :, CHN_BRT);
-            new_sz = idivide(uint16(size(img)), uint16(RESIZE));
-            dn_img = imresize(img, new_sz);
+            pixel_region = { [1 RESIZE img_md.Size(1)], [1 RESIZE img_md.Size(2)] };
+            img = imread(img_md.SourceFn, "PixelRegion", pixel_region);
+            dn_img = img(:, :, CHN_BRT);
+            % new_sz = idivide(uint16(size(img)), uint16(RESIZE));
+            % dn_img = imresize(img, new_sz);
             imwrite(imadjust(dn_img), down_fn);
             img_md.DownSampled = true;
             mdl.io_save()
@@ -267,6 +274,40 @@ classdef Model < handle
             img_md.Converted = true;
             mdl.io_save()
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
+        end
+
+        function run_microcount(mdl, region)
+
+            arguments
+                mdl Model
+                region Region
+            end
+
+            mask = mdl.Atlas.create_full_size_mask(region);
+            file_name_chrs = convertStringsToChars(region.Parent.SourceFn);
+            bfr_img = BioformatsImage(file_name_chrs);
+            settings = region.get_microcount_settings();
+            data = microcount_algo(bfr_img, mask, settings);
+            [result, output_img] = data2result(data);
+            region.Result = result;
+            fn = region.get_processed_img_fn(mdl.WS.DirName);
+            imwrite(output_img, fn);
+            region.ProcessStatus = ProcessStatus.PROCESSED;
+        end
+
+        function microcount_complete(mdl, fut)
+            arguments
+                mdl Model
+                fut parallel.FevalFuture
+            end
+
+            if ~isempty(fut.Error)
+                disp(fut.Error)
+            else
+                mdl.io_save()
+                mdl.call_registrars(ModelEvents.WorkspaceUpdated)
+            end
+
         end
 
         function is_valid = is_valid_img(mdl, fn)

@@ -8,7 +8,7 @@ classdef Region < handle
         Iba1Threshold (1, 1) double
         CD68Threshold (1, 1) double
         MaxCD68Size (1, 1) uint32
-        Processed (1, 1) logical
+        ProcessStatus (1, 1) ProcessStatus = ProcessStatus.UNPROCESSED
         Result MicrocountResult = MicrocountResult.empty
     end
     

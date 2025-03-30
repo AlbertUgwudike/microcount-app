@@ -33,8 +33,7 @@ classdef AnalyseController < ControllerBase
                 con.View.ProcessedImage.ImageSource = "";
                 con.set_text_areas_empty()
             else
-                fn = con.SelectedRegion.get_processed_img_fn(con.Model.WS.DirName);
-                % con.View.ProcessedImage.ImageSource = imread(fn);
+                con.on_image_subview_moved(con.ImageSubviewRect.Position)
                 con.set_text_areas(result)
             end
         end
@@ -61,16 +60,16 @@ classdef AnalyseController < ControllerBase
         function on_process_selected_button_pushed(con) 
             disp("AnalyseController::on_process_selected_button_pushed")
             selection = con.View.RegionTable.Selection;
-            for i = 1:numel(selection)
-                idx = selection(i);
-                foo = @() con.Model.io_process_region(con.RegionSet(idx));
-                con.Futures{idx} = parfeval(backgroundPool, @() foo(), 0);
-                fprintf("Yeeting: %d\n", idx)
-            end
+            con.Model.io_process_region(con.RegionSet(selection))
         end
 
         function on_process_all_button_pushed(con) 
             disp("AnalyseController::on_process_all_button_pushed")
+        end
+
+        function on_cancel_button_pushed(con) 
+            disp("AnalyseController::on_cancel_button_pushed")
+            con.Model.io_cancel_microcount_processes()
         end
 
         function on_export_button_pushed(con) 
@@ -92,7 +91,7 @@ classdef AnalyseController < ControllerBase
             iba1_col = [con.RegionSet.Iba1Threshold]';
             cd68_col = [con.RegionSet.CD68Threshold]';
             max_col = [con.RegionSet.MaxCD68Size]';
-            pro_col = Utility.check_or_none([con.RegionSet.Processed]');
+            pro_col = Utility.check_or_none([con.RegionSet.ProcessStatus]');
             con.View.RegionTable.Data = [region_ids iba1_col cd68_col max_col pro_col];
 
             if height(con.RegionSet) > 0 && isempty(con.View.RegionTable.Selection)
@@ -101,9 +100,9 @@ classdef AnalyseController < ControllerBase
             end
         end
 
-        function on_image_subview_moved(con, ~, event)
+        function on_image_subview_moved(con, pos)
             disp("AnalyseController::on_image_subview_moved")
-            bbox = round(20 * event.CurrentPosition);
+            bbox = round(20 * pos);
             ws_dir = con.Model.WS.DirName;
             proc_img_fn = con.SelectedRegion.get_processed_img_fn(ws_dir);
             pixel_region = { [bbox(2), bbox(2) + bbox(4)], [bbox(1), bbox(1) + bbox(3)] };
@@ -132,6 +131,9 @@ classdef AnalyseController < ControllerBase
                 case (AnalyseEvent.ButtonProcessAll)
                     con.on_process_all_button_pushed()
 
+                case (AnalyseEvent.ButtonCancel)
+                    con.on_cancel_button_pushed()
+
                 case (AnalyseEvent.ButtonExport)
                     con.on_export_button_pushed()
 
@@ -156,7 +158,7 @@ classdef AnalyseController < ControllerBase
                 delete(con.ImageSubviewRect);
             end
             con.ImageSubviewRect = drawrectangle("Position", [10, 10, 100, 100], "Parent", con.View.Thumbnail);
-            con.ImageSubviewRect.addlistener('ROIMoved', @(s, e) con.on_image_subview_moved(s, e));
+            con.ImageSubviewRect.addlistener('ROIMoved', @(~, e) con.on_image_subview_moved(e.CurrentPosition));
         end
 
         function set_text_areas(con, result)

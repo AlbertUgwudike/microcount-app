@@ -32,11 +32,11 @@ classdef RegisterController < ControllerBase
             idx = con.View.AlignmentTable.Selection;
             con.SelectedImage = con.ImageSet(idx);
             img = con.Model.io_get_down_img(con.SelectedImage);
-            img = padarray(img, double([Constants.PAD, Constants.PAD]), 0);
-            imshow(img, 'Parent', con.View.HistSliceAxes);
+            p_img = padarray(img, double([Constants.PAD, Constants.PAD]), 0);
+            imshow(p_img, 'Parent', con.View.HistSliceAxes);
 
             if (isempty(con.SelectedImage.TransformationData))
-                con.set_default_tform_data()
+                con.set_default_tform_data(size(p_img))
             end
 
             slice_idx = con.SelectedImage.TransformationData.SliceIdx;
@@ -169,9 +169,7 @@ classdef RegisterController < ControllerBase
             con.View.HistHex = con.draw_hex(tf_data.HistHex, con.View.HistSliceAxes);
         end
 
-        function set_default_tform_data(con)
-            img_sz = idivide(con.SelectedImage.Size, uint16(20));
-            img_sz = img_sz + double(2 * Constants.PAD);
+        function set_default_tform_data(con, img_sz)
             tf_data = TransformationData.default(double(img_sz), con.View.Atlas.Size);
             con.SelectedImage.TransformationData = tf_data;
         end
