@@ -312,17 +312,17 @@ classdef Model < handle
         function microcount_complete(mdl, fut)
             region = fut.InputArguments{1};
             if ~isempty(fut.Error)
-                fprintf("Microcount: Region %s stopped after event: %s\n", region.ID, fut.Error.message);
-                region.ProcessStatus = ProcessStatus.UNPROCESSED;
+                fprintf("M")
+                disp(fut.Error.message)
             else
-                fprintf("Microcount: Region %s completed after: %s\n", region.ID, fut.RunningDuration);
+                fprintf("Microcount: Region %s completed after: %s", region.ID, fut.RunningDuration)
                 result = fetchOutputs(fut);
                 region.Result = result;
                 region.ProcessStatus = ProcessStatus.PROCESSED;
+                mdl.io_save()
+                mdl.call_registrars(ModelEvents.WorkspaceUpdated)
             end
 
-            mdl.io_save()
-            mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 
         function is_valid = is_valid_img(mdl, fn)

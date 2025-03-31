@@ -99,7 +99,7 @@ classdef AnalyseView < Component
             view.CancelButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonCancel);
             view.CancelButton.Layout.Row = 1;
             view.CancelButton.Layout.Column = 4;
-            view.CancelButton.Text = 'Export';
+            view.CancelButton.Text = 'Cancel';
 
             % Create ExportButton
             view.ExportButton = uibutton(view.ButtonGrid, 'push');

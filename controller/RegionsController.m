@@ -71,7 +71,6 @@ classdef RegionsController < ControllerBase
             con.View.ImageTable.Data = [fns spacer left_markers spacer right_markers];
 
             if ~isempty(con.SelectedImage)
-                disp(con.SelectedImage)
                 con.onImageSelected()
             end
         end
