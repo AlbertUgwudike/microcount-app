@@ -226,12 +226,12 @@ classdef Model < handle
             mdl.MicrocountFutures = repmat(parallel.FevalFuture, size(regions));
             
             for i = 1:numel(regions)
-               fut = parfeval(@mdl.run_microcount, 0, regions(i));
+               fut = parfeval(@mdl.run_microcount, 1, regions(i));
                mdl.MicrocountFutures(i) = fut;
             end
-            
+
             disp(mdl.MicrocountFutures)
-            afterAll(mdl.MicrocountFutures, @mdl.microcount_complete, 0, "PassFuture", true);
+            afterEach(mdl.MicrocountFutures, @mdl.microcount_complete, 0, "PassFuture", true);
         end
 
         function io_cancel_microcount_processes(mdl)
@@ -276,7 +276,7 @@ classdef Model < handle
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 
-        function run_microcount(mdl, region)
+        function result = run_microcount(mdl, region)
 
             arguments
                 mdl Model
@@ -289,21 +289,20 @@ classdef Model < handle
             settings = region.get_microcount_settings();
             data = microcount_algo(bfr_img, mask, settings);
             [result, output_img] = data2result(data);
-            region.Result = result;
             fn = region.get_processed_img_fn(mdl.WS.DirName);
             imwrite(output_img, fn);
-            region.ProcessStatus = ProcessStatus.PROCESSED;
         end
 
         function microcount_complete(mdl, fut)
-            arguments
-                mdl Model
-                fut parallel.FevalFuture
-            end
-
             if ~isempty(fut.Error)
                 disp(fut.Error)
             else
+                disp("Microcount complete!!")
+                disp(fut.InputArguments)
+                result = fetchOutputs(fut);
+                region = fut.InputArguments{1};
+                region.Result = result;
+                region.ProcessStatus = ProcessStatus.PROCESSED;
                 mdl.io_save()
                 mdl.call_registrars(ModelEvents.WorkspaceUpdated)
             end
