@@ -265,13 +265,11 @@ classdef Model < handle
                 img_md ImageMetadata
             end
             down_fn = img_md.get_down_fn(mdl.WS.DirName);
-            RESIZE = 20; % TODO - Allow user selection
-            CHN_BRT = 1; % TODO - Allow user selection
+            RESIZE = 20;
+            CHN_BRT = 1;
             pixel_region = { [1 RESIZE img_md.Size(1)], [1 RESIZE img_md.Size(2)] };
             img = imread(img_md.SourceFn, "PixelRegion", pixel_region);
             dn_img = img(:, :, CHN_BRT);
-            % new_sz = idivide(uint16(size(img)), uint16(RESIZE));
-            % dn_img = imresize(img, new_sz);
             imwrite(imadjust(dn_img), down_fn);
             img_md.DownSampled = true;
             mdl.io_save()
