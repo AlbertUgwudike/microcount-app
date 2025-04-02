@@ -3,7 +3,7 @@ classdef Model < handle
     properties ( SetAccess = private ) 
         WS Workspace = Workspace.empty 
         ErrorCache Error 
-        MicrocountFutures (:, 1) parallel.FevalFuture
+        ThreadPool ThreadPool = ThreadPool()
     end
 
     properties ( SetAccess = public ) 
@@ -223,28 +223,28 @@ classdef Model < handle
             end
             
             mdl.io_cancel_microcount_processes();
-            mdl.MicrocountFutures = repmat(parallel.FevalFuture, size(regions));
+            mdl.Futures = repmat(parallel.FevalFuture, size(regions));
             
             for i = 1:numel(regions)
                 region = regions(i);
                 mdl.io_mark_region_as_processing(region);
                 fut = parfeval(@mdl.run_microcount, 1, regions(i));
-                mdl.MicrocountFutures(i) = fut;
+                mdl.Futures(i) = fut;
             end
 
-            disp(mdl.MicrocountFutures)
-            afterEach(mdl.MicrocountFutures, @mdl.microcount_complete, 0, "PassFuture", true);
+            disp(mdl.Futures)
+            afterEach(mdl.Futures, @mdl.microcount_complete, 0, "PassFuture", true);
         end
 
         function io_cancel_microcount_processes(mdl)
-            idx = [mdl.MicrocountFutures.ID] ~= -1;
-            active_processes = mdl.MicrocountFutures(idx);
+            idx = [mdl.Futures.ID] ~= -1;
+            active_processes = mdl.Futures(idx);
             for i = 1:numel(active_processes)
-                process = mdl.MicrocountFutures(i);
+                process = mdl.Futures(i);
                 region = process.InputArguments{1};
                 region.ProcessStatus = ProcessStatus.UNPROCESSED;
             end
-            cancel(mdl.MicrocountFutures(idx));
+            cancel(mdl.Futures(idx));
             mdl.io_save()
             mdl.call_registrars(ModelEvents.WorkspaceUpdated);
         end
