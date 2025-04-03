@@ -57,7 +57,8 @@ classdef RegisterController < ControllerBase
             atlas_vertices = con.View.AtlasHex.Position;
             hist_vertices = con.View.HistHex.Position;
             slice_idx = round(con.View.AtlasSliceSlider.Value);
-            con.Model.io_align_image(con.SelectedImage, atlas_vertices, hist_vertices, slice_idx);
+            ori = con.AtlasOrientation;
+            con.Model.io_align_image(con.SelectedImage, atlas_vertices, hist_vertices, slice_idx, ori);
             con.toggleOverlayOn()
         end
 
@@ -106,12 +107,11 @@ classdef RegisterController < ControllerBase
                 return
             end
             ori = con.AtlasOrientation.cycle();
-            im_sz = con.SelectedImage.TransformationData.ImageSize;
+            tform = con.SelectedImage.TransformationData;
             con.AtlasOrientation = ori;
-            con.set_default_tform_data(im_sz);
-            n_slices = con.Model.Atlas.n_slices(ori);
-            con.onAtlasSliceSliderChanged(n_slices / 2);
-            con.draw_hex();
+            con.set_default_tform_data(tform.ImageSize);
+            con.onAtlasSliceSliderChanged(tform.SliceIdx);
+            con.draw_hexs();
             con.toggleOverlayOff()
         end
 

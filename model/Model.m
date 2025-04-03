@@ -145,17 +145,17 @@ classdef Model < handle
         end
 
 
-        function io_align_image(mdl, img_md, atlas_vertices, hist_vertices, slice_idx)
+        function io_align_image(mdl, img_md, atlas_vertices, hist_vertices, slice_idx, ori)
             arguments
                 mdl Model
                 img_md ImageMetadata
                 atlas_vertices (6, 2) double
                 hist_vertices (6, 2) double
                 slice_idx (1, 1) double
+                ori Orientation
             end
             img_sz = img_md.TransformationData.ImageSize;
             dir = img_md.TransformationData.Direction;
-            ori = img_md.TransformationData.Orientation;
             tform = fitgeotform2d(atlas_vertices, hist_vertices, 'affine');
             t_data = TransformationData(hist_vertices, atlas_vertices, tform, img_sz, slice_idx, dir, ori);
             img_md.TransformationData = t_data;
