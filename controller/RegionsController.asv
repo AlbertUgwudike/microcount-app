@@ -35,8 +35,9 @@ classdef RegionsController < ControllerBase
         function onRegionChecked(con)
             disp("RegionsController::onRegionChecked")
             current_nodes = [con.View.RegionSelector.CheckedNodes];
-            nodes = arrayfun(@(d) d.NodeData, current_nodes, 'UniformOutput',true);
-            disp(nodes)
+            
+
+            disp([con.View.RegionSelector.CheckedNodes.NodeData])
         end
 
         function onWorkspaceUpdated(con) 

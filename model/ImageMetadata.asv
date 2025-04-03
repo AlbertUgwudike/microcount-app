@@ -36,18 +36,18 @@ classdef ImageMetadata < handle
             img_md.Size = [H(1), W(1)];
         end
 
-        function update_regions(img_md, new_regions)
+        function update_regions(img_md, region_ids)
 
             arguments
                 img_md ImageMetadata
-                new_regions (:, 1) Region
+                region_ids (:, 1) string
             end
 
-            idx = ismember([img_md.Regions.ID], [new_regions.ID]);
-            img_md.Regions = img_md.Regions(idx);
+            existing_ids = [img_md.Regions.ID];
+            intersct = intersect(region_ids, existing_ids);
+            img_md
 
-            add_idx = ~is_member([new_regions.ID], [img_md.Regions.ID]);
-            img_md.Regions = cat(1, img_md.Regions, new_regions(add_idx));
+
         end
 
         function region = get_region(img_md, region_key, laterality)

@@ -1,7 +1,12 @@
 classdef RegionsEvent
     enumeration
+        ButtonSelectAll
+        ButtonEraseRegions
         SelectionImageTable
-        RegionSelection
+        ButtonAddToSelected
+        ButtonDeselectAll
+        RegionChecked
+        
     end
 end
 

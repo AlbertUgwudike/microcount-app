@@ -190,7 +190,7 @@ classdef Model < handle
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 
-        function io_update_regions(mdl, img_md, laterality, idx)
+        function io_toggle_region(mdl, img_md, laterality, idx)
 
             arguments
                 mdl Model
@@ -202,23 +202,14 @@ classdef Model < handle
             region_key = RegionKey(idx);
             img_md.toggle_region(region_key, laterality);
 
-            fprintf("Model::io_toggle_region - Orientation: %s\n", img_md.TransformationData.Orientation)
-
             if (img_md.region_selected(region_key, laterality))
                 region = img_md.get_region(region_key, laterality);
                 dn_mask = mdl.Atlas.create_dn_size_mask(region);
-
                 fprintf("Model::io_toggle_region - Down Mask Size: [%d, %d]\n", size(dn_mask))
-
                 bbox = bounding_box(dn_mask);
-                if isempty(bbox)
-                    fprintf("Model::io_toggle_region - BBox empty")
-                    img_md.toggle_region(region_key, laterality);
-                    return
-                end
 
-                fprintf("Model::io_toggle_region - BBox: [%d, %d, %d, %d]\n", bbox)
-                
+                if isempty(bbox)
+                    fprintf("Model::io_toggle_region - BBox: [%d, %d, %d, %d]\n", bbox)
                 c_mask = imcrop(dn_mask, bbox - [0, 0, 1, 1]);
                 imwrite(c_mask, region.MaskFn);
             end

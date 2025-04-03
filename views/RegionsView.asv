@@ -137,17 +137,17 @@ classdef RegionsView < Component
 
             % Create SS_RIGHT_Node
             SS_RIGHT_Node = uitreenode(view.RightNode);
-            SS_RIGHT_Node.NodeData = Region.default_settings(RegionKey.SS, Laterality.RIGHT);
+            SS_RIGHT_Node.NodeData = { RegionKey.SS, Laterality.RIGHT } ;
             SS_RIGHT_Node.Text = 'Somatosensory Cortex';
 
             % Create HIP_RIGHT_Node
             HIP_RIGHT_Node = uitreenode(view.RightNode);
-            HIP_RIGHT_Node.NodeData = Region.default_settings(RegionKey.HIP, Laterality.RIGHT);
+            HIP_RIGHT_Node.NodeData = { RegionKey.HIP, Laterality.RIGHT };
             HIP_RIGHT_Node.Text = 'Hippocampus';
 
             % Create TH_RIGHT_Node
             TH_RIGHT_Node = uitreenode(view.RightNode);
-            TH_RIGHT_Node.NodeData = Region.default_settings(RegionKey.TH, Laterality.RIGHT);
+            TH_RIGHT_Node.NodeData = { RegionKey.TH, Laterality.RIGHT };
             TH_RIGHT_Node.Text = 'Thalamus';
 
             % Create LeftNode
@@ -156,7 +156,7 @@ classdef RegionsView < Component
 
             % Create SS_LEFT_Node
             SS_LEFT_Node = uitreenode(view.LeftNode);
-            SS_LEFT_Node.NodeData = Region.default_settings(RegionKey.SS, Laterality.LEFT);
+            SS_LEFT_Node.NodeData = { RegionKey.SS, Laterality.LEFT };
             SS_LEFT_Node.Text = 'Somatosensory Cortex';
 
             % Create HIP_LEFT_Node
@@ -166,7 +166,7 @@ classdef RegionsView < Component
 
             % Create TH_LEFT_Node
             TH_LEFT_Node = uitreenode(view.LeftNode);
-            TH_LEFT_Node.NodeData = Region.default_settings(RegionKey.TH, Laterality.LEFT);
+            TH_LEFT_Node.NodeData = { RegionKey.TH, Laterality.LEFT };
             TH_LEFT_Node.Text = 'Thalamus';
 
             % Create HistologyImage
