@@ -4,6 +4,7 @@ classdef Model < handle
         WS Workspace = Workspace.empty 
         ErrorCache Error 
         ThreadPool ThreadPool = ThreadPool()
+        BGPool BGPool = BGPool()
     end
 
     properties ( SetAccess = public ) 
@@ -100,7 +101,7 @@ classdef Model < handle
                 if ~mdl.is_valid_img(fn)
                     continue
                 end
-                new_img = ImageMetadata(fn);
+                new_img = ImageMetadata(fn, mdl.WS.DirName);
                 current_img_set = mdl.WS.Images;
                 updated_img_set = cat(1, current_img_set, new_img);
                 [~, idx, ~] = unique([updated_img_set.ID]);
@@ -121,11 +122,12 @@ classdef Model < handle
                 img = mdl.WS.Images(i);
 
                 if (~img.Converted)
-                    mdl.io_convert_img(img)
+                    mdl.ThreadPool.dispatch(@mdl.bg_conv_down_img, img, @mdl.on_bg_conv_down_img_complete)
+                    continue;
                 end
 
                 if (~img.DownSampled)
-                    mdl.io_downsample_img(img)
+                    mdl.ThreadPool.dispatch(@mdl.bg_down_img, img, @mdl.on_bg_down_img_completed)
                 end
             end
         end
@@ -135,13 +137,12 @@ classdef Model < handle
                 mdl Model
                 img_md ImageMetadata
             end
-            img_fn = img_md.get_down_fn(mdl.WS.DirName);
-            if ~isfile(img_fn)
+            if ~isfile(img_md.DownFn)
                 mdl.panic(Error.INVALID_FN)
                 img = zeros(10, 10);
                 return
             end
-            img = imread(img_fn);
+            img = imread(img_md.DownFn);
         end
 
 
@@ -168,10 +169,9 @@ classdef Model < handle
                 mdl Model
                 img_md ImageMetadata
             end
-            down_fn = img_md.get_down_fn(mdl.WS.DirName);
-            img = imread(down_fn);
+            img = imread(img_md.DownFn);
             r_img = imrotate(img, 90);
-            imwrite(r_img, down_fn);
+            imwrite(r_img, img_md.DownFn);
             direction = img_md.TransformationData.Direction;
             img_md.TransformationData.Direction = direction.rotate();
             img_md.TransformationData.ImageSize = flip(img_md.TransformationData.ImageSize);
@@ -221,32 +221,16 @@ classdef Model < handle
                 mdl Model
                 regions (:, 1) Region
             end
-            
-            mdl.io_cancel_microcount_processes();
-            mdl.Futures = repmat(parallel.FevalFuture, size(regions));
-            
+
             for i = 1:numel(regions)
                 region = regions(i);
                 mdl.io_mark_region_as_processing(region);
-                fut = parfeval(@mdl.run_microcount, 1, regions(i));
-                mdl.Futures(i) = fut;
+                mdl.ThreadPool.dispatch(@mdl.run_microcount, region, @mdl.microcount_complete);
             end
-
-            disp(mdl.Futures)
-            afterEach(mdl.Futures, @mdl.microcount_complete, 0, "PassFuture", true);
         end
 
         function io_cancel_microcount_processes(mdl)
-            idx = [mdl.Futures.ID] ~= -1;
-            active_processes = mdl.Futures(idx);
-            for i = 1:numel(active_processes)
-                process = mdl.Futures(i);
-                region = process.InputArguments{1};
-                region.ProcessStatus = ProcessStatus.UNPROCESSED;
-            end
-            cancel(mdl.Futures(idx));
-            mdl.io_save()
-            mdl.call_registrars(ModelEvents.WorkspaceUpdated);
+            mdl.ThreadPool.cancel_all()
         end
 
     end
@@ -259,33 +243,53 @@ classdef Model < handle
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 
-        function io_downsample_img(mdl, img_md)
+        function msg = bg_down_img(mdl, img_md)
             arguments
                 mdl Model
                 img_md ImageMetadata
             end
-            down_fn = img_md.get_down_fn(mdl.WS.DirName);
             RESIZE = 20;
             CHN_BRT = 1;
             pixel_region = { [1 RESIZE img_md.Size(1)], [1 RESIZE img_md.Size(2)] };
             img = imread(img_md.SourceFn, "PixelRegion", pixel_region);
             dn_img = img(:, :, CHN_BRT);
-            imwrite(imadjust(dn_img), down_fn);
-            img_md.DownSampled = true;
+            imwrite(imadjust(dn_img), img_md.DownFn);
+            msg = "Completed";
+        end
+
+        function on_bg_down_img_completed(mdl, fut)
+            img_md = fut.InputArguments{1};
+            if ~isempty(fut.Error)
+                fprintf("Downsample: Image %s stopped after event: %s\n", img_md.ID, fut.Error.message);
+            else
+                fprintf("Downsample: Image %s completed after: %s\n", img_md.ID, fut.RunningDuration);
+                img_md.DownSampled = true;
+            end
             mdl.io_save()
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 
 
-        function io_convert_img(mdl, img_md)
+        function msg = bg_conv_down_img(mdl, img_md)
             arguments
                 mdl Model
                 img_md ImageMetadata
             end
-            conv_fn = img_md.get_conv_fn(mdl.WS.DirName);
             img = imread(img_md.SourceFn);
-            imwrite(img, conv_fn);
-            img_md.Converted = true;
+            imwrite(img, img_md.ConvFn);
+            mdl.bg_down_img(img_md);
+            msg = "Complete";
+        end
+
+        function on_bg_conv_down_img_complete(mdl, fut)
+            img_md = fut.InputArguments{1};
+            if ~isempty(fut.Error)
+                fprintf("Convert and Downsample: Image %s stopped after event: %s\n", img_md.ID, fut.Error.message);
+            else
+                fprintf("Convert and Downsample: Image %s completed after: %s\n", img_md.ID, fut.RunningDuration);
+                img_md.Converted = true;
+                img_md.DownSampled = true;
+            end
             mdl.io_save()
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end

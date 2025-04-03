@@ -1,9 +1,14 @@
 classdef ImageMetadata < handle
     
-    properties
+    properties (SetAccess = private)
         SourceFn (1, 1) string
+        DownFn (1, 1) string
+        ConvFn (1, 1) string
         Size (1, 2) uint16
         ID (1, 1) string
+    end
+
+    properties
         Converted (1, 1) logical = false
         Aligned (1, 1) logical = false
         DownSampled (1, 1) logical = false
@@ -12,49 +17,20 @@ classdef ImageMetadata < handle
     end
     
     methods
-        function img_md = ImageMetadata(source_fn)
+        function img_md = ImageMetadata(source_fn, ws_dir)
             arguments
                 source_fn (1, 1) string
+                ws_dir (1, 1) string
             end
             img_md.SourceFn = source_fn;
             [~, fn, ~] = fileparts(source_fn);
             img_md.ID = fn;
+            img_md.DownFn = ImageMetadata.get_down_fn(fn, ws_dir);
+            img_md.ConvFn = ImageMetadata.get_conv_fn(fn, ws_dir);
             info = imfinfo(source_fn);
             H = [info.Height];
             W = [info.Width];
             img_md.Size = [H(1), W(1)];
-        end
-
-        function down_fn = get_down_fn(img_md, ws_dir)
-
-            arguments
-                img_md ImageMetadata
-                ws_dir string
-            end
-
-            down_fn = sprintf( ...
-                "%s/%s/%s_%s.tiff", ...
-                ws_dir, ...
-                Constants.DIR_SLUG_DOWN, ...
-                img_md.ID, ...
-                "down" ...
-            );
-        end
-
-        function down_fn = get_conv_fn(img_md, ws_dir)
-
-            arguments
-                img_md ImageMetadata
-                ws_dir string
-            end
-
-            down_fn = sprintf( ...
-                "%s/%s/%s_%s.tiff", ...
-                ws_dir, ...
-                Constants.DIR_SLUG_CONVERT, ...
-                img_md.ID, ...
-                "conv" ...
-            );
         end
 
         function toggle_region(img_mg, region_key, laterality)
@@ -111,6 +87,42 @@ classdef ImageMetadata < handle
             idx = lat_idx * 6 + region_idx;
         end
         
+    end
+
+    methods (Static)
+
+        function down_fn = get_down_fn(id, ws_dir)
+
+            arguments
+                id string
+                ws_dir string
+            end
+
+            down_fn = sprintf( ...
+                "%s/%s/%s_%s.tiff", ...
+                ws_dir, ...
+                Constants.DIR_SLUG_DOWN, ...
+                id, ...
+                "down" ...
+            );
+        end
+
+        function conv_fn = get_conv_fn(id, ws_dir)
+
+            arguments
+                id string
+                ws_dir string
+            end
+
+            conv_fn = sprintf( ...
+                "%s/%s/%s_%s.tiff", ...
+                ws_dir, ...
+                Constants.DIR_SLUG_CONVERT, ...
+                id, ...
+                "conv" ...
+            );
+        end
+
     end
 end
 

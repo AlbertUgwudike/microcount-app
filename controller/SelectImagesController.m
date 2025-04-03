@@ -40,8 +40,8 @@ classdef SelectImagesController < ControllerBase
             disp("SelectImagesController::on_workspace_updated")
             img_mds = con.Model.WS.Images;
             source_fns  = Utility.path2name([img_mds.SourceFn]');
-            converted   = Utility.apply_check([img_mds.Converted]);
-            downsampled = Utility.apply_check([img_mds.DownSampled]);
+            converted   = Utility.check_or_none([img_mds.Converted]);
+            downsampled = Utility.check_or_none([img_mds.DownSampled]);
             new_data    = [source_fns converted' downsampled'];
             con.View.ImageSetTable.Data = new_data;
         end

@@ -1,0 +1,50 @@
+classdef (Abstract) ThreadPoolBase < handle
+
+    properties (Access = private)
+        Futures (:, 1) parallel.FevalFuture = parallel.FevalFuture.empty
+    end
+    
+    methods
+
+        function obj = ThreadPoolBase()
+        end
+        
+        function dispatch(tp, fcn, arg, on_finish)
+            arguments
+                tp ThreadPoolBase
+                fcn 
+                arg
+                on_finish 
+            end
+
+            tp.remove_completed();
+            fut = tp.run(fcn, arg);
+            afterEach(fut,on_finish, 0, "PassFuture", true);
+            new_idx = tp.new_process_idx();
+            tp.Futures(new_idx) = fut;
+        end
+
+        function cancel_all(tp)
+            cancel(tp.Futures);
+        end
+    end
+
+    methods (Access = protected)
+
+        function remove_completed(tp)
+            if isempty(tp.Futures)
+                idx = [];
+            else
+                idx = [tp.Futures.State] == "finished";
+            end
+            tp.Futures = tp.Futures(~idx);
+        end
+
+        function idx = new_process_idx(tp)
+            idx = numel(tp.Futures) + 1;
+        end
+
+        fut = run(~, ~, ~)
+    end
+end
+
