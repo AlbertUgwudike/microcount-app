@@ -28,18 +28,25 @@ classdef Atlas
             disp('Done.')
         end
 
-        function borders = calc_borders(atlas, tform_data, l_abrs, r_abrs)
+        function borders = calc_borders(atlas, tform_data, locs)
             arguments
                 atlas Atlas
                 tform_data TransformationData
-                l_abrs = {}
-                r_abrs = {}
+                locs (:, 1) Location = Location.empty
             end
 
             [ali_img, lat_img] = atlas.transform_atlas_slice(tform_data);
 
             filtered = conv2(ali_img, ones(3) ./ 9, 'same');
             borders = 65536 * uint16(round(filtered) ~= ali_img);
+
+            if (isempty(locs))
+                return
+            end
+
+            l_abr_idx = [locs.Laterality] == Laterality.LEFT;
+            l_abrs = num2cell(string([locs(l_abr_idx).RegionKey]));
+            r_abrs = num2cell(string([locs(~l_abr_idx).RegionKey]));
 
             if ~isempty(l_abrs)
                 borders = borders + 65536 * atlas.fill_region(l_abrs, ali_img) .* uint16(lat_img);
@@ -61,9 +68,9 @@ classdef Atlas
 
             ali_img = isocrop(ali_img, Constants.PAD);
             lat_img = isocrop(lat_img, Constants.PAD);
-            lat_img = (region.Side == Laterality.LEFT) == lat_img;
+            lat_img = (region.Location.Laterality == Laterality.LEFT) == lat_img;
 
-            dn_mask = atlas.fill_region({ string(region.Key) }, ali_img);
+            dn_mask = atlas.fill_region({ string(region.Location.RegionKey) }, ali_img);
             dn_mask = lat_img & dn_mask;
 
             agl = tform_data.Direction.reverse_angle();
@@ -89,9 +96,9 @@ classdef Atlas
             switch ori
                 case Orientation.Axial
                     n = atlas.Size(3);
-                case Orientation.Sagittal
-                    n = atlas.Size(2);
                 case Orientation.Coronal
+                    n = atlas.Size(2);
+                case Orientation.Sagittal
                     n = atlas.Size(1);
             end
         end
@@ -106,9 +113,9 @@ classdef Atlas
             switch ori
                 case Orientation.Axial
                     img = atlas.ReferenceAtlas(:, :, idx);
-                case Orientation.Sagittal
-                    img = atlas.ReferenceAtlas(:, idx, :);
                 case Orientation.Coronal
+                    img = atlas.ReferenceAtlas(:, idx, :);
+                case Orientation.Sagittal
                     img = atlas.ReferenceAtlas(idx, :, :);
             end
             img = squeeze(img);
@@ -123,9 +130,9 @@ classdef Atlas
             switch ori
                 case Orientation.Axial
                     sz = [ atlas.Size(1), atlas.Size(2) ];
-                case Orientation.Sagittal
-                    sz = [ atlas.Size(1), atlas.Size(3) ];
                 case Orientation.Coronal
+                    sz = [ atlas.Size(1), atlas.Size(3) ];
+                case Orientation.Sagittal
                     sz = [ atlas.Size(2), atlas.Size(3) ];
             end
         end
@@ -167,15 +174,26 @@ classdef Atlas
                 atlas Atlas
                 tform_data TransformationData
             end
+            
+            switch tform_data.Orientation
+                case Orientation.Axial
+                    ann_image  = atlas.AnnotationAtlas(:, :, tform_data.SliceIdx);
+                case Orientation.Coronal
+                    ann_image  = atlas.AnnotationAtlas(:, tform_data.SliceIdx, :);
+                case Orientation.Sagittal
+                    ann_image  = atlas.AnnotationAtlas(tform_data.SliceIdx, :, :);
+            end
 
-            ann_image = atlas.get_annotation_img(tform_data.Orientation, tform_data.SliceIdx);
-            mask_img = atlas.get_lr_mask(tform_data.Orientation, tform_data.SliceIdx);
+            ann_image = squeeze(ann_image);
+
+            half_image = true(height(ann_image), width(ann_image) / 2);
+            mask_image = [half_image ~half_image];
 
             ref_img = imref2d(tform_data.ImageSize);
             tform_mat = tform_data.Transform;
 
             ali_image = imwarp(ann_image , tform_mat, 'nearest', 'Outputview', ref_img);
-            lat_image = imwarp(mask_img, tform_mat, 'nearest', 'Outputview', ref_img);
+            lat_image = imwarp(mask_image, tform_mat, 'nearest', 'Outputview', ref_img);
         end
 
         function idx_set = abr_to_idx_set(atlas, abbr)
@@ -195,47 +213,6 @@ classdef Atlas
                 mask(tmp) = parent_idx;
             end
 
-        end
-
-        function img = get_annotation_img(atlas, ori, idx)
-            arguments
-                atlas Atlas
-                ori Orientation
-                idx uint16
-            end
-
-            switch ori
-                case Orientation.Axial
-                    img = atlas.AnnotationAtlas(:, :, idx);
-                case Orientation.Sagittal
-                    img = atlas.AnnotationAtlas(:, idx, :);
-                case Orientation.Coronal
-                    img = atlas.AnnotationAtlas(idx, :, :);
-            end
-            img = squeeze(img);
-        end
-
-        function img = get_lr_mask(atlas, ori, idx)
-            arguments
-                atlas Atlas
-                ori Orientation
-                idx uint16
-            end
-
-            im_sz = atlas.get_size(ori);
-            img = true(im_sz);
-
-            switch ori
-                case Orientation.Axial
-                    w = width(img);
-                    img(:, (w/2):w) = false;
-                case Orientation.Sagittal
-                    val = idx > atlas.Size(1) / 2;
-                    img(:, :) = val;
-                case Orientation.Coronal
-                    h = height(img);
-                    img((h/2):h, :) = false;
-            end
         end
 
     end

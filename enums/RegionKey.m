@@ -6,6 +6,7 @@ classdef RegionKey < uint8
         SS    (4)
         AUD   (5)
         CTXsp (6)
+        HEMI  (7)
     end
     methods
         function val = key2val(rk)

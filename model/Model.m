@@ -190,37 +190,31 @@ classdef Model < handle
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 
-        function io_update_regions(mdl, img_md, laterality, idx)
+        function io_update_regions(mdl, img_md, locations)
 
             arguments
                 mdl Model
                 img_md ImageMetadata
-                laterality Laterality
-                idx uint8
+                locations (:, 1) Location
+            end
+            
+            create_region = @(l) Region.default_settings(img_md, l);
+            new_regions = arrayfun(create_region, locations);
+
+            if isempty(locations)
+                img_md.Regions = Region.empty;
+                regions_to_add = [];
+            elseif (numel([img_md.Regions.ID]) ~= 0)
+                idx = ismember([img_md.Regions.ID], [new_regions.ID]);
+                img_md.Regions = img_md.Regions(idx);
+                add_idx = ~ismember([new_regions.ID], [img_md.Regions.ID]);
+                regions_to_add = new_regions(add_idx);
+            else
+                regions_to_add = new_regions;
             end
 
-            region_key = RegionKey(idx);
-            img_md.toggle_region(region_key, laterality);
-
-            fprintf("Model::io_toggle_region - Orientation: %s\n", img_md.TransformationData.Orientation)
-
-            if (img_md.region_selected(region_key, laterality))
-                region = img_md.get_region(region_key, laterality);
-                dn_mask = mdl.Atlas.create_dn_size_mask(region);
-
-                fprintf("Model::io_toggle_region - Down Mask Size: [%d, %d]\n", size(dn_mask))
-
-                bbox = bounding_box(dn_mask);
-                if isempty(bbox)
-                    fprintf("Model::io_toggle_region - BBox empty")
-                    img_md.toggle_region(region_key, laterality);
-                    return
-                end
-
-                fprintf("Model::io_toggle_region - BBox: [%d, %d, %d, %d]\n", bbox)
-                
-                c_mask = imcrop(dn_mask, bbox - [0, 0, 1, 1]);
-                imwrite(c_mask, region.MaskFn);
+            for i = 1:numel(regions_to_add)
+                img_md.add_region_save_mask(regions_to_add(i), mdl.Atlas);
             end
 
             mdl.io_save()
@@ -230,13 +224,6 @@ classdef Model < handle
         function regions = get_all_regions(mdl)
             images = mdl.WS.Images;
             regions = Utility.flatten([images.Regions]);
-            if isempty(regions)
-                regions = [];
-                return
-            end
-            f_idx = ~cellfun('isempty', regions);
-            f_regions = regions(f_idx);
-            regions = [f_regions{:}];
         end
 
         function io_process_region(mdl, regions)

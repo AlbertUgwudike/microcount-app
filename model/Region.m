@@ -2,8 +2,7 @@ classdef Region < handle
     
     properties (SetAccess = private)
         Parent ImageMetadata
-        Key RegionKey
-        Side Laterality
+        Location Location
         ID (1, 1) string
         MaskFn (1, 1) string
         ProcFn (1, 1) string
@@ -18,13 +17,10 @@ classdef Region < handle
     end
     
     methods
-        function region = Region(img_md, region_key, laterality, iba1, cd68, cd68_max)
+        function region = Region(img_md, location, iba1, cd68, cd68_max)
             region.Parent = img_md;
-            region.Key = region_key;
-            region.Side = laterality;
-            region.ID = Region.generate_id(img_md.ID, region_key, laterality);
-            disp("yeeeet")
-            disp(img_md.WS_Dir)
+            region.Location = location;
+            region.ID = Region.generate_id(img_md.ID, location);
             region.MaskFn = Region.get_mask_fn(img_md.WS_Dir, region.ID);
             region.ProcFn = Region.get_proc_fn(img_md.WS_Dir, region.ID);
 
@@ -63,19 +59,20 @@ classdef Region < handle
     end
 
     methods (Static)
-        function region = default_settings(img_md, region_key, laterality)
-            region = Region(img_md, region_key, laterality, 0.35, 0.5, 10000);
+        function region = default_settings(img_md, location)
+            region = Region(img_md, location, 0.35, 0.5, 10000);
         end
 
-        function id = generate_id(identifier, region_key, laterality)
-            id = identifier + "__" + string(region_key) + "__" + string(laterality);
+        function id = generate_id(identifier, location)
+            id = identifier + "__" + string(location.RegionKey) + "__" + string(location.Laterality);
         end
 
-        function [idenitifer, region_key, laterality] = decode_id(id)
+        function [idenitifer, location] = decode_id(id)
             comps = split(id, "__");
             idenitifer = comps(1);
             region_key = RegionKey(comps(2));
             laterality = Laterality(comps(3));
+            location = Location(region_key, laterality);
         end
 
         function valid = valid_setting_str_list(str_list)

@@ -79,7 +79,6 @@ classdef RegisterController < ControllerBase
             borders = con.Model.Atlas.calc_borders(tform_d);
             disp(size(p_img))
             disp(con.SelectedImage.TransformationData.ImageSize)
-            disp(class(p_img))
             imshow(p_img + borders, 'Parent', con.View.HistSliceAxes)
             con.ShowOverlay = true;
             con.draw_hexs()
@@ -120,7 +119,7 @@ classdef RegisterController < ControllerBase
             ori = con.AtlasOrientation;
             n_slices = con.Model.Atlas.n_slices(ori);
             con.View.AtlasSliceSlider.Limits = [1, n_slices];
-
+            con.View.AtlasSliceSlider.MajorTicks = [1, n_slices];
             idx = max(0, min(n_slices, round(slider_pos)));
             con.View.CurrentAtlasSliceIdx = idx;
             img = con.View.Atlas.get_reference_img(ori, idx);

@@ -36,53 +36,36 @@ classdef ImageMetadata < handle
             img_md.Size = [H(1), W(1)];
         end
 
-        function update_regions(img_md, new_regions)
-
+        function add_region_save_mask(img_md, region, atlas)
             arguments
                 img_md ImageMetadata
-                new_regions (:, 1) Region
+                region Region
+                atlas Atlas
             end
 
-            idx = ismember([img_md.Regions.ID], [new_regions.ID]);
-            img_md.Regions = img_md.Regions(idx);
+            dn_mask = atlas.create_dn_size_mask(region);
+            bbox = bounding_box(dn_mask);
 
-            add_idx = ~is_member([new_regions.ID], [img_md.Regions.ID]);
-            img_md.Regions = cat(1, img_md.Regions, new_regions(add_idx));
+            if isempty(bbox)
+                fprintf("Region::add_region_save_mask - bbox empty - %s\n", region.ID)
+                return;
+            end
+
+            img_md.Regions = cat(1, img_md.Regions, region);
+            c_mask = imcrop(dn_mask, bbox - [0, 0, 1, 1]);
+            imwrite(c_mask, region.MaskFn);
         end
 
-        function region = get_region(img_md, region_key, laterality)
-
+        function locs = all_locations(img_md)
             arguments
                 img_md ImageMetadata
-                region_key RegionKey
-                laterality Laterality
             end
-                
-            idx = img_md.calc_idx(region_key, laterality);
-            region = img_md.Regions{idx};
-        end
 
-        function is_selected = region_selected(img_md, region_key, laterality)
-
-            arguments
-                img_md ImageMetadata
-                region_key RegionKey
-                laterality Laterality
+            locs = [img_md.Regions.Location];
+            
+            if (isempty(locs))
+                locs = Location.empty;
             end
-                
-            idx = img_md.calc_idx(region_key, laterality);
-            is_selected = ~isempty(img_md.Regions{idx});
-        end
-
-        function idx = calc_idx(~, region_key, laterality)
-            arguments
-                ~ 
-                region_key RegionKey
-                laterality Laterality 
-            end
-            region_idx = uint8(region_key);
-            lat_idx = uint8(laterality);
-            idx = lat_idx * 6 + region_idx;
         end
         
     end

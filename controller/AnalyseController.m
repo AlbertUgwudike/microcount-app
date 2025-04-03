@@ -83,6 +83,7 @@ classdef AnalyseController < ControllerBase
             disp("AnalyseController::on_workspace_updated")
             regions = con.Model.get_all_regions();
             if isempty(regions)
+                con.View.RegionTable.Data = repmat(string.empty, 1, 3);
                 return
             end
             con.RegionSet = regions;

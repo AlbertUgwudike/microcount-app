@@ -27,20 +27,33 @@ classdef RegionsController < ControllerBase
             d_img = con.Model.io_get_down_img(con.SelectedImage);
             p_img = padarray(d_img, double([Constants.PAD, Constants.PAD]), 0);
             tform_d = con.SelectedImage.TransformationData;
-            [l_abrs, r_abrs] = con.get_selected_abrs();
-            img = p_img + con.Model.Atlas.calc_borders(tform_d, l_abrs, r_abrs);
+            locs = con.SelectedImage.all_locations();
+            img = p_img + con.Model.Atlas.calc_borders(tform_d, locs);
             con.View.HistologyImage.ImageSource = cat(3, img, img, img);
         end
 
         function onRegionChecked(con)
             disp("RegionsController::onRegionChecked")
-            current_nodes = [con.View.RegionSelector.CheckedNodes];
-            nodes = arrayfun(@(d) d.NodeData, current_nodes, 'UniformOutput',true);
-            disp(nodes)
+            locs = con.get_selected_locs();
+            disp(locs)
+        end
+
+        function onAddToSelectedButtonPushed(con)
+            disp("RegionsController::onAddToSelectedButtonPushed")
+            if (isempty(con.View.ImageTable.Selection))
+                return
+            end
+            idx = con.View.ImageTable.Selection;
+            for i = 1:numel(idx)
+                img_md = con.ImageSet(idx(i));
+                locs = con.get_selected_locs();
+                con.Model.io_update_regions(img_md, locs);
+            end
         end
 
         function onWorkspaceUpdated(con) 
             disp("RegionsController::on_workspace_updated")
+
             reg_idx         = [con.Model.WS.Images.Aligned];
             con.ImageSet    = con.Model.WS.Images(reg_idx);
             
@@ -48,9 +61,19 @@ classdef RegionsController < ControllerBase
                 return;
             end
 
-            region_codes    = ~cellfun('isempty', [con.ImageSet.Regions]');
+            fns = [con.ImageSet.ID]';
+            region_names = repmat("--", numel(fns), 1);
 
-            con.View.ImageTable.Data = [fns region_names ];
+            for i = 1:numel(con.ImageSet)
+                im = con.ImageSet(i);
+                rns = arrayfun(@(r) r.Location.to_string(), im.Regions);
+                if isempty(rns)
+                    continue
+                end
+                region_names(i) = join(rns, ", ");
+            end
+
+            con.View.ImageTable.Data = [fns region_names];
 
             if ~isempty(con.SelectedImage)
                 con.onImageSelected()
@@ -70,6 +93,9 @@ classdef RegionsController < ControllerBase
                 case (RegionsEvent.RegionChecked)
                     con.onRegionChecked()
 
+                case (RegionsEvent.ButtonAddToSelected)
+                    con.onAddToSelectedButtonPushed()
+
                 case (ModelEvents.WorkspaceUpdated)
                     con.onWorkspaceUpdated()
             end
@@ -78,15 +104,12 @@ classdef RegionsController < ControllerBase
     end
 
     methods (Access=private)
-        function [l_abrs, r_abrs] = get_selected_abrs(con)
-            all_abrs = { 'HIP', 'HY', 'TH', 'SS', 'AUD', 'CTXsp' };
-            idx = ~cellfun('isempty', [con.SelectedImage.Regions]);
-            if any(idx)
-                l_abrs = { all_abrs{idx(1:6)} };
-                r_abrs = { all_abrs{idx(7:12)} };
-            else
-                l_abrs = {};
-                r_abrs = {};
+
+        function locs = get_selected_locs(con)
+            current_nodes = [con.View.RegionSelector.CheckedNodes];
+            locs = arrayfun(@(d) d.NodeData, current_nodes);
+            if isempty(locs)
+                locs = Location.empty;
             end
         end
     end
