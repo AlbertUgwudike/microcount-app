@@ -4,7 +4,6 @@ classdef Model < handle
         WS Workspace = Workspace.empty 
         ErrorCache Error 
         ThreadPool ThreadPool = ThreadPool()
-        BGPool BGPool = BGPool()
     end
 
     properties ( SetAccess = public ) 
@@ -122,12 +121,12 @@ classdef Model < handle
                 img = mdl.WS.Images(i);
 
                 if (~img.Converted)
-                    mdl.ThreadPool.dispatch(@mdl.bg_conv_down_img, img, @mdl.on_bg_conv_down_img_complete)
+                    mdl.ThreadPool.dispatch(@Model.bg_conv_down_img, img, @mdl.bg_conv_down_img_complete)
                     continue;
                 end
 
                 if (~img.DownSampled)
-                    mdl.ThreadPool.dispatch(@mdl.bg_down_img, img, @mdl.on_bg_down_img_completed)
+                    mdl.ThreadPool.dispatch(@Model.bg_down_img, img, @mdl.on_bg_down_img_completed)
                 end
             end
         end
@@ -156,8 +155,9 @@ classdef Model < handle
             end
             img_sz = img_md.TransformationData.ImageSize;
             dir = img_md.TransformationData.Direction;
+            ori = img_md.TransformationData.Orientation;
             tform = fitgeotform2d(atlas_vertices, hist_vertices, 'affine');
-            t_data = TransformationData(hist_vertices, atlas_vertices, tform, img_sz, slice_idx, dir);
+            t_data = TransformationData(hist_vertices, atlas_vertices, tform, img_sz, slice_idx, dir, ori);
             img_md.TransformationData = t_data;
             img_md.Aligned = true;
             mdl.io_save()
@@ -179,6 +179,17 @@ classdef Model < handle
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 
+        function io_cycle_atlas_orientation(mdl, img_md)
+            arguments
+                mdl Model
+                img_md ImageMetadata
+            end
+            orient = img_md.TransformationData.Orientation;
+            img_md.TransformationData.Orientation = orient.cycle();
+            mdl.io_save()
+            mdl.call_registrars(ModelEvents.WorkspaceUpdated)
+        end
+
         function io_toggle_region(mdl, img_md, laterality, idx)
 
             arguments
@@ -196,8 +207,7 @@ classdef Model < handle
                 dn_mask = mdl.Atlas.create_dn_size_mask(region);
                 bbox = bounding_box(dn_mask);
                 c_mask = imcrop(dn_mask, bbox - [0, 0, 1, 1]);
-                mask_fn = region.get_mask_fn(mdl.WS.DirName);
-                imwrite(c_mask, mask_fn);
+                imwrite(c_mask, region.MaskFn);
             end
 
             mdl.io_save()
@@ -225,7 +235,7 @@ classdef Model < handle
             for i = 1:numel(regions)
                 region = regions(i);
                 mdl.io_mark_region_as_processing(region);
-                mdl.ThreadPool.dispatch(@mdl.run_microcount, region, @mdl.microcount_complete);
+                mdl.ThreadPool.dispatch(@mdl.bg_run_microcount, region, @mdl.bg_run_microcount_complete);
             end
         end
 
@@ -243,20 +253,6 @@ classdef Model < handle
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 
-        function msg = bg_down_img(mdl, img_md)
-            arguments
-                mdl Model
-                img_md ImageMetadata
-            end
-            RESIZE = 20;
-            CHN_BRT = 1;
-            pixel_region = { [1 RESIZE img_md.Size(1)], [1 RESIZE img_md.Size(2)] };
-            img = imread(img_md.SourceFn, "PixelRegion", pixel_region);
-            dn_img = img(:, :, CHN_BRT);
-            imwrite(imadjust(dn_img), img_md.DownFn);
-            msg = "Completed";
-        end
-
         function on_bg_down_img_completed(mdl, fut)
             img_md = fut.InputArguments{1};
             if ~isempty(fut.Error)
@@ -269,22 +265,11 @@ classdef Model < handle
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 
-
-        function msg = bg_conv_down_img(mdl, img_md)
-            arguments
-                mdl Model
-                img_md ImageMetadata
-            end
-            img = imread(img_md.SourceFn);
-            imwrite(img, img_md.ConvFn);
-            mdl.bg_down_img(img_md);
-            msg = "Complete";
-        end
-
-        function on_bg_conv_down_img_complete(mdl, fut)
+        function bg_conv_down_img_complete(mdl, fut)
             img_md = fut.InputArguments{1};
             if ~isempty(fut.Error)
                 fprintf("Convert and Downsample: Image %s stopped after event: %s\n", img_md.ID, fut.Error.message);
+               disp([fut.Error.stack.name]);
             else
                 fprintf("Convert and Downsample: Image %s completed after: %s\n", img_md.ID, fut.RunningDuration);
                 img_md.Converted = true;
@@ -294,7 +279,7 @@ classdef Model < handle
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 
-        function result = run_microcount(mdl, region)
+        function result = bg_run_microcount(mdl, region)
 
             arguments
                 mdl Model
@@ -307,11 +292,10 @@ classdef Model < handle
             settings = region.get_microcount_settings();
             data = microcount_algo(bfr_img, mask, settings);
             [result, output_img] = data2result(data);
-            fn = region.get_processed_img_fn(mdl.WS.DirName);
-            imwrite(output_img, fn);
+            imwrite(output_img, region.ProcFn);
         end
 
-        function microcount_complete(mdl, fut)
+        function bg_run_microcount_complete(mdl, fut)
             region = fut.InputArguments{1};
             if ~isempty(fut.Error)
                 fprintf("Microcount: Region %s stopped after event: %s\n", region.ID, fut.Error.message);
@@ -343,6 +327,33 @@ classdef Model < handle
             end
         end
 
+    end
+
+    methods (Static)
+
+        function msg = bg_conv_down_img(img_md)
+            arguments
+                img_md ImageMetadata
+            end
+            img = imread(img_md.SourceFn);
+            imwrite(img, img_md.ConvFn);
+            Model.bg_down_img(img_md);
+            msg = "Complete";
+        end
+
+        function msg = bg_down_img(img_md)
+            arguments
+                img_md ImageMetadata
+            end
+            RESIZE = 20;
+            CHN_BRT = 1;
+            pixel_region = { [1 RESIZE img_md.Size(1)], [1 RESIZE img_md.Size(2)] };
+            img = imread(img_md.SourceFn, "PixelRegion", pixel_region);
+            dn_img = img(:, :, CHN_BRT);
+            imwrite(imadjust(dn_img), img_md.DownFn);
+            msg = "Completed";
+        end
+        
     end
 
 end

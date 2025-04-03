@@ -114,21 +114,9 @@ classdef Atlas
             img = squeeze(img);
         end
 
-        function sz = get_size(atlas, ori)
-            arguments
-                atlas Atlas
-                ori Orientation
-            end
+        function get_size(atlas, ori)
 
-            switch ori
-                case Orientation.Axial
-                    sz = [ atlas.Size(1), atlas.Size(2) ];
-                case Orientation.Coronal
-                    sz = [ atlas.Size(1), atlas.Size(3) ];
-                case Orientation.Sagittal
-                    sz = [ atlas.Size(2), atlas.Size(3) ];
-            end
-        end
+            em
 
     end
 

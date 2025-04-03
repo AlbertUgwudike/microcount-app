@@ -23,7 +23,7 @@ classdef Region < handle
             region.Key = region_key;
             region.Side = laterality;
             region.ID = Region.generate_id(img_md.ID, region_key, laterality);
-            disp("yeeeet")
+            
             disp(img_md.WS_Dir)
             region.MaskFn = Region.get_mask_fn(img_md.WS_Dir, region.ID);
             region.ProcFn = Region.get_proc_fn(img_md.WS_Dir, region.ID);

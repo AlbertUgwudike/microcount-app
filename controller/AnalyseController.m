@@ -103,7 +103,7 @@ classdef AnalyseController < ControllerBase
             disp("AnalyseController::on_image_subview_moved")
             bbox = round(20 * pos);
             ws_dir = con.Model.WS.DirName;
-            proc_img_fn = con.SelectedRegion.get_processed_img_fn(ws_dir);
+            proc_img_fn = con.SelectedRegion.ProcFn;
             pixel_region = { [bbox(2), bbox(2) + bbox(4)], [bbox(1), bbox(1) + bbox(3)] };
             con.View.ProcessedImage.ImageSource = imread(proc_img_fn, PixelRegion = pixel_region);
         end
@@ -150,7 +150,7 @@ classdef AnalyseController < ControllerBase
                 con AnalyseController
             end
 
-            mask_fn = con.SelectedRegion.get_mask_fn(con.Model.WS.DirName);
+            mask_fn = con.SelectedRegion.MaskFn;
             dn_mask = imread(mask_fn);
             imshow(imadjust(uint8(dn_mask)), 'Parent', con.View.Thumbnail, 'InitialMagnification', 20);
             if ~isempty(con.ImageSubviewRect)

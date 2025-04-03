@@ -106,9 +106,8 @@ classdef RegisterController < ControllerBase
                 return
             end
             ori = con.AtlasOrientation.cycle();
-            im_sz = con.SelectedImage.TransformationData.ImageSize;
             con.AtlasOrientation = ori;
-            con.set_default_tform_data(im_sz);
+            con.set_default_tform_data()
             n_slices = con.Model.Atlas.n_slices(ori);
             con.onAtlasSliceSliderChanged(n_slices / 2);
             con.draw_hex();

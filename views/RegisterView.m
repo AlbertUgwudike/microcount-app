@@ -7,6 +7,7 @@ classdef RegisterView < Component
         ButtonGrid
         ToggleOverlayButton
         RotateButton
+        CycleOrientationButton
         AlignColorButton
         AlignControlButton
         SliderGrid
@@ -123,6 +124,13 @@ classdef RegisterView < Component
             view.RotateButton.Layout.Row = 1;
             view.RotateButton.Layout.Column = 4;
             view.RotateButton.Text = 'Rotate';
+
+             % Create CycleOrientationButton
+            view.CycleOrientationButton = uibutton(view.ButtonGrid, 'push');
+            view.CycleOrientationButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegisterEvent.ButtonCycleOrientation);
+            view.CycleOrientationButton.Layout.Row = 1;
+            view.CycleOrientationButton.Layout.Column = 5;
+            view.CycleOrientationButton.Text = 'Atlas Orientation';
 
             % Create AtlasSliceSlider
             view.AtlasSliceSlider = uislider(view.SliderGrid);

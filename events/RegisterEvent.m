@@ -5,6 +5,7 @@ classdef RegisterEvent
         ButtonAlignControl
         ButtonToggleOverlay
         ButtonRotateImage
+        ButtonCycleOrientation
         SliderAtlasSlice
         SliderStop
     end

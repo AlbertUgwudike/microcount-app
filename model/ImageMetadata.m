@@ -4,6 +4,7 @@ classdef ImageMetadata < handle
         SourceFn (1, 1) string
         DownFn (1, 1) string
         ConvFn (1, 1) string
+        WS_Dir (1, 1) string
         Size (1, 2) uint16
         ID (1, 1) string
     end
@@ -27,6 +28,8 @@ classdef ImageMetadata < handle
             img_md.ID = fn;
             img_md.DownFn = ImageMetadata.get_down_fn(fn, ws_dir);
             img_md.ConvFn = ImageMetadata.get_conv_fn(fn, ws_dir);
+            img_md.WS_Dir = ws_dir;
+            disp(img_md.WS_Dir)
             info = imfinfo(source_fn);
             H = [info.Height];
             W = [info.Width];
