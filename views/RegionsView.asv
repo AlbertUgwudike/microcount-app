@@ -129,7 +129,7 @@ classdef RegionsView < Component
             view.RegionSelector.Layout.Column = 1;
             view.RegionSelector.CheckedNodesChangedFcn = @(~, ~) view.call_registrar(RegionsEvent.RegionChecked);
 
-            RegionsView.create_region_selector(view.RegionSelector);
+            Regions
 
             % % Create RightNode
             % RightNode = uitreenode(view.RegionSelector);
@@ -184,7 +184,7 @@ classdef RegionsView < Component
 
         function create_region_selector(ui_tree)
             table_fn = "/Users/vaness/.brainglobe/allen_mouse_100um_v1.2/structures.csv";
-            st_table = table2struct(readtable(table_fn));
+            st_table = readtable(table_fn);
             RootNode = uitreenode(ui_tree);
             RootNode.Text = 'Root';
             RootNode.NodeData = Location(RegionKey.root, Laterality.RIGHT);
@@ -193,20 +193,17 @@ classdef RegionsView < Component
 
         function create_rs_tree(st_table, parent_node)
             parent_acc = parent_node.NodeData.RegionKey.Name;
-            accs = cellfun(@convertCharsToStrings, { st_table.acronym });
-            parent_idx = [st_table(accs == parent_acc).id];
+            parent_idx = st_table([st_table.acronym] == parent_acc).id;
             child_subtable = st_table([st_table.parent_structure_id] == parent_idx);
-            child_idxs = {child_subtable.id};
-            child_keys = {child_subtable.acronym};
-            child_names = {child_subtable.name};
+            child_idxs = [child_subtable.id];
+            child_keys = [child_subtable.acronym];
 
             for i = 1:numel(child_idxs)
-                region_key = RegionKey.from_string(child_keys{i});
+                region_key = RegionKey.from_string(child_keys(i));
                 laterality = Laterality.LEFT;
                 location = Location(region_key, laterality);
-                label_str = sprintf("%s (%s)", child_names{i}, child_keys{i});
-                new_node = uitreenode(parent_node, NodeData=location, Text=label_str);
-                RegionsView.create_rs_tree(st_table, new_node);
+                new_node = uitreenode(parent_node, NodeData=location);
+                create_rs_tree(st_table, new_node);
             end
         end
 

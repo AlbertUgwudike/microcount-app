@@ -21,6 +21,7 @@ classdef Utility
         function flat = flatten(arr)
             flat = reshape(arr, [], 1);
         end
+        
     end
 end
 
