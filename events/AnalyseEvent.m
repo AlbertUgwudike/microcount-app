@@ -4,7 +4,7 @@ classdef AnalyseEvent
         CellEdited
         ButtonApplySetting
         ButtonProcessSelected
-        ButtonProcessAll
+        ButtonSelectAll
         ButtonExport
         ButtonCancel
     end

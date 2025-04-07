@@ -142,6 +142,9 @@ classdef Model < handle
                 return
             end
             img = uint16(imread(img_md.DownFn));
+            if ~isempty(img_md.TransformationData)
+                img = imrotate(img, img_md.TransformationData.Direction.to_angle());
+            end
         end
 
 
@@ -154,7 +157,8 @@ classdef Model < handle
                 slice_idx (1, 1) double
                 ori Orientation
             end
-            img_sz = img_md.TransformationData.ImageSize;
+            disp(img_md.TransformationData)
+            img_sz = img_md.TransformationData.ori_img_sz();
             dir = img_md.TransformationData.Direction;
             tform = fitgeotform2d(atlas_vertices, hist_vertices, 'affine');
             t_data = TransformationData(hist_vertices, atlas_vertices, tform, img_sz, slice_idx, dir, ori);
@@ -169,12 +173,8 @@ classdef Model < handle
                 mdl Model
                 img_md ImageMetadata
             end
-            img = imread(img_md.DownFn);
-            r_img = imrotate(img, 90);
-            imwrite(r_img, img_md.DownFn);
             direction = img_md.TransformationData.Direction;
             img_md.TransformationData.Direction = direction.rotate();
-            img_md.TransformationData.ImageSize = flip(img_md.TransformationData.ImageSize);
             mdl.io_save()
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end

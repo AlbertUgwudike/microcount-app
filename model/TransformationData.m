@@ -1,11 +1,14 @@
 classdef TransformationData
 
+    properties (Access = private)
+        ImageSize (1, 2) uint32
+    end
+
     properties
         AtlasHex (6, 2) double
         HistHex (6, 2) double
         Transform affinetform2d
         SliceIdx = 50;
-        ImageSize (1, 2) uint32
         Direction Direction
         Orientation Orientation
     end
@@ -29,6 +32,18 @@ classdef TransformationData
             obj.SliceIdx = slice_idx;
             obj.Direction = dir;
             obj.Orientation = ori;
+        end
+
+        function sz = get_img_sz(td)
+            if ismember(uint8(td.Direction), [1, 3])
+                sz = flip(td.ImageSize);
+            else
+                sz = td.ImageSize;
+            end
+        end
+
+        function sz = ori_img_sz(td)
+            sz = td.ImageSize;
         end
     end
 

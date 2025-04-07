@@ -14,7 +14,7 @@ classdef AnalyseView < Component
         CancelButton
         ExportButton
         BottomGrid
-        Thumbnail
+        Thumbnail matlab.ui.uiaxes
         ProcessedImage
         ResultGrid
         PercentageIba1AreaTextAreaLabel
@@ -51,7 +51,8 @@ classdef AnalyseView < Component
             % Create MainGrid
             view.MainGrid = uigridlayout(view);
             view.MainGrid.ColumnWidth = {'1x'};
-            view.MainGrid.RowHeight = {'0.15x', '0.5x', '0.2x', '1.2x'};
+            view.MainGrid.RowHeight = {'0.15x', '0.5x', '0.15x', '1.2x'};
+            view.MainGrid.Padding = [5 5 5 5];
 
             % Create RegionTable
             view.RegionTable = uitable(view.MainGrid);
@@ -70,6 +71,7 @@ classdef AnalyseView < Component
             view.ButtonGrid = uigridlayout(view.MainGrid);
             view.ButtonGrid.ColumnWidth = {'1x', '1x', '1x', '1x', '1x'};
             view.ButtonGrid.RowHeight = {'1x'};
+            view.ButtonGrid.ColumnSpacing = 5;
             view.ButtonGrid.Layout.Row = 3;
             view.ButtonGrid.Layout.Column = 1;
 
@@ -80,33 +82,19 @@ classdef AnalyseView < Component
             view.ProcessSelectedButton.Layout.Column = 2;
             view.ProcessSelectedButton.Text = 'Process Selected';
 
-            % Create ProcessAllButton
-            view.ProcessAllButton = uibutton(view.ButtonGrid, 'push');
-            view.ProcessAllButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonProcessAll);
-            view.ProcessAllButton.Layout.Row = 1;
-            view.ProcessAllButton.Layout.Column = 3;
-            view.ProcessAllButton.Text = 'Process All';
-
-            % Create ApplySettingButton
-            view.ApplySettingButton = uibutton(view.ButtonGrid, 'push');
-            view.ApplySettingButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonApplySetting);
-            view.ApplySettingButton.Layout.Row = 1;
-            view.ApplySettingButton.Layout.Column = 1;
-            view.ApplySettingButton.Text = 'Apply Setting';
-
             % Create CancelButton
             view.CancelButton = uibutton(view.ButtonGrid, 'push');
             view.CancelButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonCancel);
             view.CancelButton.Layout.Row = 1;
-            view.CancelButton.Layout.Column = 4;
+            view.CancelButton.Layout.Column = 3;
             view.CancelButton.Text = 'Cancel';
 
             % Create ExportButton
             view.ExportButton = uibutton(view.ButtonGrid, 'push');
             view.ExportButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonExport);
             view.ExportButton.Layout.Row = 1;
-            view.ExportButton.Layout.Column = 5;
-            view.ExportButton.Text = 'Export';
+            view.ExportButton.Layout.Column = 4;
+            view.ExportButton.Text = 'Export Processed';
 
             % Create BottomGrid
             view.BottomGrid = uigridlayout(view.MainGrid);
@@ -117,6 +105,7 @@ classdef AnalyseView < Component
 
             % Create Thumbnail
             view.Thumbnail = uiaxes(view.BottomGrid);
+            view.Thumbnail.
             view.Thumbnail.Layout.Row = 1;
             view.Thumbnail.Layout.Column = 1;
             view.Thumbnail.XTick = [];
@@ -224,6 +213,14 @@ classdef AnalyseView < Component
             view.SettingGrid.Layout.Row = 1;
             view.SettingGrid.Layout.Column = 1;
 
+
+            % Create ApplySettingButton
+            view.ApplySettingButton = uibutton(view.SettingGrid, 'push');
+            view.ApplySettingButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonApplySetting);
+            view.ApplySettingButton.Layout.Row = 1;
+            view.ApplySettingButton.Layout.Column = 1;
+            view.ApplySettingButton.Text = 'Apply Setting';
+
             % Create Iba1EditField
             view.Iba1EditField = uieditfield(view.SettingGrid, 'numeric');
             view.Iba1EditField.Layout.Row = 1;
@@ -238,6 +235,13 @@ classdef AnalyseView < Component
             view.MaxEditField = uieditfield(view.SettingGrid, 'numeric');
             view.MaxEditField.Layout.Row = 1;
             view.MaxEditField.Layout.Column = 4;
+
+            % Create ProcessAllButton
+            view.ProcessAllButton = uibutton(view.SettingGrid, 'push');
+            view.ProcessAllButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonSelectAll);
+            view.ProcessAllButton.Layout.Row = 1;
+            view.ProcessAllButton.Layout.Column = 5;
+            view.ProcessAllButton.Text = 'Select All';
 
         end
 

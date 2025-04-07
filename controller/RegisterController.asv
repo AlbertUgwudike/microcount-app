@@ -58,6 +58,7 @@ classdef RegisterController < ControllerBase
             hist_vertices = con.View.HistHex.Position;
             slice_idx = round(con.View.AtlasSliceSlider.Value);
             ori = con.AtlasOrientation;
+            fprintf("TranformationData::() -- %s\n", ori)
             con.Model.io_align_image(con.SelectedImage, atlas_vertices, hist_vertices, slice_idx, ori);
             con.toggleOverlayOn()
         end
@@ -75,7 +76,11 @@ classdef RegisterController < ControllerBase
             d_img = con.Model.io_get_down_img(con.SelectedImage);
             p_img = padarray(d_img, double([Constants.PAD, Constants.PAD]), 0);
             tform_d = con.SelectedImage.TransformationData;
+            disp(tform_d)
             borders = con.Model.Atlas.calc_borders(tform_d);
+            fprintf("toggleOverlayOn - p_img: [%d")
+            disp(size(p_img))
+            disp(con.SelectedImage.TransformationData.get_img_sz())
             imshow(p_img + borders, 'Parent', con.View.HistSliceAxes)
             con.ShowOverlay = true;
             con.draw_hexs()

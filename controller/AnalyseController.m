@@ -54,6 +54,13 @@ classdef AnalyseController < ControllerBase
 
         function on_apply_setting_button_pushed(con) 
             disp("AnalyseController::on_apply_setting_button_pushed")
+            options = [con.View.Iba1EditField.Value, con.View.CD68EditField.Value, con.View.MaxEditField.Value];
+            selection = con.View.RegionTable.Selection;
+            for i = 1:numel(selection)
+                event.Indices = selection(i);
+                con.View.RegionTable.Data(event.Indices, 2:4) = options;
+                con.on_cell_edited(event)
+            end
         end
 
         function on_process_selected_button_pushed(con) 
@@ -62,8 +69,10 @@ classdef AnalyseController < ControllerBase
             con.Model.io_process_region(con.RegionSet(selection))
         end
 
-        function on_process_all_button_pushed(con) 
+        function on_select_all_button_pushed(con) 
             disp("AnalyseController::on_process_all_button_pushed")
+            N = height(con.View.RegionTable.Data);
+            con.View.RegionTable.Selection = 1:N;
         end
 
         function on_cancel_button_pushed(con) 
@@ -103,7 +112,6 @@ classdef AnalyseController < ControllerBase
         function on_image_subview_moved(con, pos)
             disp("AnalyseController::on_image_subview_moved")
             bbox = round(20 * pos);
-            ws_dir = con.Model.WS.DirName;
             proc_img_fn = con.SelectedRegion.ProcFn;
             pixel_region = { [bbox(2), bbox(2) + bbox(4)], [bbox(1), bbox(1) + bbox(3)] };
             con.View.ProcessedImage.ImageSource = imread(proc_img_fn, PixelRegion = pixel_region);
@@ -128,8 +136,8 @@ classdef AnalyseController < ControllerBase
                 case (AnalyseEvent.ButtonProcessSelected)
                     con.on_process_selected_button_pushed()
 
-                case (AnalyseEvent.ButtonProcessAll)
-                    con.on_process_all_button_pushed()
+                case (AnalyseEvent.ButtonSelectAll)
+                    con.on_select_all_button_pushed()
 
                 case (AnalyseEvent.ButtonCancel)
                     con.on_cancel_button_pushed()

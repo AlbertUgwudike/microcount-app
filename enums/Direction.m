@@ -23,6 +23,19 @@ classdef Direction < uint8
                     agl = 90;
             end
         end
+
+        function agl = to_angle(dir)
+            switch dir
+                case Direction.North
+                    agl = 0;
+                case Direction.East
+                    agl = 90;
+                case Direction.South
+                    agl = 180;
+                case Direction.West
+                    agl = -90;
+            end
+        end
     end
 end
 

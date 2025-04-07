@@ -191,7 +191,7 @@ classdef Atlas
             ann_image = squeeze(ann_image);
             mask_image = atlas.get_lr_mask(tform_data.Orientation, tform_data.SliceIdx);
 
-            ref_img = imref2d(tform_data.ImageSize);
+            ref_img = imref2d(tform_data.get_img_sz());
             tform_mat = tform_data.Transform;
 
             ali_image = imwarp(ann_image , tform_mat, 'nearest', 'Outputview', ref_img);
