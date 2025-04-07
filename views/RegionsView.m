@@ -127,49 +127,9 @@ classdef RegionsView < Component
             view.RegionSelector = uitree(view.RightGrid, 'checkbox');
             view.RegionSelector.Layout.Row = 2;
             view.RegionSelector.Layout.Column = 1;
-            view.RegionSelector.CheckedNodesChangedFcn = @(~, ~) view.call_registrar(RegionsEvent.RegionChecked);
-
-            RegionsView.create_region_selector(view.RegionSelector);
-
-            % % Create RightNode
-            % RightNode = uitreenode(view.RegionSelector);
-            % RightNode.Text = 'Right Hemisphere';
-            % RightNode.NodeData = Location(RegionKey.HEMI, Laterality.RIGHT);
-            % 
-            % % Create SS_RIGHT_Node
-            % SS_RIGHT_Node = uitreenode(RightNode);
-            % SS_RIGHT_Node.NodeData = Location(RegionKey.SS, Laterality.RIGHT);
-            % SS_RIGHT_Node.Text = 'Somatosensory Cortex';
-            % 
-            % % Create HIP_RIGHT_Node
-            % HIP_RIGHT_Node = uitreenode(RightNode);
-            % HIP_RIGHT_Node.NodeData = Location(RegionKey.HIP, Laterality.RIGHT);
-            % HIP_RIGHT_Node.Text = 'Hippocampus';
-            % 
-            % % Create TH_RIGHT_Node
-            % TH_RIGHT_Node = uitreenode(RightNode);
-            % TH_RIGHT_Node.NodeData = Location(RegionKey.TH, Laterality.RIGHT);
-            % TH_RIGHT_Node.Text = 'Thalamus';
-            % 
-            % % Create LeftNode
-            % LeftNode = uitreenode(view.RegionSelector);
-            % LeftNode.NodeData = Location(RegionKey.HEMI, Laterality.LEFT);
-            % LeftNode.Text = 'Left Hemisphere';
-            % 
-            % % Create SS_LEFT_Node
-            % SS_LEFT_Node = uitreenode(LeftNode);
-            % SS_LEFT_Node.NodeData = Location(RegionKey.SS, Laterality.LEFT);
-            % SS_LEFT_Node.Text = 'Somatosensory Cortex';
-            % 
-            % % Create HIP_LEFT_Node
-            % HIP_LEFT_Node = uitreenode(LeftNode);
-            % HIP_LEFT_Node.NodeData = Location(RegionKey.HIP, Laterality.LEFT);
-            % HIP_LEFT_Node.Text = 'Hippocampus';
-            % 
-            % % Create TH_LEFT_Node
-            % TH_LEFT_Node = uitreenode(LeftNode);
-            % TH_LEFT_Node.NodeData = Location(RegionKey.TH, Laterality.LEFT);
-            % TH_LEFT_Node.Text = 'Thalamus';
+            view.RegionSelector.CheckedNodesChangedFcn = @(~, e) view.call_registrar(RegionsEvent.RegionChecked);
+            RegionsView.create_region_selector(view.RegionSelector, Laterality.LEFT, "Left");
+            RegionsView.create_region_selector(view.RegionSelector, Laterality.RIGHT, "Right");
 
             % Create HistologyImage
             view.HistologyImage = uiimage(view.MainGrid);
@@ -182,31 +142,22 @@ classdef RegionsView < Component
 
     methods (Static)
 
-        function create_region_selector(ui_tree)
-            table_fn = "/Users/vaness/.brainglobe/allen_mouse_100um_v1.2/structures.csv";
-            st_table = table2struct(readtable(table_fn));
-            RootNode = uitreenode(ui_tree);
-            RootNode.Text = 'Root';
-            RootNode.NodeData = Location(RegionKey.root, Laterality.RIGHT);
-            RegionsView.create_rs_tree(st_table, RootNode)
+        function create_region_selector(ui_tree, laterality, name)
+            region_tree = load("app/assets/RegionTree.mat").rt;
+            Node = uitreenode(ui_tree);
+            Node.Text = name;
+            Node.NodeData = Location(RegionKey.root, laterality);
+            RegionsView.create_rs_tree(Node, region_tree.Descendants)
         end
 
-        function create_rs_tree(st_table, parent_node)
-            parent_acc = parent_node.NodeData.RegionKey.Name;
-            accs = cellfun(@convertCharsToStrings, { st_table.acronym });
-            parent_idx = [st_table(accs == parent_acc).id];
-            child_subtable = st_table([st_table.parent_structure_id] == parent_idx);
-            child_idxs = {child_subtable.id};
-            child_keys = {child_subtable.acronym};
-            child_names = {child_subtable.name};
-
-            for i = 1:numel(child_idxs)
-                region_key = RegionKey.from_string(child_keys{i});
-                laterality = Laterality.LEFT;
-                location = Location(region_key, laterality);
-                label_str = sprintf("%s (%s)", child_names{i}, child_keys{i});
-                new_node = uitreenode(parent_node, NodeData=location, Text=label_str);
-                RegionsView.create_rs_tree(st_table, new_node);
+        function create_rs_tree(parent_node, descendants)
+            laterality = parent_node.NodeData.Laterality;
+            for i = 1:numel(descendants)
+                descendant = descendants(i);
+                child_loc = Location(descendant.Key, laterality);
+                label = sprintf("%s (%s)", descendant.Name, descendant.Key.Name);
+                child_node = uitreenode(parent_node, NodeData=child_loc, Text=label);
+                RegionsView.create_rs_tree(child_node, descendant.Descendants);
             end
         end
 

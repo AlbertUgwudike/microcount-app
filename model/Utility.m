@@ -21,7 +21,15 @@ classdef Utility
         function flat = flatten(arr)
             flat = reshape(arr, [], 1);
         end
-        
+
+        function out = cat_cells(arr)
+
+            out = [];
+            for i = 1:numel(arr)
+                out = cat(1, out, arr{i});
+            end
+        end
+
     end
 end
 

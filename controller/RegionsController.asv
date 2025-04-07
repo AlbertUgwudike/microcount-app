@@ -33,8 +33,12 @@ classdef RegionsController < ControllerBase
         end
 
         function onRegionChecked(con)
-            disp("RegionsController::onRegionChecked")
-            locs = con.get_selected_locs();
+            selected = con.View.RegionSelector.CheckedNodes;
+            % l_node = con.View.RegionSelector.Children(1);
+            % r_node = con.View.RegionSelector.Children(2);
+            % l_locs = RegionsController.extract_nodes(l_node, selected)
+            % r_locs = RegionsController.extract_nodes(r_node, selected)
+            % locs = cat(1, l_locs, r_locs)
             disp(locs)
         end
 
@@ -44,9 +48,9 @@ classdef RegionsController < ControllerBase
                 return
             end
             idx = con.View.ImageTable.Selection;
-            locs = con.get_selected_locs();
             for i = 1:numel(idx)
                 img_md = con.ImageSet(idx(i));
+                locs = con.get_selected_locs();
                 con.Model.io_update_regions(img_md, locs);
             end
         end
@@ -104,13 +108,13 @@ classdef RegionsController < ControllerBase
     end
 
     methods (Access=private)
+
         function locs = get_selected_locs(con)
-            selected = con.View.RegionSelector.CheckedNodes;
-            l_node = con.View.RegionSelector.Children(1);
-            r_node = con.View.RegionSelector.Children(2);
-            l_locs = RegionsController.extract_nodes(l_node, selected);
-            r_locs = RegionsController.extract_nodes(r_node, selected);
-            locs = cat(1, l_locs, r_locs);
+            current_nodes = [con.View.RegionSelector.CheckedNodes];
+            locs = arrayfun(@(d) d.NodeData, current_nodes);
+            if isempty(locs)
+                locs = Location.empty;
+            end
         end
     end
 
@@ -122,12 +126,14 @@ classdef RegionsController < ControllerBase
                 return
             end
 
-            locs = arrayfun(@(n) RegionsController.extract_nodes(n, selected_nodes), node.Children, UniformOutput=false);
-            locs = Utility.cat_cells(locs);
-
-            if isempty(locs)
+            if isempty(node.Children)
                 locs = Location.empty;
+                return
             end
+
+            locs = arrayfun(@(n) RegionsController.extract_nodes(n, selected_nodes), node.Children, UniformOutput=false);
+
+            locs = Utility.cat_cells(locs);
         end
 
     end
