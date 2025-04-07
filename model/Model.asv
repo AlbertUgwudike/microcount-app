@@ -97,9 +97,9 @@ classdef Model < handle
 
             for i = 1:height(names)
                 fn = convertCharsToStrings(names(i));
-                % if ~mdl.is_valid_img(fn)
-                %     continue
-                % end
+                if ~mdl.is_valid_img(fn)
+                    continue
+                end
                 new_img = ImageMetadata(fn, mdl.WS.DirName);
                 current_img_set = mdl.WS.Images;
                 updated_img_set = cat(1, current_img_set, new_img);
@@ -130,13 +130,13 @@ classdef Model < handle
             mdl.save_and_update();
         end
 
-        function io_convert_and_downsample(mdl, idx)
-            for i = 1:numel(idx)
-                img = mdl.WS.Images(idx(i));
-                if (img.ConvertStatus == ConvertStatus.CONVERTED)
+        function io_convert_and_downsample(mdl)
+            for i = 1:height(mdl.WS.Images)
+                img = mdl.WS.Images(i);
+                if (img.Converted == ConvertStatus.CONVERTED)
                     continue
                 end
-                mdl.io_mark_image_as_converting(img);
+                mdl.mark
                 mdl.ThreadPool.dispatch(@Model.bg_conv_down_img, img, @mdl.bg_conv_down_img_complete)
             end
         end
@@ -263,12 +263,6 @@ classdef Model < handle
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 
-        function io_mark_image_as_converting(mdl, img_md)
-            img_md.ConvertStatus = ConvertStatus.CONVERTING;
-            mdl.io_save()
-            mdl.call_registrars(ModelEvents.WorkspaceUpdated)
-        end
-
         function bg_conv_down_img_complete(mdl, fut)
             img_md = fut.InputArguments{1};
             if ~isempty(fut.Error)
@@ -276,7 +270,8 @@ classdef Model < handle
                disp([fut.Error.stack.name]);
             else
                 fprintf("Convert and Downsample: Image %s completed after: %s\n", img_md.ID, fut.RunningDuration);
-                img_md.ConvertStatus = ConvertStatus.CONVERTED;
+                img_md.Converted = true;
+                img_md.DownSampled = true;
             end
             mdl.io_save()
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
@@ -312,6 +307,11 @@ classdef Model < handle
 
             mdl.io_save()
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
+        end
+
+        function is_valid = is_valid_img(mdl, fn)
+            % TODO cheap image validation
+            is_valid = true;
         end
 
         function panic(mdl, err_enum)

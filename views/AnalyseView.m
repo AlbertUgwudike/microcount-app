@@ -14,7 +14,7 @@ classdef AnalyseView < Component
         CancelButton
         ExportButton
         BottomGrid
-        Thumbnail matlab.ui.uiaxes
+        Thumbnail matlab.ui.control.UIAxes
         ProcessedImage
         ResultGrid
         PercentageIba1AreaTextAreaLabel
@@ -105,9 +105,9 @@ classdef AnalyseView < Component
 
             % Create Thumbnail
             view.Thumbnail = uiaxes(view.BottomGrid);
-            view.Thumbnail.
             view.Thumbnail.Layout.Row = 1;
             view.Thumbnail.Layout.Column = 1;
+            view.Thumbnail.InnerPosition = [0, 0, 1, 1];
             view.Thumbnail.XTick = [];
             view.Thumbnail.YTick = [];
 

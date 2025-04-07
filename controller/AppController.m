@@ -28,7 +28,7 @@ classdef AppController < ControllerBase
 
     methods (Access = private)
         function flag = registrationAvailable(con)
-            flag = any([con.Model.WS.Images.DownSampled]);
+            flag = any([con.Model.WS.Images.ConvertStatus] == ConvertStatus.CONVERTED);
         end
 
         function onTabSelected(con)

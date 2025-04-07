@@ -7,12 +7,13 @@ classdef ImageMetadata < handle
         WS_Dir (1, 1) string
         Size (1, 2) uint16
         ID (1, 1) string
+        ChannelOrder (1, :) uint16
+        ChannelCount (1, 1) uint16
     end
 
     properties
-        Converted (1, 1) logical = false
+        ConvertStatus (1, 1) ConvertStatus = ConvertStatus.UNCONVERTED
         Aligned (1, 1) logical = false
-        DownSampled (1, 1) logical = false
         TransformationData TransformationData
         Regions (:, 1) Region = Region.empty()
     end
@@ -34,6 +35,8 @@ classdef ImageMetadata < handle
             H = [info.Height];
             W = [info.Width];
             img_md.Size = [H(1), W(1)];
+            img_md.ChannelCount = info.SamplesPerPixel;
+            img_md.ChannelOrder = 1:img_md.ChannelCount;
         end
 
         function add_region_save_mask(img_md, region, atlas)
@@ -62,10 +65,20 @@ classdef ImageMetadata < handle
             end
 
             locs = [img_md.Regions.Location];
-            
+
             if (isempty(locs))
                 locs = Location.empty;
             end
+        end
+
+
+        function set_channel_order_str(img_md, ch_str)
+            arguments
+                img_md ImageMetadata
+                ch_str string
+            end
+            order = uint16(arrayfun(@(s) double(strip(s)), ch_str.split(',')));
+            img_md.ChannelOrder = order;
         end
         
     end
@@ -102,6 +115,14 @@ classdef ImageMetadata < handle
                 id, ...
                 "conv" ...
             );
+        end
+
+        function v = valid_channel_order_str(ch_str, N)
+            arguments
+                ch_str string
+                N
+            end
+            v = isequal(sort(arrayfun(@(s) double(strip(s)), ch_str.split(',')))', 1:N);
         end
 
     end

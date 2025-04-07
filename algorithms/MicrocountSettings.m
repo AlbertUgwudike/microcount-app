@@ -10,13 +10,13 @@ classdef MicrocountSettings
     end
     
     methods
-        function obj = MicrocountSettings(iba1_t, cd68_t, cd68_sz)
+        function obj = MicrocountSettings(ch_order, iba1_t, cd68_t, cd68_sz)
             obj.Iba1Threshold = iba1_t;
             obj.CD68Threshold = cd68_t;
             obj.MaxCD68Size = cd68_sz;
             obj.MinOverlap = 5000;
-            obj.ChannelCD68 = 2;
-            obj.ChannelIba1 = 3;
+            obj.ChannelCD68 = ch_order(2);
+            obj.ChannelIba1 = ch_order(3);
         end
     end
 end

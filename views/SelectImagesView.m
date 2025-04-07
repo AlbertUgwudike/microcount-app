@@ -2,12 +2,15 @@ classdef SelectImagesView < Component
 
     properties ( Access = public )
         MainGrid
-        SelectAllButton
-        RemoveButton
-        ConvertandDownsampleButton
-        AddImagesButton
-        ImageSetTable
-        SaveButton
+            ButtonGrid
+                AddImagesButton
+                SelectAllButton
+                RemoveSelectedButton
+                ConvertSelectedButton
+            ImageTable
+            ChannelOrderGrid
+                ApplyChannelOrderButton
+                ChannelOrderField
     end
 
     methods
@@ -29,52 +32,75 @@ classdef SelectImagesView < Component
 
             % Create MainGrid
             view.MainGrid = uigridlayout(view);
-            view.MainGrid.ColumnWidth = {'1x', '1x', '1x', '1x'};
-            view.MainGrid.RowHeight = {'1x', '1x', '1x', '1x', '1x', '1x', '1x', '1x', '1x', '1x'};
+            view.MainGrid.ColumnWidth = {'1x'};
+            view.MainGrid.RowHeight = {'0.1x', '1x', '0.1x', '0.8x'};
 
-            % Create SelectAllButton
-            view.SelectAllButton = uibutton(view.MainGrid, 'push');
-            view.SelectAllButton.ButtonPushedFcn = @(~, ~) view.call_registrar(SelectImagesEvent.ButtonSelectAll);
-            view.SelectAllButton.Layout.Row = 2;
-            view.SelectAllButton.Layout.Column = 2;
-            view.SelectAllButton.Text = 'Select All';
-
-            % Create RemoveButton
-            view.RemoveButton = uibutton(view.MainGrid, 'push');
-            view.RemoveButton.ButtonPushedFcn = @(~, ~) view.call_registrar(SelectImagesEvent.ButtonRemoveAll);
-            view.RemoveButton.Layout.Row = 2;
-            view.RemoveButton.Layout.Column = 3;
-            view.RemoveButton.Text = 'Remove';
-
-            % Create ConvertandDownsampleButton
-            view.ConvertandDownsampleButton = uibutton(view.MainGrid, 'push');
-            view.ConvertandDownsampleButton.ButtonPushedFcn = @(~, ~) view.call_registrar(SelectImagesEvent.ButtonConvertDownsample);
-            view.ConvertandDownsampleButton.Layout.Row = 2;
-            view.ConvertandDownsampleButton.Layout.Column = 4;
-            view.ConvertandDownsampleButton.Text = 'Convert and Downsample';
+            % Create ButtonGrid
+            view.ButtonGrid = uigridlayout(view.MainGrid);
+            view.ButtonGrid.ColumnWidth = {'1x', '1x', '1x', '1x'};
+            view.ButtonGrid.RowHeight = {'1x'};
+            view.ButtonGrid.Padding = [1 1 1 1];
+            view.ButtonGrid.Layout.Row = 1;
+            view.ButtonGrid.Layout.Column = 1;
 
             % Create AddImagesButton
-            view.AddImagesButton = uibutton(view.MainGrid, 'push');
-            view.AddImagesButton.ButtonPushedFcn = @(~, ~) view.call_registrar(SelectImagesEvent.ButtonAddImages);
-            view.AddImagesButton.Layout.Row = 2;
+            view.AddImagesButton = uibutton(view.ButtonGrid, 'push');
+            view.AddImagesButton.Layout.Row = 1;
             view.AddImagesButton.Layout.Column = 1;
             view.AddImagesButton.Text = 'Add Images';
+            view.AddImagesButton.ButtonPushedFcn = @(~, ~) view.call_registrar(SelectImagesEvent.ButtonAddImages);
 
-            % Create ImageSetTable
-            view.ImageSetTable = uitable(view.MainGrid);
-            view.ImageSetTable.ColumnName = {'Name'; 'Converted'; 'Downsampled'};
-            view.ImageSetTable.ColumnWidth = {'2x', '1x', '1x'};
-            view.ImageSetTable.RowName = {};
-            view.ImageSetTable.SelectionType = 'row';
-            view.ImageSetTable.Layout.Row = [3 7];
-            view.ImageSetTable.Layout.Column = [1 4];
+            % Create SelectAllButton
+            view.SelectAllButton = uibutton(view.ButtonGrid, 'push');
+            view.SelectAllButton.Layout.Row = 1;
+            view.SelectAllButton.Layout.Column = 2;
+            view.SelectAllButton.Text = 'Select All';
+            view.SelectAllButton.ButtonPushedFcn = @(~, ~) view.call_registrar(SelectImagesEvent.ButtonSelectAll);
 
-            % Create SaveButton
-            view.SaveButton = uibutton(view.MainGrid, 'push');
-            view.SaveButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AppEvent.ButtonSave);
-            view.SaveButton.Layout.Row = 8;
-            view.SaveButton.Layout.Column = 1;
-            view.SaveButton.Text = 'Save';
+            % Create RemoveSelectedButton
+            view.RemoveSelectedButton = uibutton(view.ButtonGrid, 'push');
+            view.RemoveSelectedButton.Layout.Row = 1;
+            view.RemoveSelectedButton.Layout.Column = 3;
+            view.RemoveSelectedButton.Text = 'Remove Selected';
+            view.RemoveSelectedButton.ButtonPushedFcn = @(~, ~) view.call_registrar(SelectImagesEvent.ButtonRemoveSelected);
+
+            % Create ConvertSelectedButton
+            view.ConvertSelectedButton = uibutton(view.ButtonGrid, 'push');
+            view.ConvertSelectedButton.Layout.Row = 1;
+            view.ConvertSelectedButton.Layout.Column = 4;
+            view.ConvertSelectedButton.Text = 'Convert Selected';
+            view.ConvertSelectedButton.ButtonPushedFcn = @(~, ~) view.call_registrar(SelectImagesEvent.ButtonConvert);
+
+            % Create ImageTable
+            view.ImageTable = uitable(view.MainGrid);
+            view.ImageTable.ColumnName = {'Image'; 'Channel Count'; 'Channel Order'; 'Converted'};
+            view.ImageTable.RowName = {};
+            view.ImageTable.ColumnEditable = [false false true false];
+            view.ImageTable.Layout.Row = 2;
+            view.ImageTable.Layout.Column = 1;
+            view.ImageTable.Multiselect = 'on';
+            view.ImageTable.SelectionType = 'row';
+            view.ImageTable.CellEditCallback = @(~, e) view.call_registrar(SelectImagesEvent.ChannelOrderEdited, e);
+
+            % Create ChannelOrderGrid
+            view.ChannelOrderGrid = uigridlayout(view.MainGrid);
+            view.ChannelOrderGrid.ColumnWidth = {'1x', '1x', '1x', '1x'};
+            view.ChannelOrderGrid.RowHeight = {'1x'};
+            view.ChannelOrderGrid.Padding = [1 1 1 1];
+            view.ChannelOrderGrid.Layout.Row = 3;
+            view.ChannelOrderGrid.Layout.Column = 1;
+
+            % Create ApplyChannelOrderButton
+            view.ApplyChannelOrderButton = uibutton(view.ChannelOrderGrid, 'push');
+            view.ApplyChannelOrderButton.Layout.Row = 1;
+            view.ApplyChannelOrderButton.Layout.Column = 1;
+            view.ApplyChannelOrderButton.Text = 'Apply Channel Order';
+            view.ApplyChannelOrderButton.ButtonPushedFcn = @(~, ~) view.call_registrar(SelectImagesEvent.ButtonApplyChannelOrder);
+
+            % Create ChannelOrderField
+            view.ChannelOrderField = uieditfield(view.ChannelOrderGrid, 'text');
+            view.ChannelOrderField.Layout.Row = 1;
+            view.ChannelOrderField.Layout.Column = 2;
 
         end
 

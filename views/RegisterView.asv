@@ -5,20 +5,20 @@ classdef RegisterView < Component
             TopGrid
                 AlignmentTable
             BottomGrid
-                AtlasPanel
                 AtlasGrid
                     AtlasButtonGrid
                         CycleOrientationButton
-                    AtlasSliceAxes
-                    AtlasSliceSlider
-                HistologyGrid
-                    HistologyButtonGrid
-                        AlignColorButton
-                        AlignControlButton
-                    HistSliceAxes
-                    HistologyButtonGrid2
-                        ToggleOverlayButton
-                        RotateButton
+
+                ToggleOverlayButton
+                RotateButton
+                AlignColorButton
+                AlignControlButton
+            AxesGrid
+                AtlasSliceAxes
+                HistSliceAxes
+            SliderGrid
+                AtlasSliderLabel
+                AtlasSliceSlider
 
         Atlas Atlas = Atlas()
         AtlasHex
@@ -71,26 +71,22 @@ classdef RegisterView < Component
             % Create BottomGrid
             view.BottomGrid = uigridlayout(view.MainGrid);
             view.BottomGrid.ColumnWidth = {'1x', '1x'};
-            view.BottomGrid.RowHeight = {'1x'};
-            view.BottomGrid.Padding = [1 1 1 1];
-            view.BottomGrid.Layout.Row = 2;
-            view.BottomGrid.Layout.Column = 1;
-
-            % AtlasPanel
-            view.AtlasPanel = uipanel(view.BottomGrid);
+            view.ButtonGrid.RowHeight = {'1x'};
+            view.ButtonGrid.Padding = [1 1 1 1];
+            view.ButtonGrid.Layout.Row = 2;
+            view.ButtonGrid.Layout.Column = 1;
 
             % Create AtlasGrid
-            view.AtlasGrid = uigridlayout(view.AtlasPanel);
+            view.AtlasGrid = uigridlayout(view.BottomGrid);
             view.AtlasGrid.ColumnWidth = {'1x'};
-            view.AtlasGrid.RowHeight = {'1x', '8x', '1x'};
+            view.AtlasGrid.RowHeight = {'1x', '4x', '1x'};
             view.AtlasGrid.Padding = [1 1 1 1];
             view.AtlasGrid.Layout.Row = 1;
             view.AtlasGrid.Layout.Column = 1;
 
             % Create AtlasButtonGrid
             view.AtlasButtonGrid = uigridlayout(view.AtlasGrid);
-            view.AtlasButtonGrid.ColumnWidth = {'1x', '1x'};
-            view.AtlasButtonGrid.RowHeight = {'1x'};
+            view.AtlasButtonGrid.ColumnWidth = {'1x', '1x', '1x', '1x'};
             view.AtlasButtonGrid.RowHeight = {'1x'};
             view.AtlasButtonGrid.Padding = [1 1 1 1];
             view.AtlasButtonGrid.Layout.Row = 1;
@@ -125,32 +121,46 @@ classdef RegisterView < Component
             % Create HistologyGrid
             view.HistologyGrid = uigridlayout(view.BottomGrid);
             view.HistologyGrid.ColumnWidth = {'1x'};
-            view.HistologyGrid.RowHeight = {'1x', '8x', '1x'};
+            view.HistologyGrid.RowHeight = {'1x', '1x'};
             view.HistologyGrid.Padding = [1 1 1 1];
             view.HistologyGrid.Layout.Row = 1;
-            view.HistologyGrid.Layout.Column = 2;
+            view.HistologyGrid.Layout.Column = 1;
 
             % Create HistologyButtonGrid
-            view.HistologyButtonGrid = uigridlayout(view.HistologyGrid);
-            view.HistologyButtonGrid.ColumnWidth = {'1x', '1x'};
-            view.HistologyButtonGrid.RowHeight = {'1x'};
-            view.HistologyButtonGrid.Padding = [1 1 1 1];
-            view.HistologyButtonGrid.Layout.Row = 1;
-            view.HistologyButtonGrid.Layout.Column = 1;
+            view.AtlasButtonGrid = uigridlayout(view.Histology);
+            view.AtlasButtonGrid.ColumnWidth = {'1x', '1x', '1x', '1x'};
+            view.AtlasButtonGrid.RowHeight = {'1x'};
+            view.AtlasButtonGrid.Padding = [1 1 1 1];
+            view.AtlasButtonGrid.Layout.Row = 1;
+            view.AtlasButtonGrid.Layout.Column = 1;
 
             % Create AlignColorButton
-            view.AlignColorButton = uibutton(view.HistologyButtonGrid, 'push');
+            view.AlignColorButton = uibutton(view.AtlasButtonGrid, 'push');
             view.AlignColorButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegisterEvent.ButtonAlignColor);
             view.AlignColorButton.Layout.Row = 1;
             view.AlignColorButton.Layout.Column = 1;
             view.AlignColorButton.Text = 'Automatic Registration';
 
             % Create AlignControlButton
-            view.AlignControlButton = uibutton(view.HistologyButtonGrid, 'push');
+            view.AlignControlButton = uibutton(view.AtlasButtonGrid, 'push');
             view.AlignControlButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegisterEvent.ButtonAlignControl);
             view.AlignControlButton.Layout.Row = 1;
             view.AlignControlButton.Layout.Column = 2;
             view.AlignControlButton.Text = 'C.P. Registration';
+
+            % Create ToggleOverlayButton
+            view.ToggleOverlayButton = uibutton(view.AtlasButtonGrid, 'push');
+            view.ToggleOverlayButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegisterEvent.ButtonToggleOverlay);
+            view.ToggleOverlayButton.Layout.Row = 1;
+            view.ToggleOverlayButton.Layout.Column = 3;
+            view.ToggleOverlayButton.Text = 'Hide Overlay';
+
+            % Create RotateButton
+            view.RotateButton = uibutton(view.AtlasButtonGrid, 'push');
+            view.RotateButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegisterEvent.ButtonRotateImage);
+            view.RotateButton.Layout.Row = 1;
+            view.RotateButton.Layout.Column = 4;
+            view.RotateButton.Text = 'Rotate Image';
 
             % Create HistSliceAxes
             view.HistSliceAxes = uiaxes(view.HistologyGrid);
@@ -159,29 +169,8 @@ classdef RegisterView < Component
             view.HistSliceAxes.Layout.Row = 2;
             view.HistSliceAxes.Layout.Column = 1;
 
-            % Create HistologyButtonGrid
-            view.HistologyButtonGrid2 = uigridlayout(view.HistologyGrid);
-            view.HistologyButtonGrid2.ColumnWidth = {'1x', '1x'};
-            view.HistologyButtonGrid2.RowHeight = {'1x'};
-            view.HistologyButtonGrid2.Padding = [1 1 1 1];
-            view.HistologyButtonGrid2.Layout.Row = 3;
-            view.HistologyButtonGrid2.Layout.Column = 1;
-
-            % Create ToggleOverlayButton
-            view.ToggleOverlayButton = uibutton(view.HistologyButtonGrid2, 'push');
-            view.ToggleOverlayButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegisterEvent.ButtonToggleOverlay);
-            view.ToggleOverlayButton.Layout.Row = 1;
-            view.ToggleOverlayButton.Layout.Column = 1;
-            view.ToggleOverlayButton.Text = 'Hide Overlay';
-
-            % Create RotateButton
-            view.RotateButton = uibutton(view.HistologyButtonGrid2, 'push');
-            view.RotateButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegisterEvent.ButtonRotateImage);
-            view.RotateButton.Layout.Row = 1;
-            view.RotateButton.Layout.Column = 2;
-            view.RotateButton.Text = 'Rotate Image';
-
             imshow(view.Atlas.ReferenceAtlas(:, :, view.Atlas.Size(3) / 2), 'Parent', view.AtlasSliceAxes);
+
         end
 
     end

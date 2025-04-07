@@ -116,7 +116,7 @@ classdef RegisterController < ControllerBase
             ori = con.AtlasOrientation;
             n_slices = con.Model.Atlas.n_slices(ori);
             con.View.AtlasSliceSlider.Limits = [1, n_slices];
-            con.View.AtlasSliceSlider.MajorTicks = [1, n_slices];
+            % con.View.AtlasSliceSlider.MajorTicks = [1, n_slices];
             idx = max(0, min(n_slices, round(slider_pos)));
             con.View.CurrentAtlasSliceIdx = idx;
             img = con.View.Atlas.get_reference_img(ori, idx);
@@ -129,7 +129,7 @@ classdef RegisterController < ControllerBase
 
         function onWorkspaceUpdated(con) 
             disp("RegisterController::on_workspace_updated")
-            down_idx  = [con.Model.WS.Images.DownSampled];
+            down_idx  = [con.Model.WS.Images.ConvertStatus] == ConvertStatus.CONVERTED;
             con.ImageSet = con.Model.WS.Images(down_idx);
             checks = Utility.apply_check([con.ImageSet.Aligned]');
             fns = Utility.path2name([con.ImageSet.SourceFn]');

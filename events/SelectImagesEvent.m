@@ -1,9 +1,11 @@
 classdef SelectImagesEvent
     enumeration
         ButtonSelectAll
-        ButtonRemoveAll
-        ButtonConvertDownsample
+        ButtonRemoveSelected
+        ButtonConvert
         ButtonAddImages
+        ButtonApplyChannelOrder
+        ChannelOrderEdited
     end
 end
 
