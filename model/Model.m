@@ -207,7 +207,7 @@ classdef Model < handle
             elseif (numel([img_md.Regions.ID]) ~= 0)
                 idx = ismember([img_md.Regions.ID], [new_regions.ID]);
                 img_md.Regions = img_md.Regions(idx);
-                add_idx = ~ismember([new_regions.ID], [img_md.Regions.ID]);
+                add_idx = ~Utility.ismember([new_regions.ID], [img_md.Regions.ID]);
                 regions_to_add = new_regions(add_idx);
             else
                 regions_to_add = new_regions;
@@ -223,7 +223,7 @@ classdef Model < handle
 
         function regions = get_all_regions(mdl)
             images = mdl.WS.Images;
-            regions = Utility.flatten([images.Regions]);
+            regions = cat(1, images.Regions);
         end
 
         function io_process_region(mdl, regions)

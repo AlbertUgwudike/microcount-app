@@ -42,10 +42,12 @@ classdef RegionTree
                 return;
             end
 
+            rt(1) = RegionTree(parent_key, parent_acc, RegionTree.empty);
+
             for i = 1:N
                 region_key = RegionKey.from_string(child_keys{i});
                 kids = RegionTree.create_region_tree(st_table, region_key);
-                rt(i) = RegionTree(region_key, child_names{i}, kids);
+                rt(i + 1) = RegionTree(region_key, child_names{i}, kids);
             end
 
         end

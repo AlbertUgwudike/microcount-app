@@ -151,8 +151,19 @@ classdef RegionsView < Component
         end
 
         function create_rs_tree(parent_node, descendants)
+
+            if isempty(descendants)
+                return
+            end
+            
             laterality = parent_node.NodeData.Laterality;
-            for i = 1:numel(descendants)
+
+            select_all_desc = descendants(1);
+            loc = parent_node.NodeData;
+            label = sprintf("Select All %s", select_all_desc.Name);
+            uitreenode(parent_node, NodeData=loc, Text=label);
+
+            for i = 2:numel(descendants)
                 descendant = descendants(i);
                 child_loc = Location(descendant.Key, laterality);
                 label = sprintf("%s (%s)", descendant.Name, descendant.Key.Name);

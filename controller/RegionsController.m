@@ -22,7 +22,11 @@ classdef RegionsController < ControllerBase
     methods ( Access = private )
 
         function onImageSelected(con)
-            idx = con.View.ImageTable.Selection(1);
+            selection = con.View.ImageTable.Selection;
+            if isempty(selection)
+                return
+            end
+            idx = selection(1);
             con.SelectedImage = con.ImageSet(idx);
             d_img = con.Model.io_get_down_img(con.SelectedImage);
             p_img = padarray(d_img, double([Constants.PAD, Constants.PAD]), 0);
@@ -49,6 +53,29 @@ classdef RegionsController < ControllerBase
                 img_md = con.ImageSet(idx(i));
                 con.Model.io_update_regions(img_md, locs);
             end
+        end
+
+        function onDeselectAllButtonPushed(con)
+            disp("RegionsController::onDeselectAllButtonPushed")
+            con.View.RegionSelector.CheckedNodes = [];
+        end
+
+        function onEraseRegionsButtonPushed(con)
+            disp("RegionsController::onEraseRegionsButtonPushed")
+            if (isempty(con.View.ImageTable.Selection))
+                return
+            end
+            idx = con.View.ImageTable.Selection;
+            for i = 1:numel(idx)
+                img_md = con.ImageSet(idx(i));
+                con.Model.io_update_regions(img_md, Location.empty);
+            end
+        end
+
+        function onSelectAllButtonPushed(con)
+            disp("RegionsController::onSelectAllButtonPushed")
+            N = height(con.View.ImageTable.Data);
+            con.View.ImageTable.Selection = 1:N;
         end
 
         function onWorkspaceUpdated(con) 
@@ -95,6 +122,15 @@ classdef RegionsController < ControllerBase
 
                 case (RegionsEvent.ButtonAddToSelected)
                     con.onAddToSelectedButtonPushed()
+
+                case (RegionsEvent.ButtonDeselectAll)
+                    con.onDeselectAllButtonPushed()
+
+                case (RegionsEvent.ButtonEraseRegions)
+                    con.onEraseRegionsButtonPushed()
+
+                case (RegionsEvent.ButtonSelectAll)
+                    con.onSelectAllButtonPushed()
 
                 case (ModelEvents.WorkspaceUpdated)
                     con.onWorkspaceUpdated()

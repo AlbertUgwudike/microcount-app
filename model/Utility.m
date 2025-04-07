@@ -23,10 +23,17 @@ classdef Utility
         end
 
         function out = cat_cells(arr)
-
             out = [];
             for i = 1:numel(arr)
                 out = cat(1, out, arr{i});
+            end
+        end
+
+        function out = ismember(a, b)
+            if isempty(b)
+                out = false(size(a));
+            else
+                out = ismember(a, b);
             end
         end
 
