@@ -36,7 +36,7 @@ classdef ImageMetadata < handle
             H = [info.Height];
             W = [info.Width];
             img_md.Size = [H(1), W(1)];
-            img_md.ChannelCount = info.SamplesPerPixel;
+            img_md.ChannelCount = max([info.SamplesPerPixel, numel(info)]);
             img_md.ChannelOrder = 1:img_md.ChannelCount;
             img_md.ChannelNames = arrayfun(@(n) sprintf("CH%d", n), 1:img_md.ChannelCount);
         end

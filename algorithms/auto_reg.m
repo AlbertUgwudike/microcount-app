@@ -1,7 +1,7 @@
 function tform = auto_reg(atlas_slice, histology_slice)
 
     % histology_slice = adapthisteq(histology_slice, "ClipLimit", 0.1);
-    % histology_slice = padarray(histology_slice, [pad, pad], 0);
+    histology_slice = padarray(histology_slice, double([Constants.PAD, Constants.PAD]), 0);
 
     [optimizer, metric] = imregconfig('multimodal');
     optimizer.MaximumIterations = 500; %500

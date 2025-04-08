@@ -174,10 +174,10 @@ classdef AnalyseController < ControllerBase
                 result MicrocountResult
             end
 
-            con.View.PercentageCellAreaTextArea.Value = string(result.PercentageIba1Area);
+            con.View.PercentageIba1AreaTextArea.Value = string(result.PercentageIba1Area);
             con.View.CellCountTextArea.Value = string(result.MicrogliaDensity);
-            con.View.PercentageCoMarkerAreaTextArea.Value = string(result.PercentageCD68Area);
-            con.View.PercentageCoMarkerNumTextArea.Value = string(result.PercentageActivatedMicroglia);
+            con.View.PercentageCD68AreaTextArea.Value = string(result.PercentageCD68Area);
+            con.View.PercentageCD68NumTextArea.Value = string(result.PercentageActivatedMicroglia);
             con.View.BranchCountTextArea.Value = string(result.AverageBranchCount);
             con.View.ConvexityTextArea.Value = string(result.AverageRotundity);
 

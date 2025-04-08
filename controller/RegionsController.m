@@ -38,20 +38,20 @@ classdef RegionsController < ControllerBase
 
         function onRegionChecked(con)
             disp("RegionsController::onRegionChecked")
-            locs = con.get_selected_locs();
-            disp(locs)
+            keys = con.get_selected_keys();
+            disp(keys)
         end
 
-        function onAddToSelectedButtonPushed(con)
+        function onAddToSelectedButtonPushed(con, laterality)
             disp("RegionsController::onAddToSelectedButtonPushed")
             if (isempty(con.View.ImageTable.Selection))
                 return
             end
             idx = con.View.ImageTable.Selection;
-            locs = con.get_selected_locs();
+            keys = con.get_selected_keys();
             for i = 1:numel(idx)
                 img_md = con.ImageSet(idx(i));
-                con.Model.io_update_regions(img_md, locs);
+                con.Model.io_update_regions(img_md, keys, laterality);
             end
         end
 
@@ -68,7 +68,7 @@ classdef RegionsController < ControllerBase
             idx = con.View.ImageTable.Selection;
             for i = 1:numel(idx)
                 img_md = con.ImageSet(idx(i));
-                con.Model.io_update_regions(img_md, Location.empty);
+                con.Model.io_remove_regions(img_md);
             end
         end
 
@@ -111,7 +111,7 @@ classdef RegionsController < ControllerBase
 
     methods (Access = protected)
         
-        function handle_event(con, event, ~)
+        function handle_event(con, event, data)
             switch event
 
                 case (RegionsEvent.SelectionImageTable)
@@ -121,7 +121,7 @@ classdef RegionsController < ControllerBase
                     con.onRegionChecked()
 
                 case (RegionsEvent.ButtonAddToSelected)
-                    con.onAddToSelectedButtonPushed()
+                    con.onAddToSelectedButtonPushed(data)
 
                 case (RegionsEvent.ButtonDeselectAll)
                     con.onDeselectAllButtonPushed()
@@ -140,29 +140,26 @@ classdef RegionsController < ControllerBase
     end
 
     methods (Access=private)
-        function locs = get_selected_locs(con)
+        function keys = get_selected_keys(con)
             selected = con.View.RegionSelector.CheckedNodes;
-            l_node = con.View.RegionSelector.Children(1);
-            r_node = con.View.RegionSelector.Children(2);
-            l_locs = RegionsController.extract_nodes(l_node, selected);
-            r_locs = RegionsController.extract_nodes(r_node, selected);
-            locs = cat(1, l_locs, r_locs);
+            node = con.View.RegionSelector.Children(1);
+            keys = RegionsController.extract_keys(node, selected);
         end
     end
 
     methods (Static)
 
-        function locs = extract_nodes(node, selected_nodes)
+        function keys = extract_keys(node, selected_nodes)
             if ismember(node, selected_nodes)
-                locs = [node.NodeData];
+                keys = [node.NodeData];
                 return
             end
 
-            locs = arrayfun(@(n) RegionsController.extract_nodes(n, selected_nodes), node.Children, UniformOutput=false);
-            locs = Utility.cat_cells(locs);
+            keys = arrayfun(@(n) RegionsController.extract_keys(n, selected_nodes), node.Children, UniformOutput=false);
+            keys = Utility.cat_cells(keys);
 
-            if isempty(locs)
-                locs = Location.empty;
+            if isempty(keys)
+                keys = RegionKey.empty;
             end
         end
 

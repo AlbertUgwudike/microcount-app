@@ -4,9 +4,9 @@ classdef AnalyseView < Component
         MainGrid
             SettingGrid
                 ApplySettingButton
-                Iba1EditField
-                CD68EditField
-                MaxEditField
+                CellThresholdEditField
+                CoMarkerThresholdEditField
+                MaxSizeEditField
                 SelectAllButton
             RegionTable
             ButtonGrid
@@ -20,14 +20,14 @@ classdef AnalyseView < Component
                 ProcessedImage 
                 ResultsPanel matlab.ui.container.Panel
                 ResultGrid
-                    PercentageIba1AreaTextAreaLabel
-                    PercentageIba1AreaTextArea
+                    PercentageCellAreaTextAreaLabel
+                    PercentageCellAreaTextArea
                     CellCountTextAreaLabel
                     CellCountTextArea
-                    PercentageCD68AreaTextAreaLabel
-                    PercentageCD68AreaTextArea
-                    PercentageCD68NumTextAreaLabel
-                    PercentageCD68NumTextArea
+                    PercentageCoMarkerAreaTextAreaLabel
+                    PercentageCoMarkerAreaTextArea
+                    PercentageCoMarkerNumTextAreaLabel
+                    PercentageCoMarkerNumTextArea
                     BranchCountTextAreaLabel
                     BranchCountTextArea
                     ConvexityTextAreaLabel
@@ -73,19 +73,19 @@ classdef AnalyseView < Component
             view.ApplySettingButton.Text = 'Apply Setting';
 
             % Create Iba1EditField
-            view.Iba1EditField = uieditfield(view.SettingGrid, 'numeric');
-            view.Iba1EditField.Layout.Row = 1;
-            view.Iba1EditField.Layout.Column = 2;
+            view.CellThresholdEditField = uieditfield(view.SettingGrid, 'numeric');
+            view.CellThresholdEditField.Layout.Row = 1;
+            view.CellThresholdEditField.Layout.Column = 2;
 
             % Create CD68EditField
-            view.CD68EditField = uieditfield(view.SettingGrid, 'numeric');
-            view.CD68EditField.Layout.Row = 1;
-            view.CD68EditField.Layout.Column = 3;
+            view.CoMarkerThresholdEditField = uieditfield(view.SettingGrid, 'numeric');
+            view.CoMarkerThresholdEditField.Layout.Row = 1;
+            view.CoMarkerThresholdEditField.Layout.Column = 3;
 
             % Create MaxEditField
-            view.MaxEditField = uieditfield(view.SettingGrid, 'numeric');
-            view.MaxEditField.Layout.Row = 1;
-            view.MaxEditField.Layout.Column = 4;
+            view.MaxSizeEditField = uieditfield(view.SettingGrid, 'numeric');
+            view.MaxSizeEditField.Layout.Row = 1;
+            view.MaxSizeEditField.Layout.Column = 4;
 
             % Create ProcessAllButton
             view.SelectAllButton = uibutton(view.SettingGrid, 'push');
@@ -96,7 +96,7 @@ classdef AnalyseView < Component
 
             % Create RegionTable
             view.RegionTable = uitable(view.MainGrid);
-            view.RegionTable.ColumnName = {'RegionID'; 'Iba1 Threshold'; 'CD68 Threshold'; 'Max CD68 Size'; 'Processed'};
+            view.RegionTable.ColumnName = {'RegionID'; 'Cell Threshold'; 'CoMarker Threshold'; 'Max CoMarker Size'; 'Processed'};
             view.RegionTable.ColumnWidth = {'4x', '4x', '4x', '4x', '4x'};
             view.RegionTable.RowName = {};
             view.RegionTable.Layout.Row = 2;
@@ -185,18 +185,18 @@ classdef AnalyseView < Component
             view.ResultGrid.RowHeight = {'1x', '1x', '1x', '1x', '1x', '1x'};
 
             % Create PercentageIba1AreaTextAreaLabel
-            view.PercentageIba1AreaTextAreaLabel = uilabel(view.ResultGrid);
-            view.PercentageIba1AreaTextAreaLabel.HorizontalAlignment = 'center';
-            view.PercentageIba1AreaTextAreaLabel.FontWeight = 'bold';
-            view.PercentageIba1AreaTextAreaLabel.Layout.Row = 1;
-            view.PercentageIba1AreaTextAreaLabel.Layout.Column = 1;
-            view.PercentageIba1AreaTextAreaLabel.Text = {'Iba1 Area (%)'};
+            view.PercentageCellAreaTextAreaLabel = uilabel(view.ResultGrid);
+            view.PercentageCellAreaTextAreaLabel.HorizontalAlignment = 'center';
+            view.PercentageCellAreaTextAreaLabel.FontWeight = 'bold';
+            view.PercentageCellAreaTextAreaLabel.Layout.Row = 1;
+            view.PercentageCellAreaTextAreaLabel.Layout.Column = 1;
+            view.PercentageCellAreaTextAreaLabel.Text = {'Cell Area (%)'};
 
             % Create PercentageIba1AreaTextArea
-            view.PercentageIba1AreaTextArea = uitextarea(view.ResultGrid);
-            view.PercentageIba1AreaTextArea.FontWeight = 'bold';
-            view.PercentageIba1AreaTextArea.Layout.Row = 1;
-            view.PercentageIba1AreaTextArea.Layout.Column = 2;
+            view.PercentageCellAreaTextArea = uitextarea(view.ResultGrid);
+            view.PercentageCellAreaTextArea.FontWeight = 'bold';
+            view.PercentageCellAreaTextArea.Layout.Row = 1;
+            view.PercentageCellAreaTextArea.Layout.Column = 2;
 
             % Create CellCountTextAreaLabel
             view.CellCountTextAreaLabel = uilabel(view.ResultGrid);
@@ -213,32 +213,32 @@ classdef AnalyseView < Component
             view.CellCountTextArea.Layout.Column = 2;
 
             % Create PercentageCD68AreaTextAreaLabel
-            view.PercentageCD68AreaTextAreaLabel = uilabel(view.ResultGrid);
-            view.PercentageCD68AreaTextAreaLabel.HorizontalAlignment = 'center';
-            view.PercentageCD68AreaTextAreaLabel.FontWeight = 'bold';
-            view.PercentageCD68AreaTextAreaLabel.Layout.Row = 3;
-            view.PercentageCD68AreaTextAreaLabel.Layout.Column = 1;
-            view.PercentageCD68AreaTextAreaLabel.Text = {'CD68'; '(% Area)'};
+            view.PercentageCoMarkerAreaTextAreaLabel = uilabel(view.ResultGrid);
+            view.PercentageCoMarkerAreaTextAreaLabel.HorizontalAlignment = 'center';
+            view.PercentageCoMarkerAreaTextAreaLabel.FontWeight = 'bold';
+            view.PercentageCoMarkerAreaTextAreaLabel.Layout.Row = 3;
+            view.PercentageCoMarkerAreaTextAreaLabel.Layout.Column = 1;
+            view.PercentageCoMarkerAreaTextAreaLabel.Text = {'CoMarker'; '(% Area)'};
 
             % Create PercentageCD68AreaTextArea
-            view.PercentageCD68AreaTextArea = uitextarea(view.ResultGrid);
-            view.PercentageCD68AreaTextArea.FontWeight = 'bold';
-            view.PercentageCD68AreaTextArea.Layout.Row = 3;
-            view.PercentageCD68AreaTextArea.Layout.Column = 2;
+            view.PercentageCoMarkerAreaTextArea = uitextarea(view.ResultGrid);
+            view.PercentageCoMarkerAreaTextArea.FontWeight = 'bold';
+            view.PercentageCoMarkerAreaTextArea.Layout.Row = 3;
+            view.PercentageCoMarkerAreaTextArea.Layout.Column = 2;
 
             % Create PercentageCD68NumTextAreaLabel
-            view.PercentageCD68NumTextAreaLabel = uilabel(view.ResultGrid);
-            view.PercentageCD68NumTextAreaLabel.HorizontalAlignment = 'center';
-            view.PercentageCD68NumTextAreaLabel.FontWeight = 'bold';
-            view.PercentageCD68NumTextAreaLabel.Layout.Row = 4;
-            view.PercentageCD68NumTextAreaLabel.Layout.Column = 1;
-            view.PercentageCD68NumTextAreaLabel.Text = {'CD68'; '(% Number)'};
+            view.PercentageCoMarkerNumTextAreaLabel = uilabel(view.ResultGrid);
+            view.PercentageCoMarkerNumTextAreaLabel.HorizontalAlignment = 'center';
+            view.PercentageCoMarkerNumTextAreaLabel.FontWeight = 'bold';
+            view.PercentageCoMarkerNumTextAreaLabel.Layout.Row = 4;
+            view.PercentageCoMarkerNumTextAreaLabel.Layout.Column = 1;
+            view.PercentageCoMarkerNumTextAreaLabel.Text = {'CoMarker'; '(% Number)'};
 
             % Create PercentageCD68NumTextArea
-            view.PercentageCD68NumTextArea = uitextarea(view.ResultGrid);
-            view.PercentageCD68NumTextArea.FontWeight = 'bold';
-            view.PercentageCD68NumTextArea.Layout.Row = 4;
-            view.PercentageCD68NumTextArea.Layout.Column = 2;
+            view.PercentageCoMarkerNumTextArea = uitextarea(view.ResultGrid);
+            view.PercentageCoMarkerNumTextArea.FontWeight = 'bold';
+            view.PercentageCoMarkerNumTextArea.Layout.Row = 4;
+            view.PercentageCoMarkerNumTextArea.Layout.Column = 2;
 
             % Create BranchCountTextAreaLabel
             view.BranchCountTextAreaLabel = uilabel(view.ResultGrid);

@@ -230,27 +230,26 @@ classdef Model < handle
             end
             orient = img_md.TransformationData.Orientation;
             img_md.TransformationData.Orientation = orient.cycle();
-            mdl.io_save()
-            mdl.call_registrars(ModelEvents.WorkspaceUpdated)
+            mdl.save_and_update()
         end
 
-        function io_update_regions(mdl, img_md, locations)
+        function io_update_regions(mdl, img_md, keys, laterality)
 
             arguments
                 mdl Model
                 img_md ImageMetadata
-                locations (:, 1) Location
+                keys (:, 1) RegionKey
+                laterality Laterality
             end
             
-            create_region = @(l) Region.default_settings(img_md, l);
-            new_regions = arrayfun(create_region, locations);
+            create_region = @(k) Region.default_settings(img_md, Location(k, laterality));
+            new_regions = arrayfun(create_region, keys);
 
-            if isempty(locations)
-                img_md.Regions = Region.empty;
-                regions_to_add = [];
-            elseif (numel([img_md.Regions.ID]) ~= 0)
-                idx = ismember([img_md.Regions.ID], [new_regions.ID]);
-                img_md.Regions = img_md.Regions(idx);
+            if isempty(keys)
+                return
+            end
+
+            if (numel([img_md.Regions.ID]) ~= 0)
                 add_idx = ~Utility.ismember([new_regions.ID], [img_md.Regions.ID]);
                 regions_to_add = new_regions(add_idx);
             else
@@ -261,8 +260,12 @@ classdef Model < handle
                 img_md.add_region_save_mask(regions_to_add(i), mdl.Atlas);
             end
 
-            mdl.io_save()
-            mdl.call_registrars(ModelEvents.WorkspaceUpdated);
+            mdl.save_and_update()
+        end
+
+        function io_remove_regions(mdl, img_md)
+            img_md.Regions = Region.empty;
+            mdl.save_and_update()
         end
 
         function regions = get_all_regions(mdl)

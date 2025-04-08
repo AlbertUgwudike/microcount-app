@@ -10,7 +10,8 @@ classdef RegionsView < Component
                     ImageTable
                 RightGrid
                     RegionSelectorButtonGrid
-                        AddToSelectedButton
+                        AddToSelectedLeftButton
+                        AddToSelectedRightButton
                         DeselectAllButton
                     RegionSelector
             HistologyImage
@@ -109,18 +110,26 @@ classdef RegionsView < Component
             view.RegionSelectorButtonGrid.Layout.Row = 1;
             view.RegionSelectorButtonGrid.Layout.Column = 1;
 
-            % Create AddToSelectedButton
-            view.AddToSelectedButton = uibutton(view.RegionSelectorButtonGrid, 'push');
-            view.AddToSelectedButton.Text = 'Add To Selected';
-            view.AddToSelectedButton.Layout.Row = 1;
-            view.AddToSelectedButton.Layout.Column = 1;
-            view.AddToSelectedButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegionsEvent.ButtonAddToSelected);
+            % Create AddToSelectedLeftButton
+            view.AddToSelectedLeftButton = uibutton(view.RegionSelectorButtonGrid, 'push');
+            view.AddToSelectedLeftButton.Text = 'Add To Left';
+            view.AddToSelectedLeftButton.Layout.Row = 1;
+            view.AddToSelectedLeftButton.Layout.Column = 1;
+            view.AddToSelectedLeftButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegionsEvent.ButtonAddToSelected, Laterality.LEFT);
+
+
+            % Create AddToSelectedRightButton
+            view.AddToSelectedRightButton = uibutton(view.RegionSelectorButtonGrid, 'push');
+            view.AddToSelectedRightButton.Text = 'Add To Right';
+            view.AddToSelectedRightButton.Layout.Row = 1;
+            view.AddToSelectedRightButton.Layout.Column = 2;
+            view.AddToSelectedRightButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegionsEvent.ButtonAddToSelected, Laterality.RIGHT);
 
             % Create DeselectAllButton
             view.DeselectAllButton = uibutton(view.RegionSelectorButtonGrid, 'push');
             view.DeselectAllButton.Text = 'Deselect All';
             view.DeselectAllButton.Layout.Row = 1;
-            view.DeselectAllButton.Layout.Column = 2;
+            view.DeselectAllButton.Layout.Column = 3;
             view.DeselectAllButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegionsEvent.ButtonDeselectAll);
 
             % Create RegionSelector
@@ -128,8 +137,7 @@ classdef RegionsView < Component
             view.RegionSelector.Layout.Row = 2;
             view.RegionSelector.Layout.Column = 1;
             view.RegionSelector.CheckedNodesChangedFcn = @(~, e) view.call_registrar(RegionsEvent.RegionChecked);
-            RegionsView.create_region_selector(view.RegionSelector, Laterality.LEFT, "Left");
-            RegionsView.create_region_selector(view.RegionSelector, Laterality.RIGHT, "Right");
+            RegionsView.create_region_selector(view.RegionSelector, Laterality.LEFT, "Whole Brain");
 
             % Create HistologyImage
             view.HistologyImage = uiimage(view.MainGrid);
@@ -155,19 +163,17 @@ classdef RegionsView < Component
             if isempty(descendants)
                 return
             end
-            
-            laterality = parent_node.NodeData.Laterality;
 
             select_all_desc = descendants(1);
-            loc = parent_node.NodeData;
+            key = parent_node.NodeData;
             label = sprintf("Select All %s", select_all_desc.Name);
-            uitreenode(parent_node, NodeData=loc, Text=label);
+            uitreenode(parent_node, NodeData=key, Text=label);
 
             for i = 2:numel(descendants)
                 descendant = descendants(i);
-                child_loc = Location(descendant.Key, laterality);
+                child_key = descendant.Key;
                 label = sprintf("%s (%s)", descendant.Name, descendant.Key.Name);
-                child_node = uitreenode(parent_node, NodeData=child_loc, Text=label);
+                child_node = uitreenode(parent_node, NodeData=child_key, Text=label);
                 RegionsView.create_rs_tree(child_node, descendant.Descendants);
             end
         end
