@@ -12,7 +12,7 @@ classdef SelectImagesView < Component
                 ApplyChannelOrderButton
                 ChannelOrderField
                 ApplyChannelNamesButton
-                ChannelNamesField
+                Cha
     end
 
     methods

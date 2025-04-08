@@ -130,6 +130,14 @@ classdef Model < handle
             mdl.save_and_update();
         end
 
+        function update_channel_names(mdl, idx, ch_str)
+            img_md = mdl.WS.Images(idx);
+            if ImageMetadata.valid_channel_names_str(ch_str, img_md.ChannelCount)
+                img_md.set_channel_names_str(ch_str)
+            end
+            mdl.save_and_update();
+        end
+
         function io_convert_and_downsample(mdl, idx)
             for i = 1:numel(idx)
                 img = mdl.WS.Images(idx(i));

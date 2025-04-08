@@ -55,14 +55,23 @@ classdef SelectImagesController < ControllerBase
             end
         end
 
+        function on_apply_channel_names_button_pushed(con)
+            ch_str = con.View.ChannelNamesField.Value;
+            idx = con.View.ImageTable.Selection;
+            for i = 1:numel(idx)
+                con.Model.update_channel_names(idx(i), ch_str);
+            end
+        end
+
         function onWorkspaceUpdated(con)
             disp("SelectImagesController::on_workspace_updated")
             img_mds = con.Model.WS.Images;
             source_fns  = Utility.path2name([img_mds.SourceFn]');
             ch_counts   = [img_mds.ChannelCount];
             ch_orders   = cellfun(@(o) string(o).join(","), {img_mds.ChannelOrder});
+            ch_names    = cellfun(@(s) s.join(","), {img_mds.ChannelNames});
             downsampled = string([img_mds.ConvertStatus]);
-            new_data    = [source_fns ch_counts' ch_orders' downsampled'];
+            new_data    = [source_fns ch_counts' ch_orders' ch_names' downsampled'];
             con.View.ImageTable.Data = new_data;
         end
         
@@ -90,6 +99,9 @@ classdef SelectImagesController < ControllerBase
 
                 case (SelectImagesEvent.ChannelOrderEdited)
                     con.on_channel_order_edited(d)
+
+                case (SelectImagesEvent.ButtonApplyChannelNames)
+                    con.on_apply_channel_names_button_pushed()
 
                 case (ModelEvents.WorkspaceUpdated)
                     con.onWorkspaceUpdated()

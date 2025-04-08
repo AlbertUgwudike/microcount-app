@@ -5,6 +5,7 @@ classdef SelectImagesEvent
         ButtonConvert
         ButtonAddImages
         ButtonApplyChannelOrder
+        ButtonApplyChannelNames
         ChannelOrderEdited
     end
 end
