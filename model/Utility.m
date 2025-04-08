@@ -22,6 +22,22 @@ classdef Utility
             flat = reshape(arr, [], 1);
         end
 
+        function vertices = gen_hex(sz)
+            r = floor(0.75 * min(sz / 2));
+            c = floor(sz / 2);
+        
+            pt_idx = [0, 1, 2, 3, 4, 5];
+            fst = power(exp(1), 1i * pi / 6);
+            theta = power(exp(1), 1i * pi / 3);
+            
+            pts = arrayfun(@(idx) r * fst * power(theta, idx), pt_idx);
+        
+            xs = real(pts);
+            ys = imag(pts);
+        
+            vertices = [xs', ys'] + flip(c);
+        end
+
         function out = cat_cells(arr)
             out = [];
             for i = 1:numel(arr)

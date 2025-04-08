@@ -42,6 +42,8 @@ classdef RegisterController < ControllerBase
             
             con.AtlasOrientation = con.SelectedImage.TransformationData.Orientation;
             slice_idx = con.SelectedImage.TransformationData.SliceIdx;
+            n_slices = con.Model.Atlas.n_slices(con.AtlasOrientation);
+            con.View.AtlasSliceSlider.Limits = [1, n_slices];
             con.View.AtlasSliceSlider.Value = slice_idx;
             con.onAtlasSliceSliderChanged(slice_idx);
             con.toggleOverlayOn()
@@ -110,6 +112,8 @@ classdef RegisterController < ControllerBase
             con.AtlasOrientation = con.AtlasOrientation.cycle();
             tform = con.SelectedImage.TransformationData;
             con.set_default_tform_data(tform.get_img_sz());
+            n_slices = con.Model.Atlas.n_slices(con.AtlasOrientation);
+            con.View.AtlasSliceSlider.Limits = [1, n_slices];
             con.onAtlasSliceSliderChanged(tform.SliceIdx);
             con.draw_hexs();
             con.toggleOverlayOff()
@@ -118,11 +122,9 @@ classdef RegisterController < ControllerBase
         function onAtlasSliceSliderChanged(con, slider_pos)
             ori = con.AtlasOrientation;
             n_slices = con.Model.Atlas.n_slices(ori);
-            con.View.AtlasSliceSlider.Limits = [1, n_slices];
-            % con.View.AtlasSliceSlider.MajorTicks = [1, n_slices];
             idx = max(0, min(n_slices, round(slider_pos)));
             con.View.CurrentAtlasSliceIdx = idx;
-            img = con.View.Atlas.get_reference_img(ori, idx);
+            img = con.Model.Atlas.get_reference_img(ori, idx);
             imshow(imadjust(img), 'Parent', con.View.AtlasSliceAxes)
         end
 
@@ -198,8 +200,8 @@ classdef RegisterController < ControllerBase
         function set_default_tform_data(con, img_sz)
             ori = con.AtlasOrientation;
             im_sz = double(img_sz);
-            atlas_sz = con.View.Atlas.get_size(ori);
-            n_slices = con.View.Atlas.n_slices(ori);
+            atlas_sz = con.Model.Atlas.get_size(ori);
+            n_slices = con.Model.Atlas.n_slices(ori);
             tf_data = TransformationData.default(im_sz, atlas_sz, n_slices);
             con.SelectedImage.TransformationData = tf_data;
         end

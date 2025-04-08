@@ -14,8 +14,7 @@ classdef RegionsView < Component
                         AddToSelectedRightButton
                         DeselectAllButton
                     RegionSelector
-            BottomGrid
-                HistologyImage
+            HistologyImage
     end
 
     methods
@@ -138,18 +137,13 @@ classdef RegionsView < Component
             view.RegionSelector.CheckedNodesChangedFcn = @(~, e) view.call_registrar(RegionsEvent.RegionChecked);
             RegionsView.create_region_selector(view.RegionSelector, Laterality.LEFT, "Whole Brain");
 
-            % Create BottomGrid
-            view.BottomGrid = uigridlayout(view.MainGrid);
-            view.BottomGrid.ColumnWidth = {'1x'};
-            view.BottomGrid.RowHeight = {'1x'};
-            view.BottomGrid.Layout.Row = 2;
-            view.BottomGrid.Layout.Column = 1;
-            view.BottomGrid.BackgroundColor = [0, 0, 0];
+            % Creat BottomPanel
+            view.BottomPanel = uipanel(view.MainGrid);
+            view.BottomPanel.Layout.Row = 2;
+            view.BottomPanel.Layout.Column = 1;
 
             % Create HistologyImage
-            view.HistologyImage = uiimage(view.BottomGrid);
-            view.HistologyImage.Layout.Row = 1;
-            view.HistologyImage.Layout.Column = 1;
+            view.HistologyImage = uiimage(view.MainGrid);
 
         end
 

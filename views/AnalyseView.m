@@ -147,8 +147,6 @@ classdef AnalyseView < Component
             view.ThumbnailPanel = uigridlayout(view.BottomGrid);
             view.ThumbnailPanel.ColumnWidth = {'1x'};
             view.ThumbnailPanel.RowHeight = {'1x'};
-            % view.ThumbnailPanel.Units = 'normalized';
-            % view.ThumbnailPanel.InnerPosition = [0, 0, 1, 1];
             view.ThumbnailPanel.Layout.Row = 1;
             view.ThumbnailPanel.Layout.Column = 1;
             view.ThumbnailPanel.BackgroundColor = [0, 0, 0];

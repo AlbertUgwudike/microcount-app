@@ -21,7 +21,6 @@ classdef RegisterView < Component
                         ToggleOverlayButton
                         RotateButton
 
-        Atlas Atlas = Atlas()
         AtlasHex
         HistHex
 
@@ -115,7 +114,7 @@ classdef RegisterView < Component
 
             % Create AtlasSliceSlider
             view.AtlasSliceSlider = uislider(view.AtlasGrid);
-            view.AtlasSliceSlider.Limits = [1 view.Atlas.Size(3)];
+            % view.AtlasSliceSlider.Limits = [1 view.Atlas.Size(3)];
             view.AtlasSliceSlider.MajorTicks = [];
             view.AtlasSliceSlider.ValueChangingFcn = @(~, e) view.call_registrar(RegisterEvent.SliderAtlasSlice, e.Value);
             view.AtlasSliceSlider.ValueChangedFcn = @(~, e) view.call_registrar(RegisterEvent.SliderStop, e.Value);
@@ -123,7 +122,7 @@ classdef RegisterView < Component
             view.AtlasSliceSlider.Layout.Row = 3;
             view.AtlasSliceSlider.Layout.Column = 1;
             view.AtlasSliceSlider.FontSize = 8;
-            view.AtlasSliceSlider.Value = view.Atlas.Size(3) / 2;
+            % view.AtlasSliceSlider.Value = view.Atlas.Size(3) / 2;
 
             % HistologyPanel
             view.HistologyPanel = uipanel(view.BottomGrid);

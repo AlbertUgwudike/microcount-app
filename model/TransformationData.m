@@ -49,8 +49,8 @@ classdef TransformationData
 
     methods (Static)
         function tform = default(hist_sz, atlas_sz, n_slices)
-            hist_hex = gen_hex(hist_sz);
-            atlas_hex = gen_hex(atlas_sz);
+            hist_hex = Utility.gen_hex(hist_sz);
+            atlas_hex = Utility.gen_hex(atlas_sz);
             tform_mat = eye(3, 3, "double");
             tform = TransformationData(hist_hex, atlas_hex, tform_mat, hist_sz, n_slices / 2);
         end
