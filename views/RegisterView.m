@@ -11,6 +11,7 @@ classdef RegisterView < Component
                         CycleOrientationButton
                     AtlasSliceAxes
                     AtlasSliceSlider
+                HistologyPanel
                 HistologyGrid
                     HistologyButtonGrid
                         AlignColorButton
@@ -78,14 +79,14 @@ classdef RegisterView < Component
 
             % AtlasPanel
             view.AtlasPanel = uipanel(view.BottomGrid);
+            view.AtlasPanel.Layout.Row = 1;
+            view.AtlasPanel.Layout.Column = 1;
 
             % Create AtlasGrid
             view.AtlasGrid = uigridlayout(view.AtlasPanel);
             view.AtlasGrid.ColumnWidth = {'1x'};
             view.AtlasGrid.RowHeight = {'1x', '8x', '1x'};
             view.AtlasGrid.Padding = [1 1 1 1];
-            view.AtlasGrid.Layout.Row = 1;
-            view.AtlasGrid.Layout.Column = 1;
 
             % Create AtlasButtonGrid
             view.AtlasButtonGrid = uigridlayout(view.AtlasGrid);
@@ -122,13 +123,16 @@ classdef RegisterView < Component
             view.AtlasSliceSlider.FontSize = 8;
             view.AtlasSliceSlider.Value = view.Atlas.Size(3) / 2;
 
+            % HistologyPanel
+            view.HistologyPanel = uipanel(view.BottomGrid);
+            view.HistologyPanel.Layout.Row = 1;
+            view.HistologyPanel.Layout.Column = 2;
+
             % Create HistologyGrid
-            view.HistologyGrid = uigridlayout(view.BottomGrid);
+            view.HistologyGrid = uigridlayout(view.HistologyPanel);
             view.HistologyGrid.ColumnWidth = {'1x'};
             view.HistologyGrid.RowHeight = {'1x', '8x', '1x'};
             view.HistologyGrid.Padding = [1 1 1 1];
-            view.HistologyGrid.Layout.Row = 1;
-            view.HistologyGrid.Layout.Column = 2;
 
             % Create HistologyButtonGrid
             view.HistologyButtonGrid = uigridlayout(view.HistologyGrid);
