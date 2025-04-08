@@ -19,11 +19,11 @@ classdef RegionTree
     methods (Static)
 
         function rt = generate_tree()
-            table_fn = "/Users/vaness/.brainglobe/allen_mouse_100um_v1.2/structures.csv";
+            table_fn = "./assets/structures.csv";
             st_table = table2struct(readtable(table_fn));
             kids = RegionTree.create_region_tree(st_table, RegionKey.root);
             rt = RegionTree(RegionKey.root, "Root", kids);
-            save("app/assets/RegionTree.mat", "rt");
+            save("./assets/RegionTree.mat", "rt");
         end
 
         function rt = create_region_tree(st_table, parent_key)

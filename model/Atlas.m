@@ -14,13 +14,10 @@ classdef Atlas
     methods
         function atlas = Atlas()
             disp('Loading Allen CCF atlas...')
-            atlas_path = '~/.brainglobe/allen_mouse_50um_v1.2/';
-            atlas.ReferenceAtlas = tiffreadVolume(append(atlas_path, 'reference.tiff'));
-            atlas.AnnotationAtlas = tiffreadVolume(append(atlas_path, 'annotation.tiff'));
+            atlas.ReferenceAtlas = tiffreadVolume('./assets/reference.tiff');
+            atlas.AnnotationAtlas = tiffreadVolume('./assets/annotation.tiff');
             atlas.Size = size(atlas.AnnotationAtlas);
-            
-            s_table_fn = append(atlas_path, 'structures.csv');
-            s_table = table2struct(readtable(s_table_fn));
+            s_table = table2struct(readtable('./assets/structures.csv'));
 
             atlas.IdxMap = atlas.create_idx_map(s_table);
             atlas.AbrMap = atlas.create_abr_map(s_table);

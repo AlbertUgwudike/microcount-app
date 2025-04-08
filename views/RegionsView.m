@@ -158,7 +158,7 @@ classdef RegionsView < Component
     methods (Static)
 
         function create_region_selector(ui_tree, laterality, name)
-            region_tree = load("app/assets/RegionTree.mat").rt;
+            region_tree = load("./assets/RegionTree.mat").rt;
             Node = uitreenode(ui_tree);
             Node.Text = name;
             Node.NodeData = Location(RegionKey.root, laterality);
