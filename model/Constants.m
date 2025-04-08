@@ -7,5 +7,7 @@ classdef Constants < handle
         FILE_WS_MAT char = 'ws.mat';
 
         PAD (1, 1) uint16 = 100
+
+        REG_ERROR char = 'Registration failed because optimization diverged. Try reducing the InitialRadius property of the optimizer.';
     end
 end

@@ -49,7 +49,10 @@ classdef RegisterController < ControllerBase
 
         function onAlignColorButtonPushed(con)
             disp("RegisterController::onAlignColorButtonPushed")
-
+            slice_idx = round(con.View.AtlasSliceSlider.Value);
+            ori = con.AtlasOrientation;
+            con.Model.io_align_image_col(con.SelectedImage, slice_idx, ori);
+            con.toggleOverlayOn()
         end
 
         function onAlignControlButtonPushed(con)
@@ -58,7 +61,7 @@ classdef RegisterController < ControllerBase
             hist_vertices = con.View.HistHex.Position;
             slice_idx = round(con.View.AtlasSliceSlider.Value);
             ori = con.AtlasOrientation;
-            con.Model.io_align_image(con.SelectedImage, atlas_vertices, hist_vertices, slice_idx, ori);
+            con.Model.io_align_image_cp(con.SelectedImage, atlas_vertices, hist_vertices, slice_idx, ori);
             con.toggleOverlayOn()
         end
 

@@ -82,10 +82,8 @@ classdef AnalyseController < ControllerBase
 
         function on_export_button_pushed(con) 
             disp("AnalyseController::on_export_button_pushed")
-            for i = 1:numel(con.Model.MicrocountFutures)
-                fut = con.Model.MicrocountFutures(i);
-                disp(fut)
-            end
+            idx = [con.RegionSet.ProcessStatus] == ProcessStatus.PROCESSED;
+            con.Model.io_export_results(con.RegionSet(idx));
         end
 
         function on_workspace_update(con) 

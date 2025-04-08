@@ -2,33 +2,36 @@ classdef AnalyseView < Component
 
     properties ( Access = public )
         MainGrid
-        SettingGrid
-        Iba1EditField
-        CD68EditField
-        MaxEditField
-        RegionTable
-        ButtonGrid
-        ProcessSelectedButton
-        ProcessAllButton
-        ApplySettingButton
-        CancelButton
-        ExportButton
-        BottomGrid
-        Thumbnail matlab.ui.control.UIAxes
-        ProcessedImage
-        ResultGrid
-        PercentageIba1AreaTextAreaLabel
-        PercentageIba1AreaTextArea
-        CellCountTextAreaLabel
-        CellCountTextArea
-        PercentageCD68AreaTextAreaLabel
-        PercentageCD68AreaTextArea
-        PercentageCD68NumTextAreaLabel
-        PercentageCD68NumTextArea
-        BranchCountTextAreaLabel
-        BranchCountTextArea
-        ConvexityTextAreaLabel
-        ConvexityTextArea
+            SettingGrid
+                ApplySettingButton
+                Iba1EditField
+                CD68EditField
+                MaxEditField
+                SelectAllButton
+            RegionTable
+            ButtonGrid
+                ProcessSelectedButton
+                CancelButton
+                ExportButton
+            BottomGrid
+                ThumbnailPanel 
+                Thumbnail matlab.ui.control.UIAxes
+                ProcessedImagePanel 
+                ProcessedImage 
+                ResultsPanel matlab.ui.container.Panel
+                ResultGrid
+                    PercentageIba1AreaTextAreaLabel
+                    PercentageIba1AreaTextArea
+                    CellCountTextAreaLabel
+                    CellCountTextArea
+                    PercentageCD68AreaTextAreaLabel
+                    PercentageCD68AreaTextArea
+                    PercentageCD68NumTextAreaLabel
+                    PercentageCD68NumTextArea
+                    BranchCountTextAreaLabel
+                    BranchCountTextArea
+                    ConvexityTextAreaLabel
+                    ConvexityTextArea
     end
 
     methods
@@ -51,8 +54,45 @@ classdef AnalyseView < Component
             % Create MainGrid
             view.MainGrid = uigridlayout(view);
             view.MainGrid.ColumnWidth = {'1x'};
+            view.MainGrid.RowSpacing = 1;
             view.MainGrid.RowHeight = {'0.15x', '0.5x', '0.15x', '1.2x'};
             view.MainGrid.Padding = [5 5 5 5];
+
+            % Create SettingGrid
+            view.SettingGrid = uigridlayout(view.MainGrid);
+            view.SettingGrid.ColumnWidth = {'1x', '1x', '1x', '1x', '1x'};
+            view.SettingGrid.RowHeight = {'1x'};
+            view.SettingGrid.Layout.Row = 1;
+            view.SettingGrid.Layout.Column = 1;
+
+            % Create ApplySettingButton
+            view.ApplySettingButton = uibutton(view.SettingGrid, 'push');
+            view.ApplySettingButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonApplySetting);
+            view.ApplySettingButton.Layout.Row = 1;
+            view.ApplySettingButton.Layout.Column = 1;
+            view.ApplySettingButton.Text = 'Apply Setting';
+
+            % Create Iba1EditField
+            view.Iba1EditField = uieditfield(view.SettingGrid, 'numeric');
+            view.Iba1EditField.Layout.Row = 1;
+            view.Iba1EditField.Layout.Column = 2;
+
+            % Create CD68EditField
+            view.CD68EditField = uieditfield(view.SettingGrid, 'numeric');
+            view.CD68EditField.Layout.Row = 1;
+            view.CD68EditField.Layout.Column = 3;
+
+            % Create MaxEditField
+            view.MaxEditField = uieditfield(view.SettingGrid, 'numeric');
+            view.MaxEditField.Layout.Row = 1;
+            view.MaxEditField.Layout.Column = 4;
+
+            % Create ProcessAllButton
+            view.SelectAllButton = uibutton(view.SettingGrid, 'push');
+            view.SelectAllButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonSelectAll);
+            view.SelectAllButton.Layout.Row = 1;
+            view.SelectAllButton.Layout.Column = 5;
+            view.SelectAllButton.Text = 'Select All';
 
             % Create RegionTable
             view.RegionTable = uitable(view.MainGrid);
@@ -103,24 +143,46 @@ classdef AnalyseView < Component
             view.BottomGrid.Layout.Row = 4;
             view.BottomGrid.Layout.Column = 1;
 
+            %Create ThumbnailPanel
+            view.ThumbnailPanel = uigridlayout(view.BottomGrid);
+            view.ThumbnailPanel.ColumnWidth = {'1x'};
+            view.ThumbnailPanel.RowHeight = {'1x'};
+            % view.ThumbnailPanel.Units = 'normalized';
+            % view.ThumbnailPanel.InnerPosition = [0, 0, 1, 1];
+            view.ThumbnailPanel.Layout.Row = 1;
+            view.ThumbnailPanel.Layout.Column = 1;
+            view.ThumbnailPanel.BackgroundColor = [0, 0, 0];
+
             % Create Thumbnail
-            view.Thumbnail = uiaxes(view.BottomGrid);
+            view.Thumbnail = uiaxes(view.ThumbnailPanel);
+            view.Thumbnail.Units = 'normalized';
+            view.Thumbnail.InnerPosition = [0, 0, 1, 1];
             view.Thumbnail.Layout.Row = 1;
             view.Thumbnail.Layout.Column = 1;
-            view.Thumbnail.InnerPosition = [0, 0, 1, 1];
             view.Thumbnail.XTick = [];
             view.Thumbnail.YTick = [];
 
+            %Create ProcessedImagePanel
+            view.ProcessedImagePanel = uigridlayout(view.BottomGrid);
+            view.ProcessedImagePanel.ColumnWidth = {'1x'};
+            view.ProcessedImagePanel.RowHeight = {'1x'};
+            view.ProcessedImagePanel.Layout.Row = 1;
+            view.ProcessedImagePanel.Layout.Column = 2;
+            view.ProcessedImagePanel.BackgroundColor = [0, 0, 0];
+
             % Create ProcessedImage
-            view.ProcessedImage = uiimage(view.BottomGrid);
+            view.ProcessedImage = uiimage(view.ProcessedImagePanel);
             view.ProcessedImage.Layout.Row = 1;
-            view.ProcessedImage.Layout.Column = 2;
+            view.ProcessedImage.Layout.Column = 1;
+
+            % Creat ResultsPanel
+            view.ResultsPanel = uipanel(view.BottomGrid);
+            view.ResultsPanel.Layout.Row = 1;
+            view.ResultsPanel.Layout.Column = 3;
 
             % Create ResultGrid
-            view.ResultGrid = uigridlayout(view.BottomGrid);
+            view.ResultGrid = uigridlayout(view.ResultsPanel);
             view.ResultGrid.RowHeight = {'1x', '1x', '1x', '1x', '1x', '1x'};
-            view.ResultGrid.Layout.Row = 1;
-            view.ResultGrid.Layout.Column = 3;
 
             % Create PercentageIba1AreaTextAreaLabel
             view.PercentageIba1AreaTextAreaLabel = uilabel(view.ResultGrid);
@@ -128,7 +190,7 @@ classdef AnalyseView < Component
             view.PercentageIba1AreaTextAreaLabel.FontWeight = 'bold';
             view.PercentageIba1AreaTextAreaLabel.Layout.Row = 1;
             view.PercentageIba1AreaTextAreaLabel.Layout.Column = 1;
-            view.PercentageIba1AreaTextAreaLabel.Text = {'Percentage'; 'Iba1 Area'};
+            view.PercentageIba1AreaTextAreaLabel.Text = {'Iba1 Area (%)'};
 
             % Create PercentageIba1AreaTextArea
             view.PercentageIba1AreaTextArea = uitextarea(view.ResultGrid);
@@ -142,7 +204,7 @@ classdef AnalyseView < Component
             view.CellCountTextAreaLabel.FontWeight = 'bold';
             view.CellCountTextAreaLabel.Layout.Row = 2;
             view.CellCountTextAreaLabel.Layout.Column = 1;
-            view.CellCountTextAreaLabel.Text = {'Cell'; 'Count'};
+            view.CellCountTextAreaLabel.Text = {'Cell Density'};
 
             % Create CellCountTextArea
             view.CellCountTextArea = uitextarea(view.ResultGrid);
@@ -156,7 +218,7 @@ classdef AnalyseView < Component
             view.PercentageCD68AreaTextAreaLabel.FontWeight = 'bold';
             view.PercentageCD68AreaTextAreaLabel.Layout.Row = 3;
             view.PercentageCD68AreaTextAreaLabel.Layout.Column = 1;
-            view.PercentageCD68AreaTextAreaLabel.Text = {'Percentage'; 'CD68 Area'};
+            view.PercentageCD68AreaTextAreaLabel.Text = {'CD68'; '(% Area)'};
 
             % Create PercentageCD68AreaTextArea
             view.PercentageCD68AreaTextArea = uitextarea(view.ResultGrid);
@@ -170,7 +232,7 @@ classdef AnalyseView < Component
             view.PercentageCD68NumTextAreaLabel.FontWeight = 'bold';
             view.PercentageCD68NumTextAreaLabel.Layout.Row = 4;
             view.PercentageCD68NumTextAreaLabel.Layout.Column = 1;
-            view.PercentageCD68NumTextAreaLabel.Text = {'Percentage'; 'CD68 Num'};
+            view.PercentageCD68NumTextAreaLabel.Text = {'CD68'; '(% Number)'};
 
             % Create PercentageCD68NumTextArea
             view.PercentageCD68NumTextArea = uitextarea(view.ResultGrid);
@@ -184,7 +246,7 @@ classdef AnalyseView < Component
             view.BranchCountTextAreaLabel.FontWeight = 'bold';
             view.BranchCountTextAreaLabel.Layout.Row = 5;
             view.BranchCountTextAreaLabel.Layout.Column = 1;
-            view.BranchCountTextAreaLabel.Text = {'Branch'; 'Count'};
+            view.BranchCountTextAreaLabel.Text = {'Branch Points'};
 
             % Create BranchCountTextArea
             view.BranchCountTextArea = uitextarea(view.ResultGrid);
@@ -206,42 +268,7 @@ classdef AnalyseView < Component
             view.ConvexityTextArea.Layout.Row = 6;
             view.ConvexityTextArea.Layout.Column = 2;
 
-            % Create SettingGrid
-            view.SettingGrid = uigridlayout(view.MainGrid);
-            view.SettingGrid.ColumnWidth = {'1x', '1x', '1x', '1x', '1x'};
-            view.SettingGrid.RowHeight = {'1x'};
-            view.SettingGrid.Layout.Row = 1;
-            view.SettingGrid.Layout.Column = 1;
-
-
-            % Create ApplySettingButton
-            view.ApplySettingButton = uibutton(view.SettingGrid, 'push');
-            view.ApplySettingButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonApplySetting);
-            view.ApplySettingButton.Layout.Row = 1;
-            view.ApplySettingButton.Layout.Column = 1;
-            view.ApplySettingButton.Text = 'Apply Setting';
-
-            % Create Iba1EditField
-            view.Iba1EditField = uieditfield(view.SettingGrid, 'numeric');
-            view.Iba1EditField.Layout.Row = 1;
-            view.Iba1EditField.Layout.Column = 2;
-
-            % Create CD68EditField
-            view.CD68EditField = uieditfield(view.SettingGrid, 'numeric');
-            view.CD68EditField.Layout.Row = 1;
-            view.CD68EditField.Layout.Column = 3;
-
-            % Create MaxEditField
-            view.MaxEditField = uieditfield(view.SettingGrid, 'numeric');
-            view.MaxEditField.Layout.Row = 1;
-            view.MaxEditField.Layout.Column = 4;
-
-            % Create ProcessAllButton
-            view.ProcessAllButton = uibutton(view.SettingGrid, 'push');
-            view.ProcessAllButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonSelectAll);
-            view.ProcessAllButton.Layout.Row = 1;
-            view.ProcessAllButton.Layout.Column = 5;
-            view.ProcessAllButton.Text = 'Select All';
+            
 
         end
 
