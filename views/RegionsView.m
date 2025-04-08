@@ -136,7 +136,7 @@ classdef RegionsView < Component
             view.RegionSelector.Layout.Row = 2;
             view.RegionSelector.Layout.Column = 1;
             view.RegionSelector.CheckedNodesChangedFcn = @(~, e) view.call_registrar(RegionsEvent.RegionChecked);
-            RegionsView.create_region_selector(view.RegionSelector, Laterality.LEFT, "Whole Brain");
+            RegionsView.create_region_selector(view.RegionSelector, "Whole Brain");
 
             % Create BottomGrid
             view.BottomGrid = uigridlayout(view.MainGrid);
@@ -157,11 +157,11 @@ classdef RegionsView < Component
 
     methods (Static)
 
-        function create_region_selector(ui_tree, laterality, name)
+        function create_region_selector(ui_tree, name)
             region_tree = load("./assets/RegionTree.mat").rt;
             Node = uitreenode(ui_tree);
             Node.Text = name;
-            Node.NodeData = Location(RegionKey.root, laterality);
+            Node.NodeData = RegionKey.root;
             RegionsView.create_rs_tree(Node, region_tree.Descendants)
         end
 
