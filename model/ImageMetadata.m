@@ -56,10 +56,18 @@ classdef ImageMetadata < handle
                 return;
             end
 
+            bbox = bbox - [0, 0, 1, 1];
+
             img_md.Regions = cat(1, img_md.Regions, region);
-            c_mask = imcrop(dn_mask, bbox - [0, 0, 1, 1]);
-            imwrite(c_mask, region.MaskFn);
+
+            c_mask = imcrop(dn_mask, bbox);
+            dn_img = imread(img_md.DownFn);
+            dn_region = imcrop(dn_img, bbox);
+            dn_region(c_mask == 0) = 0;
+
+            imwrite(dn_region, region.MaskFn);
         end
+
 
         function locs = all_locations(img_md)
             arguments

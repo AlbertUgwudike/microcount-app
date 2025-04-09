@@ -159,6 +159,8 @@ classdef AnalyseView < Component
             view.Thumbnail.Layout.Column = 1;
             view.Thumbnail.XTick = [];
             view.Thumbnail.YTick = [];
+            view.Thumbnail.Color = [0,0,0];
+            
 
             %Create ProcessedImagePanel
             view.ProcessedImagePanel = uigridlayout(view.BottomGrid);

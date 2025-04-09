@@ -111,10 +111,10 @@ classdef RegisterView < Component
             view.AtlasSliceAxes.YTick = [];
             view.AtlasSliceAxes.Layout.Row = 2;
             view.AtlasSliceAxes.Layout.Column = 1;
+            view.AtlasSliceAxes.Color = [0, 0, 0];
 
             % Create AtlasSliceSlider
             view.AtlasSliceSlider = uislider(view.AtlasGrid);
-            % view.AtlasSliceSlider.Limits = [1 view.Atlas.Size(3)];
             view.AtlasSliceSlider.MajorTicks = [];
             view.AtlasSliceSlider.ValueChangingFcn = @(~, e) view.call_registrar(RegisterEvent.SliderAtlasSlice, e.Value);
             view.AtlasSliceSlider.ValueChangedFcn = @(~, e) view.call_registrar(RegisterEvent.SliderStop, e.Value);
@@ -122,7 +122,6 @@ classdef RegisterView < Component
             view.AtlasSliceSlider.Layout.Row = 3;
             view.AtlasSliceSlider.Layout.Column = 1;
             view.AtlasSliceSlider.FontSize = 8;
-            % view.AtlasSliceSlider.Value = view.Atlas.Size(3) / 2;
 
             % HistologyPanel
             view.HistologyPanel = uipanel(view.BottomGrid);
@@ -165,6 +164,7 @@ classdef RegisterView < Component
             view.HistSliceAxes.YTick = [];
             view.HistSliceAxes.Layout.Row = 2;
             view.HistSliceAxes.Layout.Column = 1;
+            view.HistSliceAxes.Color = [0, 0, 0];
 
             % Create HistologyButtonGrid
             view.HistologyButtonGrid2 = uigridlayout(view.HistologyGrid);

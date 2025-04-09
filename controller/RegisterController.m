@@ -29,6 +29,10 @@ classdef RegisterController < ControllerBase
             if height(con.View.AlignmentTable.Data) == 0
                 return
             end
+
+            if numel(con.View.AlignmentTable.Selection) == 0
+                return
+            end
             
             idx = con.View.AlignmentTable.Selection;
             con.SelectedImage = con.ImageSet(idx);

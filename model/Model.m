@@ -16,7 +16,10 @@ classdef Model < handle
         function io_create_workspace(mdl)
             disp("Creating workspace.")
 
-            dir_name = uigetdir('', 'Select Microcount Workspace');
+            [file, path] = uiputfile('*.*', 'Create Microcount Workspace', 'mc_ws');
+            
+            dir_name = fullfile(path, file);
+            disp(dir_name)
 
             if dir_name == 0
                 mdl.panic(Error.NO_WS_SELECTED)
@@ -30,6 +33,8 @@ classdef Model < handle
 
             dir_name = convertCharsToStrings(dir_name);
             full_path = @(slug) dir_name + "/" + slug;
+
+            mkdir(dir_name);
 
             ws = Workspace(dir_name);
             save(full_path(Constants.FILE_WS_MAT), 'ws');

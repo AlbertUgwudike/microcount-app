@@ -24,6 +24,9 @@ classdef AnalyseController < ControllerBase
 
         function on_region_selected(con)
             disp("AnalyseController::on_region_selected")
+            if numel(con.View.RegionTable.Selection) == 0
+                return
+            end
             idx = con.View.RegionTable.Selection(1);
             con.SelectedRegion = con.RegionSet(idx);
             result = con.SelectedRegion.Result;
@@ -54,7 +57,7 @@ classdef AnalyseController < ControllerBase
 
         function on_apply_setting_button_pushed(con) 
             disp("AnalyseController::on_apply_setting_button_pushed")
-            options = [con.View.Iba1EditField.Value, con.View.CD68EditField.Value, con.View.MaxEditField.Value];
+            options = [con.View.CellThresholdEditField.Value, con.View.CoMarkerThresholdEditField.Value, con.View.MaxSizeEditField.Value];
             selection = con.View.RegionTable.Selection;
             for i = 1:numel(selection)
                 event.Indices = selection(i);
@@ -159,7 +162,7 @@ classdef AnalyseController < ControllerBase
 
             mask_fn = con.SelectedRegion.MaskFn;
             dn_mask = imread(mask_fn);
-            imshow(imadjust(uint8(dn_mask)), 'Parent', con.View.Thumbnail, 'InitialMagnification', 20);
+            imshow(dn_mask, 'Parent', con.View.Thumbnail, 'InitialMagnification', 20);
             if ~isempty(con.ImageSubviewRect)
                 delete(con.ImageSubviewRect);
             end

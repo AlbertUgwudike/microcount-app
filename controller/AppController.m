@@ -27,16 +27,20 @@ classdef AppController < ControllerBase
     end
 
     methods (Access = private)
-        function flag = registrationAvailable(con)
-            flag = any([con.Model.WS.Images.ConvertStatus] == ConvertStatus.CONVERTED);
+
+        function flag = workspaceLoaded(con)
+            flag = ~isempty(con.Model.WS);
         end
 
         function onTabSelected(con)
             disp("AppController::onTabSelected")
-            if ~con.registrationAvailable() && con.View.TabGroup.SelectedTab.Title == "Register"
-                con.View.TabGroup.SelectedTab = con.View.SelectTab;
+
+            if ~con.workspaceLoaded()
+                con.View.TabGroup.SelectedTab = con.View.HomeTab;
+                return
             end
         end
+
     end
     
 end

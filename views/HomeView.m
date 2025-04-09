@@ -8,6 +8,7 @@ classdef HomeView < Component
         LoadWorkspaceButton
         CreateWorkspaceButton
         LabelGrid
+        PanelGrid
         WorkspacePanel
         CurrentWorkspaceName 
     end
@@ -32,7 +33,7 @@ classdef HomeView < Component
             % Create MainGrid
             view.MainGrid = uigridlayout(view);
             view.MainGrid.ColumnWidth = {'1x'};
-            view.MainGrid.RowHeight = {'0.2x', '0.5x', '0.1x', '0.1x'};
+            view.MainGrid.RowHeight = {'0.15x', '0.5x', '0.1x', '0.1x'};
 
             % Create Title
             view.Title = uilabel(view.MainGrid);
@@ -71,11 +72,18 @@ classdef HomeView < Component
             view.CreateWorkspaceButton.Layout.Row = 1;
             view.CreateWorkspaceButton.Layout.Column = 3;
             view.CreateWorkspaceButton.Text = 'Create Workspace';
+
+            % Create PanelGrid
+            view.PanelGrid = uigridlayout(view.MainGrid);
+            view.PanelGrid.ColumnWidth = {'0.25x', '1x', '0.25x'};
+            view.PanelGrid.RowHeight = {'1x'};
+            view.PanelGrid.Layout.Row = 4;
+            view.PanelGrid.Layout.Column = 1;
             
             % Create WorkspacePanel
-            view.WorkspacePanel = uipanel(view.MainGrid);
-            view.WorkspacePanel.Layout.Row = 4;
-            view.WorkspacePanel.Layout.Column = 1;
+            view.WorkspacePanel = uipanel(view.PanelGrid);
+            view.WorkspacePanel.Layout.Row = 1;
+            view.WorkspacePanel.Layout.Column = 2;
 
             % Create LabelGrid
             view.LabelGrid = uigridlayout(view.WorkspacePanel);
