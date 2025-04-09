@@ -5,11 +5,12 @@ classdef ImageMetadata < handle
         DownFn (1, 1) string
         ConvFn (1, 1) string
         WS_Dir (1, 1) string
-        Size (1, 2) uint16
         ID (1, 1) string
-        ChannelOrder (1, :) uint16
-        ChannelCount (1, 1) uint16
-        ChannelNames (1, :) string
+
+        Size (1, 2) uint16
+        ChannelOrder (1, :) uint16 = uint16.empty
+        ChannelCount (1, 1) uint16 = 0
+        ChannelNames (1, :) string = string.empty
     end
 
     properties
@@ -32,7 +33,10 @@ classdef ImageMetadata < handle
             img_md.ConvFn = ImageMetadata.get_conv_fn(fn, ws_dir);
             img_md.WS_Dir = ws_dir;
             disp(img_md.WS_Dir)
-            info = imfinfo(source_fn);
+        end
+
+        function set_metadata(img_md)
+            info = imfinfo(img_md.ConvFn);
             H = [info.Height];
             W = [info.Width];
             img_md.Size = [H(1), W(1)];

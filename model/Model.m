@@ -87,7 +87,7 @@ classdef Model < handle
             [home_dir, ~, ~] = fileparts(mdl.WS.DirName);
 
             [file, path, ~] = uigetfile( ...
-                {'*.tif;*.tiff;*.czi', 'Image files' }, ...
+                {'*.tif;*.tiff;*.czi;*.lof', 'Image files' }, ...
                 "Select your images", ...
                 home_dir, ...
                 MultiSelect = "on" ...
@@ -342,6 +342,7 @@ classdef Model < handle
                disp([fut.Error.stack.name]);
             else
                 fprintf("Convert and Downsample: Image %s completed after: %s\n", img_md.ID, fut.RunningDuration);
+                img_md.set_metadata()
                 img_md.ConvertStatus = ConvertStatus.CONVERTED;
             end
             mdl.io_save()
@@ -404,8 +405,19 @@ classdef Model < handle
             arguments
                 img_md ImageMetadata
             end
-            img = imread(img_md.SourceFn);
-            imwrite(img, img_md.ConvFn);
+
+            [~, ~, ext] = fileparts(img_md.SourceFn);
+
+            if ismember(ext, [".tif", ".tiff"])
+                img = imread(img_md.SourceFn);
+                imwrite(img, img_md.ConvFn);
+            else
+                err = lof2tiff(proper_in, proper_out);
+                if err == 1
+                    glumpers
+                end
+            end
+
             Model.bg_down_img(img_md);
             msg = "Complete";
         end
@@ -417,7 +429,7 @@ classdef Model < handle
             RESIZE = 20;
             CHN_BRT = 1;
             pixel_region = { [1 RESIZE img_md.Size(1)], [1 RESIZE img_md.Size(2)] };
-            img = imread(img_md.SourceFn, "PixelRegion", pixel_region);
+            img = imread(img_md.ConvFn, "PixelRegion", pixel_region);
             dn_img = img(:, :, CHN_BRT);
             imwrite(imadjust(dn_img), img_md.DownFn);
             msg = "Completed";

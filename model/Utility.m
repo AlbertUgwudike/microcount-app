@@ -70,16 +70,16 @@ classdef Utility
             export_table.file_name = [regions.ProcFn]';
             export_table.mask_file_name = [regions.MaskFn]';
             export_table.region_ID = [regions.ID]';
-            export_table.iba1_threshold = [regions.Iba1Threshold]';
-            export_table.max_cd68_size = [regions.MaxCD68Size]';
-            export_table.cd68_threshold = [regions.CD68Threshold]';
+            export_table.cell_threshold = [regions.Iba1Threshold]';
+            export_table.max_comarker_size = [regions.MaxCD68Size]';
+            export_table.comarker_threshold = [regions.CD68Threshold]';
 
             results = [regions.Result];
 
-            export_table.microglail_density = [results.MicrogliaDensity]';
-            export_table.percentage_iba1 = [results.PercentageIba1Area]';
-            export_table.percentage_cd68_area = [results.PercentageCD68Area]';
-            export_table.percentage_activated_microglia = [results.PercentageActivatedMicroglia]';
+            export_table.cel_density = [results.MicrogliaDensity]';
+            export_table.percentage_cell_area = [results.PercentageIba1Area]';
+            export_table.percentage_comarker_area = [results.PercentageCD68Area]';
+            export_table.percentage_comarker_num = [results.PercentageActivatedMicroglia]';
             export_table.average_convexity = [results.AverageRotundity]';
             export_table.average_soma_size = [results.AverageSomaSizeUm]';
             export_table.average_branch_count = [results.AverageBranchCount]';
