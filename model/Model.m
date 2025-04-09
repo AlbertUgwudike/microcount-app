@@ -316,7 +316,7 @@ classdef Model < handle
 
     end
 
-    methods (Access = private)
+    methods (Access = public)
 
         function io_mark_region_as_processing(mdl, region)
             region.ProcessStatus = ProcessStatus.PROCESSING;

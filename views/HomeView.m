@@ -1,10 +1,15 @@
 classdef HomeView < Component
 
     properties
-        MainGrid
+        MainGrid matlab.ui.container.GridLayout
+        LogoImage matlab.ui.control.Image
+        Title matlab.ui.control.Label
+        ButtonGrid
         LoadWorkspaceButton
         CreateWorkspaceButton
-        CurrentWorkspaceName
+        LabelGrid
+        WorkspacePanel
+        CurrentWorkspaceName 
     end
 
     methods
@@ -26,39 +31,63 @@ classdef HomeView < Component
 
             % Create MainGrid
             view.MainGrid = uigridlayout(view);
-            view.MainGrid.ColumnWidth = {'0.25x', '1x', '0.25x'};
-            view.MainGrid.RowHeight = {'1.5x', '1x', '1x', '0.5x', '0.5x', '0.5x', '1.5x'};
+            view.MainGrid.ColumnWidth = {'1x'};
+            view.MainGrid.RowHeight = {'0.2x', '0.5x', '0.1x', '0.1x'};
+
+            % Create Title
+            view.Title = uilabel(view.MainGrid);
+            view.Title.Text = "Microcount";
+            view.Title.FontSize = 62;
+            view.Title.FontWeight = 'bold';
+            view.Title.HorizontalAlignment = 'center';
+            view.Title.Layout.Row = 1;
+            view.Title.Layout.Column = 1;
+
+            % Create LogoImage
+            view.LogoImage = uiimage(view.MainGrid);
+            view.LogoImage.ImageSource = "./assets/microcount_logo.png";
+            view.LogoImage.Layout.Row = 2;
+            view.LogoImage.Layout.Column = 1;
+
+            % Create ButtonGrid
+            view.ButtonGrid = uigridlayout(view.MainGrid);
+            view.ButtonGrid.ColumnWidth = {'0.25x', '0.5x', '0.5x', '0.25x'};
+            view.ButtonGrid.RowHeight = {'1x'};
+            view.ButtonGrid.Layout.Row = 3;
+            view.ButtonGrid.Layout.Column = 1;
 
             % Create LoadWorkspaceButton
-            view.LoadWorkspaceButton = uibutton(view.MainGrid, 'push');
+            view.LoadWorkspaceButton = uibutton(view.ButtonGrid, 'push');
             view.LoadWorkspaceButton.ButtonPushedFcn = @(~, ~) view.call_registrar(HomeEvent.ButtonLoadWorkspace);
             view.LoadWorkspaceButton.FontSize = 24;
-            view.LoadWorkspaceButton.Layout.Row = 3;
+            view.LoadWorkspaceButton.Layout.Row = 1;
             view.LoadWorkspaceButton.Layout.Column = 2;
             view.LoadWorkspaceButton.Text = 'Load Workspace';
 
             % Create CreateWorkspaceButton
-            view.CreateWorkspaceButton = uibutton(view.MainGrid, 'push');
+            view.CreateWorkspaceButton = uibutton(view.ButtonGrid, 'push');
             view.CreateWorkspaceButton.ButtonPushedFcn = @(~, ~) view.call_registrar(HomeEvent.ButtonCreateWorkspace);
             view.CreateWorkspaceButton.FontSize = 24;
-            view.CreateWorkspaceButton.Layout.Row = 2;
-            view.CreateWorkspaceButton.Layout.Column = 2;
+            view.CreateWorkspaceButton.Layout.Row = 1;
+            view.CreateWorkspaceButton.Layout.Column = 3;
             view.CreateWorkspaceButton.Text = 'Create Workspace';
             
-            % Create CurrentWorkspaceLabel
-            workspace_label = uilabel(view.MainGrid);
-            workspace_label.HorizontalAlignment = 'center';
-            workspace_label.FontSize = 18;
-            workspace_label.Layout.Row = 5;
-            workspace_label.Layout.Column = 2;
-            workspace_label.Text = 'Current Workspace';
+            % Create WorkspacePanel
+            view.WorkspacePanel = uipanel(view.MainGrid);
+            view.WorkspacePanel.Layout.Row = 4;
+            view.WorkspacePanel.Layout.Column = 1;
+
+            % Create LabelGrid
+            view.LabelGrid = uigridlayout(view.WorkspacePanel);
+            view.LabelGrid.ColumnWidth = {'1x'};
+            view.LabelGrid.RowHeight = {'1x'};
             
             % Create CurrentWorkspaceName
-            view.CurrentWorkspaceName = uilabel(view.MainGrid);
+            view.CurrentWorkspaceName = uilabel(view.LabelGrid);
             view.CurrentWorkspaceName.HorizontalAlignment = 'center';
-            view.CurrentWorkspaceName.Layout.Row = 6;
-            view.CurrentWorkspaceName.Layout.Column = 2;
-            view.CurrentWorkspaceName.Text = 'None Selected';
+            view.CurrentWorkspaceName.Layout.Row = 1;
+            view.CurrentWorkspaceName.Layout.Column = 1;
+            view.CurrentWorkspaceName.Text = 'No Workspace Selected';
 
         end
 

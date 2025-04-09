@@ -1,4 +1,4 @@
-function launch(f) 
+function microcount(f) 
 
     arguments
         f(1, 1) matlab.ui.Figure = uifigure() 
