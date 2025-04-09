@@ -38,7 +38,7 @@ classdef RegisterController < ControllerBase
             con.SelectedImage = con.ImageSet(idx);
             img = con.Model.io_get_down_img(con.SelectedImage);
             p_img = padarray(img, double([Constants.PAD, Constants.PAD]), 0);
-            imshow(p_img, 'Parent', con.View.HistSliceAxes);
+            imshow(imadjust(p_img), 'Parent', con.View.HistSliceAxes);
 
             if (isempty(con.SelectedImage.TransformationData))
                 con.set_default_tform_data(size(p_img))
@@ -85,6 +85,8 @@ classdef RegisterController < ControllerBase
             p_img = padarray(d_img, double([Constants.PAD, Constants.PAD]), 0);
             tform_d = con.SelectedImage.TransformationData;
             borders = con.Model.Atlas.calc_borders(tform_d);
+            disp(size(p_img))
+            disp(size(borders))
             imshow(p_img + borders, 'Parent', con.View.HistSliceAxes)
             con.ShowOverlay = true;
             con.draw_hexs()

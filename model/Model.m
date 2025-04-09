@@ -165,6 +165,7 @@ classdef Model < handle
                 return
             end
             img = uint16(imread(img_md.DownFn));
+            disp(size(img))
             if ~isempty(img_md.TransformationData)
                 img = imrotate(img, img_md.TransformationData.Direction.to_angle());
             end
@@ -357,7 +358,7 @@ classdef Model < handle
             end
 
             mask = mdl.Atlas.create_full_size_mask(region);
-            file_name_chrs = convertStringsToChars(region.Parent.SourceFn);
+            file_name_chrs = convertStringsToChars(region.Parent.ConvFn);
             bfr_img = BioformatsImage(file_name_chrs);
             settings = region.get_microcount_settings();
             data = microcount_algo(bfr_img, mask, settings);
@@ -412,7 +413,7 @@ classdef Model < handle
                 img = imread(img_md.SourceFn);
                 imwrite(img, img_md.ConvFn);
             else
-                err = lof2tiff(proper_in, proper_out);
+                err = lof2tiff(img_md.SourceFn, img_md.ConvFn);
                 if err == 1
                     glumpers
                 end
@@ -428,7 +429,8 @@ classdef Model < handle
             end
             RESIZE = 20;
             CHN_BRT = 1;
-            pixel_region = { [1 RESIZE img_md.Size(1)], [1 RESIZE img_md.Size(2)] };
+            info = imfinfo(img_md.ConvFn);
+            pixel_region = { [1 RESIZE info.Height], [1 RESIZE info.Width] };
             img = imread(img_md.ConvFn, "PixelRegion", pixel_region);
             dn_img = img(:, :, CHN_BRT);
             imwrite(imadjust(dn_img), img_md.DownFn);
