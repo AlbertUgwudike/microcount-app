@@ -340,7 +340,8 @@ classdef Model < handle
             img_md = fut.InputArguments{1};
             if ~isempty(fut.Error)
                 fprintf("Convert and Downsample: Image %s stopped after event: %s\n", img_md.ID, fut.Error.message);
-               disp([fut.Error.stack.name]);
+                disp([fut.Error.stack.name]);
+                img_md.ConvertStatus = ConvertStatus.UNCONVERTED;
             else
                 fprintf("Convert and Downsample: Image %s completed after: %s\n", img_md.ID, fut.RunningDuration);
                 img_md.set_metadata()
@@ -430,7 +431,9 @@ classdef Model < handle
             RESIZE = 20;
             CHN_BRT = 1;
             info = imfinfo(img_md.ConvFn);
-            pixel_region = { [1 RESIZE info.Height], [1 RESIZE info.Width] };
+            H = [info.Height];
+            W = [info.Width];
+            pixel_region = { [1 RESIZE H(1)], [1 RESIZE W(1)] };
             img = imread(img_md.ConvFn, "PixelRegion", pixel_region);
             dn_img = img(:, :, CHN_BRT);
             imwrite(imadjust(dn_img), img_md.DownFn);
