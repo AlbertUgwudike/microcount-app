@@ -23,8 +23,6 @@ classdef RegisterView < Component
 
         AtlasHex
         HistHex
-
-        CurrentAtlasSliceIdx = 150
     end
 
     methods

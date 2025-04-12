@@ -362,8 +362,8 @@ classdef Model < handle
             file_name_chrs = convertStringsToChars(region.Parent.ConvFn);
             bfr_img = BioformatsImage(file_name_chrs);
             settings = region.get_microcount_settings();
-%             data = microcount_algo(bfr_img, mask, settings);
-            data = dab_algo(bfr_img, mask, settings);
+            data = microcount_algo(bfr_img, mask, settings);
+            % data = dab_algo(bfr_img, mask, settings);
             [result, output_img] = data2result(data);
             imwrite(output_img, region.ProcFn);
         end

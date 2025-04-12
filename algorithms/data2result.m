@@ -26,6 +26,7 @@ function [result, img] = data2result(data)
     
     cd68_adj = imadjust(data.cd68, [0.001; 0.005], []);
     iba1_adj = imadjust(data.iba1); %, [0.0714; 0.3392], []);
+    % iba1_adj(data.iba1Mask == 0) = 0; %, [0.0714; 0.3392], []);
 
     % left = zeros([size(data.cd68), 3]);
     % left(:, :, 1) = iba1_adj;
