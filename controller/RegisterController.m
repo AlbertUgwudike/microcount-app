@@ -129,7 +129,6 @@ classdef RegisterController < ControllerBase
             ori = con.AtlasOrientation;
             n_slices = con.Model.Atlas.n_slices(ori);
             idx = max(0, min(n_slices, round(slider_pos)));
-            con.View.CurrentAtlasSliceIdx = idx;
             img = con.Model.Atlas.get_reference_img(ori, idx);
             imshow(imadjust(img), 'Parent', con.View.AtlasSliceAxes)
         end
@@ -198,7 +197,6 @@ classdef RegisterController < ControllerBase
             delete(con.View.AtlasHex)
             delete(con.View.HistHex)
 
-            con.View.CurrentAtlasSliceIdx = tf_data.SliceIdx;
             con.View.AtlasHex = con.draw_hex(tf_data.AtlasHex, con.View.AtlasSliceAxes);
             con.View.HistHex = con.draw_hex(tf_data.HistHex, con.View.HistSliceAxes);
         end

@@ -176,7 +176,6 @@ classdef AnalyseController < ControllerBase
                 con AnalyseController
                 result MicrocountResult
             end
-
             con.View.PercentageCellAreaTextArea.Value = string(result.PercentageIba1Area);
             con.View.CellCountTextArea.Value = string(result.MicrogliaDensity);
             con.View.PercentageCoMarkerAreaTextArea.Value = string(result.PercentageCD68Area);
@@ -190,7 +189,6 @@ classdef AnalyseController < ControllerBase
             arguments
                 con AnalyseController
             end
-            disp("yaas")
             con.View.PercentageCellAreaTextArea.Value = "--";
             con.View.CellCountTextArea.Value = "--";
             con.View.PercentageCoMarkerAreaTextArea.Value = "--";

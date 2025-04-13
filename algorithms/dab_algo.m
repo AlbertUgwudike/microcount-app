@@ -10,7 +10,7 @@ function data = dab_algo(bfr, mask, settings)
     MAX_CD68_SIZE       = settings.MaxCD68Size;
     CD68_SENSITIVITY    = settings.CD68Threshold;
     CD68_MIN_OVERLAP    = settings.MinOverlap;
-    DENDRITE_THRESHOLD  = 0.37;
+    DENDRITE_THRESHOLD  = 0.4;
 
     % Crop region -----------------------------------------------
     
@@ -30,15 +30,19 @@ function data = dab_algo(bfr, mask, settings)
         [bbox(2), (bbox(2) + bbox(4) - 1)];
         [bbox(1), (bbox(1) + bbox(3) - 1)]
     };
-    
-    im_fn = bfr.filename;
-    img = imread(im_fn, PixelRegion=pixel_region);
-    img = min(img, [], 3);
-    img = double(img) / 65535;
-    img = imadjust(img);
 
-    % pseudo iba1
-    iba1 = 1 - img;
+    % 65535 for microglia lof images
+    scale_f = 255;
+
+    % astrocytes dab
+    im_fn = bfr.filename;
+    img = imread(im_fn, Index=1, PixelRegion=pixel_region);
+    img = min(img, [], 3);
+    img = double(img) / scale_f;
+    img = imadjust(img);
+    iba1 = uint16(65535 * (1 - img));
+
+
     cd68 = uint16(zeros(size(iba1)));
     
     r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
@@ -52,7 +56,7 @@ function data = dab_algo(bfr, mask, settings)
     cd68_mask = uint16(segment_activation(tmp, CD68_SENSITIVITY));
     cd68_mask = filter_size_cd68(cd68_mask, MAX_CD68_SIZE);
 
-    soma_mask = segment_somas(nan_background(double(iba1), r_mask), 0.3);
+    soma_mask = segment_somas(nan_background(double(iba1), r_mask), 0.2);
     branches = segment_microglia(iba1, DENDRITE_THRESHOLD);
     iba1_mask = uint16(soma_mask + branches);
 
