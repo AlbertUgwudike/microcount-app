@@ -4,14 +4,20 @@ classdef Model < handle
         WS Workspace = Workspace.empty 
         ErrorCache Error 
         ThreadPool ThreadPool = ThreadPool()
+        AppDir string
     end
 
     properties ( SetAccess = public ) 
-        Atlas Atlas = Atlas()
+        Atlas Atlas
         RegistrarFcns
     end
 
     methods (Access = public)
+
+        function  mdl = Model(app_dir)
+            mdl.AppDir = app_dir;
+            mdl.Atlas = Atlas(app_dir);
+        end
 
         function io_create_workspace(mdl)
             disp("Creating workspace.")
@@ -149,8 +155,9 @@ classdef Model < handle
                 if (img.ConvertStatus == ConvertStatus.CONVERTED)
                     continue
                 end
+                fprintf("%s\n%s\n", img.SourceFn, img.ConvFn);
                 mdl.io_mark_image_as_converting(img);
-                mdl.ThreadPool.dispatch(@Model.bg_conv_down_img, img, @mdl.bg_conv_down_img_complete)
+                mdl.ThreadPool.dispatch(@mdl.bg_conv_down_img, img, @mdl.bg_conv_down_img_complete)
             end
         end
 
@@ -362,8 +369,8 @@ classdef Model < handle
             file_name_chrs = convertStringsToChars(region.Parent.ConvFn);
             bfr_img = BioformatsImage(file_name_chrs);
             settings = region.get_microcount_settings();
-%             data = microcount_algo(bfr_img, mask, settings);
-            data = dab_algo(bfr_img, mask, settings);
+            data = microcount_algo(bfr_img, mask, settings);
+%             data = dab_algo(bfr_img, mask, settings);
             [result, output_img] = data2result(data);
             imwrite(output_img, region.ProcFn);
         end
@@ -400,12 +407,9 @@ classdef Model < handle
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 
-    end
-
-    methods (Static)
-
-        function msg = bg_conv_down_img(img_md)
+        function msg = bg_conv_down_img(mdl, img_md)
             arguments
+                mdl Model
                 img_md ImageMetadata
             end
 
@@ -415,7 +419,7 @@ classdef Model < handle
                 img = imread(img_md.SourceFn);
                 imwrite(img, img_md.ConvFn);
             else
-                err = lof2tiff(img_md.SourceFn, img_md.ConvFn);
+                err = lof2tiff(mdl.AppDir, img_md.SourceFn, img_md.ConvFn);
                 if err == 1
                     glumpers
                 end
@@ -424,6 +428,10 @@ classdef Model < handle
             Model.bg_down_img(img_md);
             msg = "Complete";
         end
+
+    end
+
+    methods (Static)
 
         function msg = bg_down_img(img_md)
             arguments

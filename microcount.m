@@ -7,8 +7,11 @@ function microcount(f)
     % Rename figure.
     f.Name = "Microcount"; 
     f.Position = [1 1 714 631];
+
+    this_fn = mfilename('fullpath');
+    [app_dir, ~, ~] = fileparts(this_fn);
     
-    model = Model();
+    model = Model(app_dir);
     
     % Create the home view and controller.
     app_view = AppView(f);

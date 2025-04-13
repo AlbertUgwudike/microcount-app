@@ -12,12 +12,17 @@ classdef Atlas
     end
     
     methods
-        function atlas = Atlas()
+        function atlas = Atlas(app_dir)
             disp('Loading Allen CCF atlas...')
-            atlas.ReferenceAtlas = tiffreadVolume('./assets/reference.tiff');
-            atlas.AnnotationAtlas = tiffreadVolume('./assets/annotation.tiff');
+
+            ref_path = sprintf('%s/assets/reference.tiff', app_dir);
+            ann_path = sprintf('%s/assets/annotation.tiff', app_dir);
+            str_path = sprintf('%s/assets/structures.csv', app_dir);
+
+            atlas.ReferenceAtlas = tiffreadVolume(ref_path);
+            atlas.AnnotationAtlas = tiffreadVolume(ann_path);
             atlas.Size = size(atlas.AnnotationAtlas);
-            s_table = table2struct(readtable('./assets/structures.csv'));
+            s_table = table2struct(readtable(str_path));
 
             atlas.IdxMap = atlas.create_idx_map(s_table);
             atlas.AbrMap = atlas.create_abr_map(s_table);

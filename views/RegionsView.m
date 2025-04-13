@@ -158,7 +158,10 @@ classdef RegionsView < Component
     methods (Static)
 
         function create_region_selector(ui_tree, name)
-            region_tree = load("./assets/RegionTree.mat").rt;
+            this_fn = mfilename('fullpath');
+            [curr_dir, ~, ~] = fileparts(this_fn);
+            rt_fn = sprintf("%s/../assets/RegionTree.mat", curr_dir);
+            region_tree = load(rt_fn).rt;
             Node = uitreenode(ui_tree);
             Node.Text = name;
             Node.NodeData = RegionKey.root;

@@ -44,9 +44,14 @@ classdef HomeView < Component
             view.Title.Layout.Row = 1;
             view.Title.Layout.Column = 1;
 
+
+            this_fn = mfilename('fullpath');
+            [curr_dir, ~, ~] = fileparts(this_fn);
+            logo_fn = sprintf("%s/../assets/microcount_logo.png", curr_dir);
+
             % Create LogoImage
             view.LogoImage = uiimage(view.MainGrid);
-            view.LogoImage.ImageSource = "./assets/microcount_logo.png";
+            view.LogoImage.ImageSource = logo_fn;
             view.LogoImage.Layout.Row = 2;
             view.LogoImage.Layout.Column = 1;
 
