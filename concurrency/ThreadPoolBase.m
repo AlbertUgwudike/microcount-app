@@ -1,7 +1,7 @@
 classdef (Abstract) ThreadPoolBase < handle
 
     properties (Access = private)
-        Futures (:, 1) parallel.FevalFuture = parallel.FevalFuture.empty
+        Futures = parallel.FevalFuture.empty
     end
     
     methods

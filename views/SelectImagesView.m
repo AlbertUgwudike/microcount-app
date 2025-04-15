@@ -75,9 +75,9 @@ classdef SelectImagesView < Component
 
             % Create ImageTable
             view.ImageTable = uitable(view.MainGrid);
-            view.ImageTable.ColumnName = {'Image'; 'Channel Count'; 'Channel Order'; 'Channel Names'; 'Converted'};
+            view.ImageTable.ColumnName = {'Image'; 'Channel Count'; 'Channel Order'; 'Channel Names'; 'Converted'; 'Progress'};
             view.ImageTable.RowName = {};
-            view.ImageTable.ColumnEditable = [false false true false];
+            view.ImageTable.ColumnEditable = [false false true false, false];
             view.ImageTable.Layout.Row = 2;
             view.ImageTable.Layout.Column = 1;
             view.ImageTable.Multiselect = 'on';

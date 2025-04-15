@@ -150,6 +150,10 @@ classdef Model < handle
         end
 
         function io_convert_and_downsample(mdl, idx)
+
+            q = parallel.pool.DataQueue;
+            afterEach(q, @(p) mdl.update_progress(p));
+
             for i = 1:numel(idx)
                 img = mdl.WS.Images(idx(i));
                 if (img.ConvertStatus == ConvertStatus.CONVERTED)
@@ -157,7 +161,12 @@ classdef Model < handle
                 end
                 fprintf("%s\n%s\n", img.SourceFn, img.ConvFn);
                 mdl.io_mark_image_as_converting(img);
-                mdl.ThreadPool.dispatch(@mdl.bg_conv_down_img, img, @mdl.bg_conv_down_img_complete)
+
+                args = { img, mdl.AppDir };
+                mdl.ThreadPool.dispatch(@Model.bg_conv_down_img, args, @mdl.bg_conv_down_img_complete)
+
+                margs = { img, q };
+                mdl.ThreadPool.dispatch(@Model.bg_monitor_progress, margs, @(~) disp("Monitor completed"))
             end
         end
 
@@ -344,7 +353,7 @@ classdef Model < handle
         end
 
         function bg_conv_down_img_complete(mdl, fut)
-            img_md = fut.InputArguments{1};
+            img_md = fut.InputArguments{1}{1};
             if ~isempty(fut.Error)
                 fprintf("Convert and Downsample: Image %s stopped after event: %s\n", img_md.ID, fut.Error.message);
                 disp([fut.Error.stack.name]);
@@ -407,19 +416,27 @@ classdef Model < handle
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
 
-        function msg = bg_conv_down_img(mdl, img_md)
-            arguments
-                mdl Model
-                img_md ImageMetadata
-            end
+        function update_progress(mdl, p)
+            images = [mdl.WS.Images];
+            idx = [images.ID] == p{1};
+            images(idx).ConversionProgress = p{2};
+            mdl.call_registrars(ModelEvents.ConversionProgress);
+        end
+
+    end
+
+    methods (Static)
+
+        function msg = bg_conv_down_img(args)
+            img_md = args{1};
+            app_dir = args{2};
 
             [~, ~, ext] = fileparts(img_md.SourceFn);
 
             if ismember(ext, [".tif", ".tiff"])
-                img = imread(img_md.SourceFn);
-                imwrite(img, img_md.ConvFn);
+                copyfile(img_md.SourceFn, img_md.ConvFn);
             else
-                err = lof2tiff(mdl.AppDir, img_md.SourceFn, img_md.ConvFn);
+                err = lof2tiff(app_dir, img_md.SourceFn, img_md.ConvFn);
                 if err == 1
                     glumpers
                 end
@@ -428,10 +445,6 @@ classdef Model < handle
             Model.bg_down_img(img_md);
             msg = "Complete";
         end
-
-    end
-
-    methods (Static)
 
         function msg = bg_down_img(img_md)
             arguments
@@ -447,6 +460,31 @@ classdef Model < handle
             dn_img = img(:, :, CHN_BRT);
             imwrite(imadjust(dn_img), img_md.DownFn);
             msg = "Completed";
+        end
+
+        function msg = bg_monitor_progress(args)
+            img_md = args{1};
+            q = args{2};
+
+            disp("Commenced!!")
+
+            ori_sz = dir(img_md.SourceFn).bytes;
+
+            tic
+            while true
+                if toc > 90
+                    break
+                end
+
+                if isfile(img_md.ConvFn)
+                    curr_size = dir(img_md.ConvFn).bytes;
+                    pc = min(100, round(100 * curr_size / ori_sz, 2));
+                    send(q, {img_md.ID, pc})
+                    pause(0.5)
+                end
+            end
+
+            msg = "Done";
         end
         
     end

@@ -71,7 +71,8 @@ classdef SelectImagesController < ControllerBase
             ch_orders   = cellfun(@(o) string(o).join(","), {img_mds.ChannelOrder});
             ch_names    = cellfun(@(s) s.join(","), {img_mds.ChannelNames});
             downsampled = string([img_mds.ConvertStatus]);
-            new_data    = [source_fns ch_counts' ch_orders' ch_names' downsampled'];
+            progress    = string([img_mds.ConversionProgress]);
+            new_data    = [source_fns ch_counts' ch_orders' ch_names' downsampled' progress'];
             con.View.ImageTable.Data = new_data;
         end
         
@@ -104,6 +105,9 @@ classdef SelectImagesController < ControllerBase
                     con.on_apply_channel_names_button_pushed()
 
                 case (ModelEvents.WorkspaceUpdated)
+                    con.onWorkspaceUpdated()
+
+                case (ModelEvents.ConversionProgress)
                     con.onWorkspaceUpdated()
             end
         end

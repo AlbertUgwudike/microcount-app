@@ -15,6 +15,7 @@ classdef ImageMetadata < handle
 
     properties
         ConvertStatus (1, 1) ConvertStatus = ConvertStatus.UNCONVERTED
+        ConversionProgress (1, 1) double = 0;
         Aligned (1, 1) logical = false
         TransformationData TransformationData
         Regions (:, 1) Region = Region.empty()
