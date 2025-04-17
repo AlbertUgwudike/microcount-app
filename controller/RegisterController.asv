@@ -85,8 +85,6 @@ classdef RegisterController < ControllerBase
             p_img = padarray(d_img, double([Constants.PAD, Constants.PAD]), 0);
             tform_d = con.SelectedImage.TransformationData;
             borders = con.Model.Atlas.calc_borders(tform_d);
-            fprintf("p-img size: [%d, %d]\n", size(p_img));
-            fprintf("borders size: [%d, %d]\n", size(borders));
             imshow(p_img + borders, 'Parent', con.View.HistSliceAxes)
             con.ShowOverlay = true;
             con.draw_hexs()
@@ -98,7 +96,7 @@ classdef RegisterController < ControllerBase
             img = padarray(d_img, double([Constants.PAD, Constants.PAD]), 0);
             imshow(img, 'Parent', con.View.HistSliceAxes, 'Border','tight')
             con.ShowOverlay = false;
-            con.draw_hexs()
+            con.draw_hexs(chn)
         end
 
         function onRotateButtonPushed(con)
@@ -131,7 +129,6 @@ classdef RegisterController < ControllerBase
             idx = max(0, min(n_slices, round(slider_pos)));
             img = con.Model.Atlas.get_reference_img(ori, idx);
             imshow(imadjust(img), 'Parent', con.View.AtlasSliceAxes)
-            con.View.LateralityLabel.Text = con.Model.Atlas.get_laterality_label(ori, idx);
         end
 
         function onSliderStop(con)
@@ -188,49 +185,51 @@ classdef RegisterController < ControllerBase
 
     methods (Access=private)
 
-        function [poly, labels] = draw_hex(con, pos, parent, sep)
+        function [poly, labels] = draw_hex(con, pos, parent)
             poly = drawpolygon('Position', pos, 'Parent', parent, 'FaceAlpha', 0);
             labels = [];
             for i = 1:6
-                txt = sprintf("V%d", i);
-                labels(i) = text(pos(i, 1) + sep, pos(i, 2), txt, 'Parent', parent, 'BackgroundColor', 'w', 'FontWeight','bold');
+                labels(i) = text(pos(i, 1) + 10, pos(i, 2), "yeeeeet", 'Parent', parent);
+                disp(labels(i))
             end
             addlistener(poly, "ROIMoved", @(~, ~) con.draw_hexs(1));
         end
 
-        function draw_hexs(con, use_view)
+        function draw_hexs(con, use_view, changing_fig)
             arguments
                 con
                 use_view = false
+                changing_fig = false
             end
-
             tf_data = con.SelectedImage.TransformationData;
 
             if use_view 
                 atlas_hex_pos = con.View.AtlasHex.Position;
                 his_hex_pos = con.View.HistHex.Position;
-            else
-                atlas_hex_pos = tf_data.AtlasHex;
-                his_hex_pos = tf_data.HistHex;
             end
 
             delete(con.View.AtlasHex)
             delete(con.View.HistHex)
 
-            if isgraphics(con.View.AtlasHexLabels)
+            if ~changing_fig
+                disp("-----")
+                disp(con.View.AtlasHexLabels(1))
+                disp("-----")
                 delete(con.View.AtlasHexLabels)
-            end
-            if isgraphics(con.View.HistHexLabels)
                 delete(con.View.HistHexLabels)
             end
 
-            [atlas_hex, atlas_hex_labels] = con.draw_hex(atlas_hex_pos, con.View.AtlasSliceAxes, 7);
-            [hist_hex, hist_hex_labels] = con.draw_hex(his_hex_pos, con.View.HistSliceAxes, 60);
+            if (use_view)
+                [atlas_hex, atlas_hex_labels] = con.draw_hex(atlas_hex_pos, con.View.AtlasSliceAxes);
+                [hist_hex, hist_hex_labels] = con.draw_hex(his_hex_pos, con.View.HistSliceAxes);
+            else
+                [atlas_hex, atlas_hex_labels] = con.draw_hex(tf_data.AtlasHex, con.View.AtlasSliceAxes);
+                [hist_hex, hist_hex_labels] = con.draw_hex(tf_data.HistHex, con.View.HistSliceAxes);
+            end
             
             con.View.AtlasHex = atlas_hex;
-            con.View.HistHex = hist_hex;
-
             con.View.AtlasHexLabels = atlas_hex_labels;
+            con.View.HistHex = hist_hex;
             con.View.HistHexLabels = hist_hex_labels;
         end
 

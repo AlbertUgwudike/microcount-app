@@ -143,6 +143,28 @@ classdef Atlas
             end
         end
 
+        function lbl = get_laterality_label(atlas, ori, idx)
+            arguments
+                atlas Atlas
+                ori Orientation
+                idx 
+            end
+
+            switch ori
+                case Orientation.Axial
+                    lbl = "LEFT | RIGHT";
+                case Orientation.Sagittal
+                    mid_way = atlas.n_slices(ori) / 2;
+                    if idx < mid_way
+                        lbl = "LEFT";
+                    else
+                        lbl = "RIGHT";
+                    end
+                case Orientation.Coronal
+                    lbl = "LEFT | RIGHT";
+            end
+        end
+
     end
 
     methods (Static)

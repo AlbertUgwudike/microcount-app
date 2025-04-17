@@ -9,7 +9,7 @@ classdef (Abstract) ThreadPoolBase < handle
         function obj = ThreadPoolBase()
         end
         
-        function dispatch(tp, fcn, arg, on_finish)
+        function fut = dispatch(tp, fcn, arg, on_finish)
             arguments
                 tp ThreadPoolBase
                 fcn 
@@ -19,7 +19,7 @@ classdef (Abstract) ThreadPoolBase < handle
 
             tp.remove_completed();
             fut = tp.run(fcn, arg);
-            afterEach(fut,on_finish, 0, "PassFuture", true);
+            afterEach(fut, on_finish, 0, "PassFuture", true);
             new_idx = tp.new_process_idx();
             tp.Futures(new_idx) = fut;
         end

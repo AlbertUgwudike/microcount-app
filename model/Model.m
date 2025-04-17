@@ -162,11 +162,11 @@ classdef Model < handle
                 fprintf("%s\n%s\n", img.SourceFn, img.ConvFn);
                 mdl.io_mark_image_as_converting(img);
 
-                args = { img, mdl.AppDir };
-                mdl.ThreadPool.dispatch(@Model.bg_conv_down_img, args, @mdl.bg_conv_down_img_complete)
-
                 margs = { img, q };
-                mdl.ThreadPool.dispatch(@Model.bg_monitor_progress, margs, @(~) disp("Monitor completed"))
+                fut = mdl.ThreadPool.dispatch(@Model.bg_monitor_progress, margs, @(~) disp("Monitor completed"));
+
+                args = { img, mdl.AppDir, fut };
+                mdl.ThreadPool.dispatch(@Model.bg_conv_down_img, args, @mdl.bg_conv_down_img_complete);
             end
         end
 
@@ -354,6 +354,10 @@ classdef Model < handle
 
         function bg_conv_down_img_complete(mdl, fut)
             img_md = fut.InputArguments{1}{1};
+            monitor = fut.InputArguments{1}{3};
+
+            cancel(monitor);
+
             if ~isempty(fut.Error)
                 fprintf("Convert and Downsample: Image %s stopped after event: %s\n", img_md.ID, fut.Error.message);
                 disp([fut.Error.stack.name]);
@@ -472,7 +476,7 @@ classdef Model < handle
 
             tic
             while true
-                if toc > 90
+                if toc > 15 * 60
                     break
                 end
 

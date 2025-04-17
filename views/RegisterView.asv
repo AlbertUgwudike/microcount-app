@@ -12,7 +12,7 @@ classdef RegisterView < Component
                     AtlasSliceAxes matlab.ui.control.UIAxes
                     AtlasSliderGrid
                         AtlasSliceSlider
-                        LateralityLabel
+                        AtlasLateralityLabel
                 HistologyPanel matlab.ui.container.Panel
                 HistologyGrid
                     HistologyButtonGrid
@@ -94,6 +94,7 @@ classdef RegisterView < Component
             view.AtlasButtonGrid = uigridlayout(view.AtlasGrid);
             view.AtlasButtonGrid.ColumnWidth = {'1x', '2x', '1x'};
             view.AtlasButtonGrid.RowHeight = {'1x'};
+            view.AtlasButtonGrid.RowHeight = {'1x'};
             view.AtlasButtonGrid.Padding = [5,5,5,5];
             view.AtlasButtonGrid.Layout.Row = 1;
             view.AtlasButtonGrid.Layout.Column = 1;
@@ -117,29 +118,25 @@ classdef RegisterView < Component
             % Create AtlasSliderGrid
             view.AtlasSliderGrid = uigridlayout(view.AtlasGrid);
             view.AtlasSliderGrid.ColumnWidth = {'4x', '1x'};
+            view.AtlasButtonGrid.RowHeight = {'1x'};
             view.AtlasSliderGrid.RowHeight = {'1x'};
-            view.AtlasSliderGrid.Padding = [1,1,1,1];
-            view.AtlasSliderGrid.Layout.Row = 3;
-            view.AtlasSliderGrid.Layout.Column = 1;
-            view.AtlasSliderGrid.BackgroundColor = [0, 0, 0];
+            view.AtlasButtonGrid.Padding = [5,5,5,5];
+            view.AtlasButtonGrid.Layout.Row = 1;
+            view.AtlasButtonGrid.Layout.Column = 1;
+            view.AtlasButtonGrid.BackgroundColor = [0, 0, 0];
 
             % Create AtlasSliceSlider
-            view.AtlasSliceSlider = uislider(view.AtlasSliderGrid);
+            view.AtlasSliceSlider = uislider(view.AtlasGrid);
             view.AtlasSliceSlider.MajorTicks = [];
             view.AtlasSliceSlider.ValueChangingFcn = @(~, e) view.call_registrar(RegisterEvent.SliderAtlasSlice, e.Value);
             view.AtlasSliceSlider.ValueChangedFcn = @(~, e) view.call_registrar(RegisterEvent.SliderStop, e.Value);
             view.AtlasSliceSlider.MinorTicks = [];
-            view.AtlasSliceSlider.Layout.Row = 1;
+            view.AtlasSliceSlider.Layout.Row = 3;
             view.AtlasSliceSlider.Layout.Column = 1;
+            view.AtlasSliceSlider.FontSize = 8;
 
             % Create AtlasLateralityLabel
-            view.LateralityLabel = uilabel(view.AtlasSliderGrid);
-            view.LateralityLabel.Layout.Row = 1;
-            view.LateralityLabel.Layout.Column = 2;
-            view.LateralityLabel.FontSize = 8;
-            view.LateralityLabel.FontColor = 'white';
-            view.LateralityLabel.BackgroundColor = [0, 0, 0];
-            view.LateralityLabel.Text = '--';
+
 
             % HistologyPanel
             view.HistologyPanel = uipanel(view.BottomGrid);
