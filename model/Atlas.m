@@ -156,9 +156,9 @@ classdef Atlas
                 case Orientation.Sagittal
                     mid_way = atlas.n_slices(ori) / 2;
                     if idx < mid_way
-                        lbl = "LEFT";
-                    else
                         lbl = "RIGHT";
+                    else
+                        lbl = "LEFT";
                     end
                 case Orientation.Coronal
                     lbl = "LEFT | RIGHT";
@@ -216,6 +216,7 @@ classdef Atlas
             mask_image = atlas.get_lr_mask(tform_data.Orientation, tform_data.SliceIdx);
 
             ref_img = imref2d(tform_data.get_img_sz());
+            fprintf("Atlas: get_img_sz: [%d, %d]\n", tform_data.get_img_sz())
             tform_mat = tform_data.Transform;
 
             ali_image = imwarp(ann_image , tform_mat, 'nearest', 'Outputview', ref_img);

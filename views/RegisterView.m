@@ -116,7 +116,7 @@ classdef RegisterView < Component
 
             % Create AtlasSliderGrid
             view.AtlasSliderGrid = uigridlayout(view.AtlasGrid);
-            view.AtlasSliderGrid.ColumnWidth = {'4x', '1x'};
+            view.AtlasSliderGrid.ColumnWidth = {'3x', '1x'};
             view.AtlasSliderGrid.RowHeight = {'1x'};
             view.AtlasSliderGrid.Padding = [1,1,1,1];
             view.AtlasSliderGrid.Layout.Row = 3;
@@ -136,8 +136,9 @@ classdef RegisterView < Component
             view.LateralityLabel = uilabel(view.AtlasSliderGrid);
             view.LateralityLabel.Layout.Row = 1;
             view.LateralityLabel.Layout.Column = 2;
-            view.LateralityLabel.FontSize = 8;
+            view.LateralityLabel.FontSize = 11;
             view.LateralityLabel.FontColor = 'white';
+            view.LateralityLabel.FontWeight = 'bold';
             view.LateralityLabel.BackgroundColor = [0, 0, 0];
             view.LateralityLabel.Text = '--';
 

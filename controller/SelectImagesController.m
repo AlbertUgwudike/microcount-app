@@ -63,6 +63,11 @@ classdef SelectImagesController < ControllerBase
             end
         end
 
+        function on_cancel_all_button_pushed(con)
+            disp("SelectImagesController::on_cancel_all_button_pushed")
+            con.Model.io_cancel_microcount_processes()
+        end
+
         function onWorkspaceUpdated(con)
             disp("SelectImagesController::on_workspace_updated")
             img_mds = con.Model.WS.Images;
@@ -71,7 +76,7 @@ classdef SelectImagesController < ControllerBase
             ch_orders   = cellfun(@(o) string(o).join(","), {img_mds.ChannelOrder});
             ch_names    = cellfun(@(s) s.join(","), {img_mds.ChannelNames});
             downsampled = string([img_mds.ConvertStatus]);
-            progress    = string([img_mds.ConversionProgress]);
+            progress    = string([img_mds.ConversionProgress]) + "%";
             new_data    = [source_fns ch_counts' ch_orders' ch_names' downsampled' progress'];
             con.View.ImageTable.Data = new_data;
         end
@@ -103,6 +108,9 @@ classdef SelectImagesController < ControllerBase
 
                 case (SelectImagesEvent.ButtonApplyChannelNames)
                     con.on_apply_channel_names_button_pushed()
+
+                case (SelectImagesEvent.ButtonCancel)
+                    con.on_cancel_all_button_pushed()
 
                 case (ModelEvents.WorkspaceUpdated)
                     con.onWorkspaceUpdated()

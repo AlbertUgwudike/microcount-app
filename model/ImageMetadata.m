@@ -8,6 +8,7 @@ classdef ImageMetadata < handle
         ID (1, 1) string
 
         Size (1, 2) uint16
+        DownSize (1, 2) uint16
         ChannelOrder (1, :) uint16 = uint16.empty
         ChannelCount (1, 1) uint16 = 0
         ChannelNames (1, :) string = string.empty
@@ -41,9 +42,15 @@ classdef ImageMetadata < handle
             H = [info.Height];
             W = [info.Width];
             img_md.Size = [H(1), W(1)];
+
             img_md.ChannelCount = max([info.SamplesPerPixel, numel(info)]);
             img_md.ChannelOrder = 1:img_md.ChannelCount;
             img_md.ChannelNames = arrayfun(@(n) sprintf("CH%d", n), 1:img_md.ChannelCount);
+
+            info = imfinfo(img_md.DownFn);
+            H = [info.Height];
+            W = [info.Width];
+            img_md.DownSize = [H(1), W(1)];
         end
 
         function add_region_save_mask(img_md, region, atlas)

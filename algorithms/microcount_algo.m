@@ -11,6 +11,7 @@ function data = microcount_algo(bfr, mask, settings)
     CD68_SENSITIVITY    = settings.CD68Threshold;
     CD68_MIN_OVERLAP    = settings.MinOverlap;
     DENDRITE_THRESHOLD  = settings.Iba1Threshold;
+    SOMA_THRESHOLD      = settings.SomaThreshold;
     CHN_IBA1            = settings.ChannelIba1; 
     CHN_CD68            = settings.ChannelCD68;
 
@@ -42,7 +43,7 @@ function data = microcount_algo(bfr, mask, settings)
     cd68_mask = uint16(segment_activation(tmp, CD68_SENSITIVITY));
     cd68_mask = filter_size_cd68(cd68_mask, MAX_CD68_SIZE);
 
-    soma_mask = segment_somas(nan_background(double(iba1), r_mask));
+    soma_mask = segment_somas(nan_background(double(iba1), r_mask), SOMA_THRESHOLD);
     branches = segment_microglia(iba1, DENDRITE_THRESHOLD);
     iba1_mask = uint16(soma_mask + branches);
 

@@ -38,10 +38,10 @@ classdef RegisterController < ControllerBase
             con.SelectedImage = con.ImageSet(idx);
             img = con.Model.io_get_down_img(con.SelectedImage);
             p_img = padarray(img, double([Constants.PAD, Constants.PAD]), 0);
-            imshow(imadjust(p_img), 'Parent', con.View.HistSliceAxes);
+            imshow(imadjust(uint16(p_img)), 'Parent', con.View.HistSliceAxes);
 
             if (isempty(con.SelectedImage.TransformationData))
-                con.set_default_tform_data(size(p_img))
+                con.set_default_tform_data(size(p_img), Direction.North)
             end
             
             con.AtlasOrientation = con.SelectedImage.TransformationData.Orientation;
@@ -85,6 +85,8 @@ classdef RegisterController < ControllerBase
             p_img = padarray(d_img, double([Constants.PAD, Constants.PAD]), 0);
             tform_d = con.SelectedImage.TransformationData;
             borders = con.Model.Atlas.calc_borders(tform_d);
+            fprintf("Img Direciton: %s\n", tform_d.Direction);
+            fprintf("Con sz: [%d, %d]\n", tform_d.get_img_sz())
             fprintf("p-img size: [%d, %d]\n", size(p_img));
             fprintf("borders size: [%d, %d]\n", size(borders));
             imshow(p_img + borders, 'Parent', con.View.HistSliceAxes)
@@ -117,7 +119,7 @@ classdef RegisterController < ControllerBase
             end
             con.AtlasOrientation = con.AtlasOrientation.cycle();
             tform = con.SelectedImage.TransformationData;
-            con.set_default_tform_data(tform.get_img_sz());
+            con.set_default_tform_data(tform.get_img_sz(), tform.Direction);
             n_slices = con.Model.Atlas.n_slices(con.AtlasOrientation);
             con.View.AtlasSliceSlider.Limits = [1, n_slices];
             con.onAtlasSliceSliderChanged(tform.SliceIdx);
@@ -234,12 +236,13 @@ classdef RegisterController < ControllerBase
             con.View.HistHexLabels = hist_hex_labels;
         end
 
-        function set_default_tform_data(con, img_sz)
+        function set_default_tform_data(con, rot_sz, dir)
             ori = con.AtlasOrientation;
-            im_sz = double(img_sz);
+            rot_sz = double(rot_sz);
+            ori_sz = con.SelectedImage.DownSize + 2 * Constants.PAD;
             atlas_sz = con.Model.Atlas.get_size(ori);
             n_slices = con.Model.Atlas.n_slices(ori);
-            tf_data = TransformationData.default(im_sz, atlas_sz, n_slices);
+            tf_data = TransformationData.default(ori_sz, rot_sz, atlas_sz, n_slices, dir, ori);
             con.SelectedImage.TransformationData = tf_data;
         end
 

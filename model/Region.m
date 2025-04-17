@@ -12,12 +12,13 @@ classdef Region < handle
         Iba1Threshold (1, 1) double
         CD68Threshold (1, 1) double
         MaxCD68Size (1, 1) uint32
+        SomaThreshold (1, 1) double
         ProcessStatus (1, 1) ProcessStatus = ProcessStatus.UNPROCESSED
         Result MicrocountResult = MicrocountResult.empty
     end
     
     methods
-        function region = Region(img_md, location, iba1, cd68, cd68_max)
+        function region = Region(img_md, location, iba1, cd68, cd68_max, soma)
             region.Parent = img_md;
             region.Location = location;
             region.ID = Region.generate_id(img_md.ID, location);
@@ -27,6 +28,7 @@ classdef Region < handle
             region.Iba1Threshold = iba1;
             region.CD68Threshold = cd68;
             region.MaxCD68Size = cd68_max;
+            region.SomaThreshold = soma;
         end
 
         function apply_setting_str_list(reg, setting_list)
@@ -34,13 +36,15 @@ classdef Region < handle
             reg.Iba1Threshold = parsed_list(1);
             reg.CD68Threshold = parsed_list(2);
             reg.MaxCD68Size = uint32(parsed_list(3));
+            reg.SomaThreshold = parsed_list(4);
         end
 
         function str_list = get_setting_str_list(reg)
             iba1 = sprintf("%0.2f", reg.Iba1Threshold);
             cd68 = sprintf("%0.2f", reg.CD68Threshold);
             max_cd68 = string(reg.MaxCD68Size);
-            str_list = [iba1, cd68, max_cd68];
+            soma = sprintf("%0.2f", reg.SomaThreshold);
+            str_list = [iba1, cd68, max_cd68, soma];
         end
 
         function settings = get_microcount_settings(region)
@@ -52,7 +56,8 @@ classdef Region < handle
                 region.Parent.ChannelOrder, ...
                 region.Iba1Threshold, ...
                 region.CD68Threshold, ...
-                region.MaxCD68Size ...
+                region.MaxCD68Size, ...
+                region.SomaThreshold ...
             );
 
         end
@@ -61,7 +66,7 @@ classdef Region < handle
 
     methods (Static)
         function region = default_settings(img_md, location)
-            region = Region(img_md, location, 0.35, 0.5, 10000);
+            region = Region(img_md, location, 0.35, 0.5, 10000, 0.5);
         end
 
         function id = generate_id(identifier, location)

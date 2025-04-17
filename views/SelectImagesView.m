@@ -7,6 +7,7 @@ classdef SelectImagesView < Component
                 SelectAllButton
                 RemoveSelectedButton
                 ConvertSelectedButton
+                CancelButton
             ImageTable
             ChannelOrderGrid
                 ApplyChannelOrderButton
@@ -39,7 +40,7 @@ classdef SelectImagesView < Component
 
             % Create ButtonGrid
             view.ButtonGrid = uigridlayout(view.MainGrid);
-            view.ButtonGrid.ColumnWidth = {'1x', '1x', '1x', '1x'};
+            view.ButtonGrid.ColumnWidth = {'1x', '1x', '1x', '1x', '1x'};
             view.ButtonGrid.RowHeight = {'1x'};
             view.ButtonGrid.Padding = [1 1 1 1];
             view.ButtonGrid.Layout.Row = 1;
@@ -72,6 +73,13 @@ classdef SelectImagesView < Component
             view.ConvertSelectedButton.Layout.Column = 4;
             view.ConvertSelectedButton.Text = 'Convert Selected';
             view.ConvertSelectedButton.ButtonPushedFcn = @(~, ~) view.call_registrar(SelectImagesEvent.ButtonConvert);
+
+            % Create ConvertSelectedButton
+            view.CancelButton = uibutton(view.ButtonGrid, 'push');
+            view.CancelButton.Layout.Row = 1;
+            view.CancelButton.Layout.Column = 5;
+            view.CancelButton.Text = 'Cancel All';
+            view.CancelButton.ButtonPushedFcn = @(~, ~) view.call_registrar(SelectImagesEvent.ButtonCancel);
 
             % Create ImageTable
             view.ImageTable = uitable(view.MainGrid);

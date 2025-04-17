@@ -7,6 +7,7 @@ classdef AnalyseView < Component
                 CellThresholdEditField
                 CoMarkerThresholdEditField
                 MaxSizeEditField
+                SomaThresholdEditField
                 SelectAllButton
             RegionTable
             ButtonGrid
@@ -60,7 +61,7 @@ classdef AnalyseView < Component
 
             % Create SettingGrid
             view.SettingGrid = uigridlayout(view.MainGrid);
-            view.SettingGrid.ColumnWidth = {'1x', '1x', '1x', '1x', '1x'};
+            view.SettingGrid.ColumnWidth = {'1x', '1x', '1x', '1x', '1x', '1x'};
             view.SettingGrid.RowHeight = {'1x'};
             view.SettingGrid.Layout.Row = 1;
             view.SettingGrid.Layout.Column = 1;
@@ -87,23 +88,28 @@ classdef AnalyseView < Component
             view.MaxSizeEditField.Layout.Row = 1;
             view.MaxSizeEditField.Layout.Column = 4;
 
+            % Create SomaThresholdEditField
+            view.SomaThresholdEditField = uieditfield(view.SettingGrid, 'numeric');
+            view.SomaThresholdEditField.Layout.Row = 1;
+            view.SomaThresholdEditField.Layout.Column = 5;
+
             % Create ProcessAllButton
             view.SelectAllButton = uibutton(view.SettingGrid, 'push');
             view.SelectAllButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonSelectAll);
             view.SelectAllButton.Layout.Row = 1;
-            view.SelectAllButton.Layout.Column = 5;
+            view.SelectAllButton.Layout.Column = 6;
             view.SelectAllButton.Text = 'Select All';
 
             % Create RegionTable
             view.RegionTable = uitable(view.MainGrid);
-            view.RegionTable.ColumnName = {'RegionID'; 'Cell Threshold'; 'CoMarker Threshold'; 'Max CoMarker Size'; 'Processed'};
-            view.RegionTable.ColumnWidth = {'4x', '4x', '4x', '4x', '4x'};
+            view.RegionTable.ColumnName = {'RegionID'; 'Cell Threshold'; 'CoMarker Threshold'; 'Max CoMarker Size'; 'Some Threshold'; 'Processed'};
+            view.RegionTable.ColumnWidth = {'4x', '4x', '4x', '4x', '4x', '4x'};
             view.RegionTable.RowName = {};
             view.RegionTable.Layout.Row = 2;
             view.RegionTable.Layout.Column = 1;
             view.RegionTable.Multiselect = 'on';
             view.RegionTable.SelectionType = 'row';
-            view.RegionTable.ColumnEditable = [false, true, true, true, false];
+            view.RegionTable.ColumnEditable = [false, true, true, true, true, false];
             view.RegionTable.CellSelectionCallback = @(~, ~) view.call_registrar(AnalyseEvent.SelectionRegionTable);
             view.RegionTable.CellEditCallback = @(~, e) view.call_registrar(AnalyseEvent.CellEdited, e);
 

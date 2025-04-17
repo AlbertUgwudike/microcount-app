@@ -43,12 +43,12 @@ classdef AnalyseController < ControllerBase
         function on_cell_edited(con, event)
             disp("AnalyseController::on_cell_edited")
             idx = event.Indices(1, 1);
-            data = con.View.RegionTable.Data(idx, 2:4);
+            data = con.View.RegionTable.Data(idx, 2:5);
             region = con.RegionSet(idx);
 
             if ~Region.valid_setting_str_list(data)
                 original_settings = region.get_setting_str_list();
-                con.View.RegionTable.Data(idx, 2:4) = original_settings;
+                con.View.RegionTable.Data(idx, 2:5) = original_settings;
             else
                 con.RegionSet(idx).apply_setting_str_list(data);
                 con.Model.io_save()
@@ -57,11 +57,17 @@ classdef AnalyseController < ControllerBase
 
         function on_apply_setting_button_pushed(con) 
             disp("AnalyseController::on_apply_setting_button_pushed")
-            options = [con.View.CellThresholdEditField.Value, con.View.CoMarkerThresholdEditField.Value, con.View.MaxSizeEditField.Value];
+            options = [ ...
+                con.View.CellThresholdEditField.Value, ...
+                con.View.CoMarkerThresholdEditField.Value, ...
+                con.View.MaxSizeEditField.Value, ...
+                con.View.SomaThresholdEditField.Value ...
+            ];
+
             selection = con.View.RegionTable.Selection;
             for i = 1:numel(selection)
                 event.Indices = selection(i);
-                con.View.RegionTable.Data(event.Indices, 2:4) = options;
+                con.View.RegionTable.Data(event.Indices, 2:5) = options;
                 con.on_cell_edited(event)
             end
         end
@@ -101,8 +107,9 @@ classdef AnalyseController < ControllerBase
             iba1_col = [con.RegionSet.Iba1Threshold]';
             cd68_col = [con.RegionSet.CD68Threshold]';
             max_col = [con.RegionSet.MaxCD68Size]';
+            soma_col = [con.RegionSet.SomaThreshold]';
             pro_col = string([con.RegionSet.ProcessStatus]');
-            con.View.RegionTable.Data = [region_ids iba1_col cd68_col max_col pro_col];
+            con.View.RegionTable.Data = [region_ids iba1_col cd68_col max_col soma_col, pro_col];
 
             if height(con.RegionSet) > 0 && isempty(con.View.RegionTable.Selection)
                 con.View.RegionTable.Selection = 1;

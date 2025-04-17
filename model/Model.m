@@ -162,6 +162,12 @@ classdef Model < handle
                 fprintf("%s\n%s\n", img.SourceFn, img.ConvFn);
                 mdl.io_mark_image_as_converting(img);
 
+                if (isfile(img.ConvFn))
+                    fprintf("Error, image already exists!\n");
+                    fprintf("Please delete previous converted img:\n%s\n", img.ConvFn);
+                    continue
+                end
+
                 margs = { img, q };
                 fut = mdl.ThreadPool.dispatch(@Model.bg_monitor_progress, margs, @(~) disp("Monitor completed"));
 
@@ -181,7 +187,6 @@ classdef Model < handle
                 return
             end
             img = uint16(imread(img_md.DownFn));
-            disp(size(img))
             if ~isempty(img_md.TransformationData)
                 img = imrotate(img, img_md.TransformationData.Direction.to_angle());
             end
@@ -202,8 +207,7 @@ classdef Model < handle
             t_data = TransformationData(hist_vertices, atlas_vertices, tform, img_sz, slice_idx, dir, ori);
             img_md.TransformationData = t_data;
             img_md.Aligned = true;
-            mdl.io_save()
-            mdl.call_registrars(ModelEvents.WorkspaceUpdated)
+            mdl.save_and_update()
         end
 
         function io_align_image_col(mdl, img_md, slice_idx, ori)
@@ -230,8 +234,7 @@ classdef Model < handle
             t_data = TransformationData(hist_vertices, atlas_vertices, tform, img_sz, slice_idx, dir, ori);
             img_md.TransformationData = t_data;
             img_md.Aligned = true;
-            mdl.io_save()
-            mdl.call_registrars(ModelEvents.WorkspaceUpdated)
+            mdl.save_and_update()
         end
 
         function io_rotate_image(mdl, img_md)
@@ -241,8 +244,7 @@ classdef Model < handle
             end
             direction = img_md.TransformationData.Direction;
             img_md.TransformationData.Direction = direction.rotate();
-            mdl.io_save()
-            mdl.call_registrars(ModelEvents.WorkspaceUpdated)
+            mdl.save_and_update()
         end
 
         function io_cycle_atlas_orientation(mdl, img_md)
@@ -361,6 +363,7 @@ classdef Model < handle
             if ~isempty(fut.Error)
                 fprintf("Convert and Downsample: Image %s stopped after event: %s\n", img_md.ID, fut.Error.message);
                 disp([fut.Error.stack.name]);
+                img_md.ConversionProgress = 0;
                 img_md.ConvertStatus = ConvertStatus.UNCONVERTED;
             else
                 fprintf("Convert and Downsample: Image %s completed after: %s\n", img_md.ID, fut.RunningDuration);
