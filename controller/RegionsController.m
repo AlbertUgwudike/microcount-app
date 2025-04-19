@@ -32,7 +32,7 @@ classdef RegionsController < ControllerBase
             p_img = padarray(d_img, double([Constants.PAD, Constants.PAD]), 0);
             tform_d = con.SelectedImage.TransformationData;
             locs = con.SelectedImage.all_locations();
-            img = p_img + con.Model.Atlas.calc_borders(tform_d, locs);
+            img = imadjust(p_img) + con.Model.Atlas.calc_borders(tform_d, locs);
             con.View.HistologyImage.ImageSource = cat(3, img, img, img);
         end
 

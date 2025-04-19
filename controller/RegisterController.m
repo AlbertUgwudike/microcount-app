@@ -26,22 +26,17 @@ classdef RegisterController < ControllerBase
         function onAligmentTableSelection(con)
             disp("RegisterController::onAligmentTableSelection")
 
-            if height(con.View.AlignmentTable.Data) == 0
-                return
-            end
-
             if numel(con.View.AlignmentTable.Selection) == 0
                 return
             end
             
             idx = con.View.AlignmentTable.Selection;
             con.SelectedImage = con.ImageSet(idx);
-            img = con.Model.io_get_down_img(con.SelectedImage);
-            p_img = padarray(img, double([Constants.PAD, Constants.PAD]), 0);
-            imshow(imadjust(uint16(p_img)), 'Parent', con.View.HistSliceAxes);
+
+            p_size = con.SelectedImage.DownSize;
 
             if (isempty(con.SelectedImage.TransformationData))
-                con.set_default_tform_data(size(p_img), Direction.North)
+                con.set_default_tform_data(p_size, Direction.North)
             end
             
             con.AtlasOrientation = con.SelectedImage.TransformationData.Orientation;
@@ -89,7 +84,7 @@ classdef RegisterController < ControllerBase
             fprintf("Con sz: [%d, %d]\n", tform_d.get_img_sz())
             fprintf("p-img size: [%d, %d]\n", size(p_img));
             fprintf("borders size: [%d, %d]\n", size(borders));
-            imshow(p_img + borders, 'Parent', con.View.HistSliceAxes)
+            imshow(imadjust(p_img) + uint16(borders), 'Parent', con.View.HistSliceAxes)
             con.ShowOverlay = true;
             con.draw_hexs()
         end
@@ -98,7 +93,7 @@ classdef RegisterController < ControllerBase
             disp("RegisterController::onToggleOverlayOff")
             d_img = con.Model.io_get_down_img(con.SelectedImage);
             img = padarray(d_img, double([Constants.PAD, Constants.PAD]), 0);
-            imshow(img, 'Parent', con.View.HistSliceAxes, 'Border','tight')
+            imshow(imadjust(img), 'Parent', con.View.HistSliceAxes, 'Border','tight')
             con.ShowOverlay = false;
             con.draw_hexs()
         end
