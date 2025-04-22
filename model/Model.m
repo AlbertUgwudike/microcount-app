@@ -397,9 +397,9 @@ classdef Model < handle
                     tic
                     result = mdl.bg_run_microcount(regions(i));
                     elapsed = string(toc);
-                    send(q, {true, regions(i), result, elapsed});
+                    send(q, {true, regions(i).ID, result, elapsed});
                 catch e
-                    send(q, {false, regions(i), e});
+                    send(q, {false, regions(i).ID, e});
                 end
             end
         end
@@ -423,7 +423,10 @@ classdef Model < handle
 
         function bg_run_microcount_complete(mdl, args)
             err     = ~args{1};
-            region  = args{2};
+            region_id  = args{2};
+
+            regions = mdl.get_all_regions();
+            region = regions([regions.ID] == region_id);
 
             if err
                 fprintf("Microcount: Region %s stopped after event: %s\n", region.ID, args{3}.message);
