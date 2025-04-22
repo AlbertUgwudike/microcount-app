@@ -108,9 +108,6 @@ classdef Model < handle
 
             for i = 1:height(names)
                 fn = convertCharsToStrings(names(i));
-                % if ~mdl.is_valid_img(fn)
-                %     continue
-                % end
                 new_img = ImageMetadata(fn, mdl.WS.DirName);
                 current_img_set = mdl.WS.Images;
                 updated_img_set = cat(1, current_img_set, new_img);
@@ -303,10 +300,16 @@ classdef Model < handle
                 regions (:, 1) Region
             end
 
-            for i = 1:numel(regions)
-                region = regions(i);
-                mdl.io_mark_region_as_processing(region);
-                mdl.ThreadPool.dispatch(@mdl.bg_run_microcount, region, @mdl.bg_run_microcount_complete);
+            n_workers = mdl.ThreadPool.get_n_workers();
+            batches = Utility.create_batches_modulo(regions, n_workers);
+
+            q = parallel.pool.DataQueue;
+            afterEach(q, @mdl.bg_run_microcount_complete);
+
+            for i = 1:n_workers
+                args = { q, batches{i} };
+                mdl.io_set_processing_status(batches{i}, ProcessStatus.PROCESSING);
+                mdl.ThreadPool.dispatch(@mdl.bg_run_microcount_batch, args, @mdl.bg_batch_complete);
             end
         end
 
@@ -342,10 +345,11 @@ classdef Model < handle
 
     methods (Access = public)
 
-        function io_mark_region_as_processing(mdl, region)
-            region.ProcessStatus = ProcessStatus.PROCESSING;
-            mdl.io_save()
-            mdl.call_registrars(ModelEvents.WorkspaceUpdated)
+        function io_set_processing_status(mdl, regions, status)
+            for i = 1:numel(regions)
+                regions(i).ProcessStatus = status;
+            end
+            mdl.save_and_update()
         end
 
         function io_mark_image_as_converting(mdl, img_md)
@@ -370,8 +374,34 @@ classdef Model < handle
                 img_md.set_metadata()
                 img_md.ConvertStatus = ConvertStatus.CONVERTED;
             end
-            mdl.io_save()
-            mdl.call_registrars(ModelEvents.WorkspaceUpdated)
+
+            mdl.save_and_update()
+        end
+
+        function bg_batch_complete(mdl, fut)
+            if ~isempty(fut.Error)
+                fprintf("Microcount: Batch stopped after event: %s\n", fut.Error.message);
+                disp([fut.Error.stack.name]);
+            else
+                fprintf("Microcount: Batch completed after: %s\n", fut.RunningDuration);
+            end
+        end
+
+        function msg = bg_run_microcount_batch(mdl, args)
+            q       = args{1};
+            regions = args{2};
+            msg = "Placeholder";
+
+            for i = 1:numel(regions)
+                try
+                    tic
+                    result = mdl.bg_run_microcount(regions(i));
+                    elapsed = string(toc);
+                    send(q, {true, regions(i), result, elapsed});
+                catch e
+                    send(q, {false, regions(i), e});
+                end
+            end
         end
 
         function result = bg_run_microcount(mdl, region)
@@ -391,20 +421,20 @@ classdef Model < handle
             imwrite(output_img, region.ProcFn);
         end
 
-        function bg_run_microcount_complete(mdl, fut)
-            region = fut.InputArguments{1};
-            if ~isempty(fut.Error)
-                fprintf("Microcount: Region %s stopped after event: %s\n", region.ID, fut.Error.message);
+        function bg_run_microcount_complete(mdl, args)
+            err     = ~args{1};
+            region  = args{2};
+
+            if err
+                fprintf("Microcount: Region %s stopped after event: %s\n", region.ID, args{3}.message);
                 region.ProcessStatus = ProcessStatus.UNPROCESSED;
             else
-                fprintf("Microcount: Region %s completed after: %s\n", region.ID, fut.RunningDuration);
-                result = fetchOutputs(fut);
-                region.Result = result;
+                fprintf("Microcount: Region %s completed after: %s\n", region.ID, args{4});
+                region.Result = args{3};
                 region.ProcessStatus = ProcessStatus.PROCESSED;
             end
 
-            mdl.io_save()
-            mdl.call_registrars(ModelEvents.WorkspaceUpdated)
+            mdl.save_and_update()
         end
 
         function panic(mdl, err_enum)

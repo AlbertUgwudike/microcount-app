@@ -66,6 +66,14 @@ classdef Utility
             warning(s)
         end
 
+        function batches = create_batches_modulo(lst, n)
+            full_idx = 0:(numel(lst) - 1);
+            for i = 1:n
+                idx = mod(full_idx, n) == i - 1;
+                batches{i} = lst(idx);
+            end
+        end
+
         function export_table = region2export(regions)
             export_table.file_name = [regions.ProcFn]';
             export_table.mask_file_name = [regions.MaskFn]';

@@ -111,10 +111,15 @@ classdef AnalyseController < ControllerBase
             pro_col = string([con.RegionSet.ProcessStatus]');
             con.View.RegionTable.Data = [region_ids iba1_col cd68_col max_col soma_col, pro_col];
 
-            if height(con.RegionSet) > 0 && isempty(con.View.RegionTable.Selection)
-                con.View.RegionTable.Selection = 1;
-                con.on_region_selected()
+            if height(con.RegionSet) == 0
+                return
             end
+
+            if isempty(con.View.RegionTable.Selection)
+                con.View.RegionTable.Selection = 1;
+            end
+            
+            con.on_region_selected()
         end
 
         function on_image_subview_moved(con, pos)
