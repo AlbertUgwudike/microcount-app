@@ -12,7 +12,8 @@ classdef RegionsView < Component
                     RegionSelectorButtonGrid
                         AddToSelectedLeftButton
                         AddToSelectedRightButton
-                        DeselectAllButton
+                        RemoveFromSelectedLeftButton
+                        RemoveFromSelectedRightButton
                     RegionSelector
             BottomGrid
                 HistologyImage
@@ -101,7 +102,7 @@ classdef RegionsView < Component
 
             % Create RegionSelectorButtonGrid
             view.RegionSelectorButtonGrid = uigridlayout(view.RightGrid);
-            view.RegionSelectorButtonGrid.ColumnWidth = {'1x', '1x', '1x'};
+            view.RegionSelectorButtonGrid.ColumnWidth = {'1x', '1x', '1x', '1x', '1x'};
             view.RegionSelectorButtonGrid.RowHeight = {'1x'};
             view.RegionSelectorButtonGrid.ColumnSpacing = 1;
             view.RegionSelectorButtonGrid.RowSpacing = 1;
@@ -111,7 +112,7 @@ classdef RegionsView < Component
 
             % Create AddToSelectedLeftButton
             view.AddToSelectedLeftButton = uibutton(view.RegionSelectorButtonGrid, 'push');
-            view.AddToSelectedLeftButton.Text = 'Add To Left';
+            view.AddToSelectedLeftButton.Text = 'Add - Left';
             view.AddToSelectedLeftButton.Layout.Row = 1;
             view.AddToSelectedLeftButton.Layout.Column = 1;
             view.AddToSelectedLeftButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegionsEvent.ButtonAddToSelected, Laterality.LEFT);
@@ -119,17 +120,24 @@ classdef RegionsView < Component
 
             % Create AddToSelectedRightButton
             view.AddToSelectedRightButton = uibutton(view.RegionSelectorButtonGrid, 'push');
-            view.AddToSelectedRightButton.Text = 'Add To Right';
+            view.AddToSelectedRightButton.Text = 'Add - R';
             view.AddToSelectedRightButton.Layout.Row = 1;
             view.AddToSelectedRightButton.Layout.Column = 2;
             view.AddToSelectedRightButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegionsEvent.ButtonAddToSelected, Laterality.RIGHT);
 
-            % Create DeselectAllButton
-            view.DeselectAllButton = uibutton(view.RegionSelectorButtonGrid, 'push');
-            view.DeselectAllButton.Text = 'Deselect All';
-            view.DeselectAllButton.Layout.Row = 1;
-            view.DeselectAllButton.Layout.Column = 3;
-            view.DeselectAllButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegionsEvent.ButtonDeselectAll);
+            % Create RemoveFromSelectedLeftButton
+            view.RemoveFromSelectedLeftButton = uibutton(view.RegionSelectorButtonGrid, 'push');
+            view.RemoveFromSelectedLeftButton.Text = 'Remove - L';
+            view.RemoveFromSelectedLeftButton.Layout.Row = 1;
+            view.RemoveFromSelectedLeftButton.Layout.Column = 4;
+            view.RemoveFromSelectedLeftButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegionsEvent.ButtonRemoveFromSelected, Laterality.LEFT);
+
+             % Create RemoveFromSelectedRightButton
+            view.RemoveFromSelectedRightButton = uibutton(view.RegionSelectorButtonGrid, 'push');
+            view.RemoveFromSelectedRightButton.Text = 'Remove - R';
+            view.RemoveFromSelectedRightButton.Layout.Row = 1;
+            view.RemoveFromSelectedRightButton.Layout.Column = 5;
+            view.RemoveFromSelectedRightButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegionsEvent.ButtonRemoveFromSelected, Laterality.RIGHT);
 
             % Create RegionSelector
             view.RegionSelector = uitree(view.RightGrid, 'checkbox');

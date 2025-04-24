@@ -55,9 +55,17 @@ classdef RegionsController < ControllerBase
             end
         end
 
-        function onDeselectAllButtonPushed(con)
-            disp("RegionsController::onDeselectAllButtonPushed")
-            con.View.RegionSelector.CheckedNodes = [];
+        function onRemoveFromSelectedButtonPushed(con, laterality)
+            disp("RegionsController::onRemoveFromSelectedButtonPushed")
+            if (isempty(con.View.ImageTable.Selection))
+                return
+            end
+            idx = con.View.ImageTable.Selection;
+            keys = con.get_selected_keys();
+            for i = 1:numel(idx)
+                img_md = con.ImageSet(idx(i));
+                con.Model.io_remove_regions(img_md, keys, laterality);
+            end
         end
 
         function onEraseRegionsButtonPushed(con)
@@ -68,7 +76,7 @@ classdef RegionsController < ControllerBase
             idx = con.View.ImageTable.Selection;
             for i = 1:numel(idx)
                 img_md = con.ImageSet(idx(i));
-                con.Model.io_remove_regions(img_md);
+                con.Model.io_remove_all_regions(img_md);
             end
         end
 
@@ -123,8 +131,8 @@ classdef RegionsController < ControllerBase
                 case (RegionsEvent.ButtonAddToSelected)
                     con.onAddToSelectedButtonPushed(data)
 
-                case (RegionsEvent.ButtonDeselectAll)
-                    con.onDeselectAllButtonPushed()
+                case (RegionsEvent.ButtonRemoveFromSelected)
+                    con.onRemoveFromSelectedButtonPushed(data)
 
                 case (RegionsEvent.ButtonEraseRegions)
                     con.onEraseRegionsButtonPushed()

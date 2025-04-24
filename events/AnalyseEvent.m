@@ -3,6 +3,7 @@ classdef AnalyseEvent
         SelectionRegionTable
         CellEdited
         ButtonApplySetting
+        ButtonSelectUnprocessed
         ButtonProcessSelected
         ButtonSelectAll
         ButtonExport

@@ -11,6 +11,7 @@ classdef AnalyseView < Component
                 SelectAllButton
             RegionTable
             ButtonGrid
+                SelectUnprocessedButton
                 ProcessSelectedButton
                 CancelButton
                 ExportButton
@@ -115,31 +116,38 @@ classdef AnalyseView < Component
 
             % Create ButtonGrid
             view.ButtonGrid = uigridlayout(view.MainGrid);
-            view.ButtonGrid.ColumnWidth = {'1x', '1x', '1x', '1x', '1x'};
+            view.ButtonGrid.ColumnWidth = {'1x', '1x', '1x', '1x', '1x', '1x'};
             view.ButtonGrid.RowHeight = {'1x'};
             view.ButtonGrid.ColumnSpacing = 5;
             view.ButtonGrid.Layout.Row = 3;
             view.ButtonGrid.Layout.Column = 1;
 
+            % Create SelectUnprocessedButton
+            view.SelectUnprocessedButton = uibutton(view.ButtonGrid, 'push');
+            view.SelectUnprocessedButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonSelectUnprocessed);
+            view.SelectUnprocessedButton.Layout.Row = 1;
+            view.SelectUnprocessedButton.Layout.Column = 2;
+            view.SelectUnprocessedButton.Text = 'Select Unprocessed';
+
             % Create ProcessSelectedButton
             view.ProcessSelectedButton = uibutton(view.ButtonGrid, 'push');
             view.ProcessSelectedButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonProcessSelected);
             view.ProcessSelectedButton.Layout.Row = 1;
-            view.ProcessSelectedButton.Layout.Column = 2;
+            view.ProcessSelectedButton.Layout.Column = 3;
             view.ProcessSelectedButton.Text = 'Process Selected';
 
             % Create CancelButton
             view.CancelButton = uibutton(view.ButtonGrid, 'push');
             view.CancelButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonCancel);
             view.CancelButton.Layout.Row = 1;
-            view.CancelButton.Layout.Column = 3;
+            view.CancelButton.Layout.Column = 4;
             view.CancelButton.Text = 'Cancel';
 
             % Create ExportButton
             view.ExportButton = uibutton(view.ButtonGrid, 'push');
             view.ExportButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonExport);
             view.ExportButton.Layout.Row = 1;
-            view.ExportButton.Layout.Column = 4;
+            view.ExportButton.Layout.Column = 5;
             view.ExportButton.Text = 'Export Processed';
 
             % Create BottomGrid

@@ -72,6 +72,14 @@ classdef AnalyseController < ControllerBase
             end
         end
 
+        function on_select_unprocessed_button_pushed(con) 
+            disp("AnalyseController::on_select_unprocessed_button_pushed")
+            regions = con.Model.get_all_regions();
+            idx = [regions.ProcessStatus] ~= ProcessStatus.PROCESSED;
+            all_idx = 1:numel(regions);
+            con.View.RegionTable.Selection = all_idx(idx);
+        end
+
         function on_process_selected_button_pushed(con) 
             disp("AnalyseController::on_process_selected_button_pushed")
             selection = con.View.RegionTable.Selection;
@@ -82,6 +90,14 @@ classdef AnalyseController < ControllerBase
             disp("AnalyseController::on_process_all_button_pushed")
             N = height(con.View.RegionTable.Data);
             con.View.RegionTable.Selection = 1:N;
+            % regions = con.Model.get_all_regions();
+            % idx = [regions.ProcessStatus] == ProcessStatus.PROCESSING;
+            % proc_regions = regions(idx);
+            % for i = 1:numel(proc_regions)
+            %     region = proc_regions(i);
+            %     region.ProcessStatus = ProcessStatus.UNPROCESSED;
+            % end
+            % con.Model.save_and_update()
         end
 
         function on_cancel_button_pushed(con) 
@@ -145,6 +161,9 @@ classdef AnalyseController < ControllerBase
 
                 case (AnalyseEvent.ButtonApplySetting)
                     con.on_apply_setting_button_pushed()
+
+                case (AnalyseEvent.ButtonSelectUnprocessed)
+                    con.on_select_unprocessed_button_pushed()
 
                 case (AnalyseEvent.ButtonProcessSelected)
                     con.on_process_selected_button_pushed()

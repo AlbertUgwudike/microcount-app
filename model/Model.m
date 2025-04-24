@@ -284,7 +284,24 @@ classdef Model < handle
             mdl.save_and_update()
         end
 
-        function io_remove_regions(mdl, img_md)
+        function io_remove_regions(mdl, img_md, keys, laterality)
+
+            arguments
+                mdl Model
+                img_md ImageMetadata
+                keys (:, 1) RegionKey
+                laterality Laterality
+            end
+            
+            locs = [img_md.Regions.Location];
+            region_idx = ismember([locs.RegionKey], keys);
+            laterality_idx = [locs.Laterality] == laterality;
+            idx = ~(region_idx & laterality_idx);
+            img_md.Regions = img_md.Regions(idx);
+            mdl.save_and_update()
+        end
+
+        function io_remove_all_regions(mdl, img_md)
             img_md.Regions = Region.empty;
             mdl.save_and_update()
         end
@@ -378,7 +395,7 @@ classdef Model < handle
             mdl.save_and_update()
         end
 
-        function bg_batch_complete(mdl, fut)
+        function bg_batch_complete(~, fut)
             if ~isempty(fut.Error)
                 fprintf("Microcount: Batch stopped after event: %s\n", fut.Error.message);
                 disp([fut.Error.stack.name]);

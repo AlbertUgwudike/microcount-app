@@ -4,7 +4,7 @@ classdef RegionsEvent
         ButtonEraseRegions
         SelectionImageTable
         ButtonAddToSelected
-        ButtonDeselectAll
+        ButtonRemoveFromSelected
         RegionChecked
     end
 end
