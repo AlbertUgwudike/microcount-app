@@ -66,14 +66,6 @@ classdef Utility
             warning(s)
         end
 
-        function batches = create_batches_modulo(lst, n)
-            full_idx = 0:(numel(lst) - 1);
-            for i = 1:n
-                idx = mod(full_idx, n) == i - 1;
-                batches{i} = lst(idx);
-            end
-        end
-
         function export_table = region2export(regions)
             export_table.file_name = [regions.ProcFn]';
             export_table.mask_file_name = [regions.MaskFn]';
@@ -94,6 +86,17 @@ classdef Utility
             
             export_table = struct2table(export_table);
         end
+
+        function out = color_segmentation(seg)
+            out = uint16(zeros([size(seg) 3]));
+            N = max(seg, [], "all");
+            for i = 1:N
+                for j = 1:3
+                    out(:, :, j) = out(:, :, j) + uint16((seg == i) * (rand() * 20000 + 40000));
+                end
+            end
+        end
+
 
     end
 end

@@ -115,7 +115,7 @@ classdef Model < handle
                 mdl.WS.Images = updated_img_set(idx);
             end
 
-            mdl.call_registrars(ModelEvents.WorkspaceUpdated)
+            mdl.save_and_update()
         end
 
         function io_save(mdl)
@@ -317,17 +317,11 @@ classdef Model < handle
                 regions (:, 1) Region
             end
 
-            n_workers = mdl.ThreadPool.get_n_workers();
-            batches = Utility.create_batches_modulo(regions, n_workers);
-
-            q = parallel.pool.DataQueue;
-            afterEach(q, @mdl.bg_run_microcount_complete);
-
-            for i = 1:n_workers
-                args = { q, batches{i} };
-                mdl.io_set_processing_status(batches{i}, ProcessStatus.PROCESSING);
-                mdl.ThreadPool.dispatch(@mdl.bg_run_microcount_batch, args, @mdl.bg_batch_complete);
-            end
+            mdl.ThreadPool.dispatch_batch( ...
+                @(batch) mdl.io_set_processing_status(batch, ProcessStatus.PROCESSING), ...
+                @mdl.bg_run_microcount_batch, regions, ...
+                @mdl.bg_run_microcount_complete ...
+            );
         end
 
         function io_cancel_microcount_processes(mdl)
@@ -395,15 +389,6 @@ classdef Model < handle
             mdl.save_and_update()
         end
 
-        function bg_batch_complete(~, fut)
-            if ~isempty(fut.Error)
-                fprintf("Microcount: Batch stopped after event: %s\n", fut.Error.message);
-                disp([fut.Error.stack.name]);
-            else
-                fprintf("Microcount: Batch completed after: %s\n", fut.RunningDuration);
-            end
-        end
-
         function msg = bg_run_microcount_batch(mdl, args)
             q       = args{1};
             regions = args{2};
@@ -432,9 +417,13 @@ classdef Model < handle
             file_name_chrs = convertStringsToChars(region.Parent.ConvFn);
             bfr_img = BioformatsImage(file_name_chrs);
             settings = region.get_microcount_settings();
+
             data = microcount_algo(bfr_img, mask, settings);
-%             data = dab_algo(bfr_img, mask, settings);
             [result, output_img] = data2result(data);
+
+            % data = dab_algo(bfr_img, mask, settings);
+            % [result, output_img] = data2result(data, 'dab');
+            
             imwrite(output_img, region.ProcFn);
         end
 

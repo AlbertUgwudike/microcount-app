@@ -10,7 +10,7 @@ function data = dab_algo(bfr, mask, settings)
     MAX_CD68_SIZE       = settings.MaxCD68Size;
     CD68_SENSITIVITY    = settings.CD68Threshold;
     CD68_MIN_OVERLAP    = settings.MinOverlap;
-    DENDRITE_THRESHOLD  = 0.4;
+    DENDRITE_THRESHOLD  = settings.Iba1Threshold;
 
     % Crop region -----------------------------------------------
     
@@ -32,15 +32,15 @@ function data = dab_algo(bfr, mask, settings)
     };
 
     % 65535 for microglia lof images
-    scale_f = 255;
+    scale_f = 65536;
 
     % astrocytes dab
     im_fn = bfr.filename;
     img = imread(im_fn, Index=1, PixelRegion=pixel_region);
-    img = min(img, [], 3);
-    img = double(img) / scale_f;
-    img = imadjust(img);
-    iba1 = uint16(65535 * (1 - img));
+    min_img = min(img, [], 3);
+    scl_img = double(min_img) / scale_f;
+    adj_img = imadjust(scl_img);
+    iba1 = 1 - adj_img;
 
 
     cd68 = uint16(zeros(size(iba1)));
@@ -56,11 +56,30 @@ function data = dab_algo(bfr, mask, settings)
     cd68_mask = uint16(segment_activation(tmp, CD68_SENSITIVITY));
     cd68_mask = filter_size_cd68(cd68_mask, MAX_CD68_SIZE);
 
-    soma_mask = segment_somas(nan_background(double(iba1), r_mask), 0.2);
-    branches = segment_microglia(iba1, DENDRITE_THRESHOLD);
-    iba1_mask = uint16(soma_mask + branches);
+    % soma_mask = segment_somas(nan_background(double(iba1), r_mask), 0.2);
+    % soma_mask = imerode(soma_mask, strel('disk', 2, 0));
 
-    [regions, segmented]        = floodfill(soma_mask, iba1_mask);
+    % branches = segment_microglia(iba1, DENDRITE_THRESHOLD);
+    % iba1_mask = uint16(soma_mask + branches);
+    % 
+    % [regions, segmented]        = floodfill(soma_mask, iba1_mask);
+
+    T = adaptthresh(iba1, 0.9,'ForegroundPolarity','dark');
+    op_img = imbinarize(iba1, T);
+    op_img = medfilt2(op_img, [10, 10]);
+    soma_mask = bwareafilt(op_img, [400, 5000]);
+
+    branches = mat2gray(pacefilt(iba1, 21, 5) / 4) > 0.3;
+
+    iba1_mask = uint16(soma_mask + branches);
+    [regions, segmented] = floodfill(soma_mask, iba1_mask);
+
+    for i = 1:max(segmented, [], 'all')
+        if sum(segmented == i, "all") > 15000
+            segmented(segmented == i) = 0;
+        end
+    end
+
     [av_rotundity, poly_mask]   = rotundity(regions, soma_mask);
     [detected, skelly]          = count_branches(segmented);
 
@@ -78,7 +97,7 @@ function data = dab_algo(bfr, mask, settings)
 
     data = MicrocountData( ...
         iba1            = iba1, ...
-        cd68            = cd68, ...
+        cd68            = img, ... % I will not forget this
         segmented       = segmented, ...
         iba1Mask        = iba1_mask, ...
         cd68Mask        = cd68_mask, ...

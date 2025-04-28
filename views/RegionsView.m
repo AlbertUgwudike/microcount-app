@@ -102,7 +102,7 @@ classdef RegionsView < Component
 
             % Create RegionSelectorButtonGrid
             view.RegionSelectorButtonGrid = uigridlayout(view.RightGrid);
-            view.RegionSelectorButtonGrid.ColumnWidth = {'1x', '1x', '1x', '1x', '1x'};
+            view.RegionSelectorButtonGrid.ColumnWidth = {'3x', '3x', '1x', '3x', '3x'};
             view.RegionSelectorButtonGrid.RowHeight = {'1x'};
             view.RegionSelectorButtonGrid.ColumnSpacing = 1;
             view.RegionSelectorButtonGrid.RowSpacing = 1;
@@ -112,7 +112,7 @@ classdef RegionsView < Component
 
             % Create AddToSelectedLeftButton
             view.AddToSelectedLeftButton = uibutton(view.RegionSelectorButtonGrid, 'push');
-            view.AddToSelectedLeftButton.Text = 'Add - Left';
+            view.AddToSelectedLeftButton.Text = 'Add - L';
             view.AddToSelectedLeftButton.Layout.Row = 1;
             view.AddToSelectedLeftButton.Layout.Column = 1;
             view.AddToSelectedLeftButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegionsEvent.ButtonAddToSelected, Laterality.LEFT);
@@ -127,14 +127,14 @@ classdef RegionsView < Component
 
             % Create RemoveFromSelectedLeftButton
             view.RemoveFromSelectedLeftButton = uibutton(view.RegionSelectorButtonGrid, 'push');
-            view.RemoveFromSelectedLeftButton.Text = 'Remove - L';
+            view.RemoveFromSelectedLeftButton.Text = 'Del - L';
             view.RemoveFromSelectedLeftButton.Layout.Row = 1;
             view.RemoveFromSelectedLeftButton.Layout.Column = 4;
             view.RemoveFromSelectedLeftButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegionsEvent.ButtonRemoveFromSelected, Laterality.LEFT);
 
              % Create RemoveFromSelectedRightButton
             view.RemoveFromSelectedRightButton = uibutton(view.RegionSelectorButtonGrid, 'push');
-            view.RemoveFromSelectedRightButton.Text = 'Remove - R';
+            view.RemoveFromSelectedRightButton.Text = 'Del - R';
             view.RemoveFromSelectedRightButton.Layout.Row = 1;
             view.RemoveFromSelectedRightButton.Layout.Column = 5;
             view.RemoveFromSelectedRightButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegionsEvent.ButtonRemoveFromSelected, Laterality.RIGHT);

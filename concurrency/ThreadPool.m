@@ -9,6 +9,28 @@ classdef ThreadPool < handle
         function obj = ThreadPool()
         end
         
+        function dispatch_batch(tp, pre_batch_fcn, fcn, arg_vec, on_finish_fcn)
+            arguments
+                tp ThreadPool
+                pre_batch_fcn
+                fcn 
+                arg_vec
+                on_finish_fcn 
+            end
+
+            n_workers = tp.get_n_workers();
+            batches = ThreadPool.create_batches_modulo(arg_vec, n_workers);
+
+            q = parallel.pool.DataQueue;
+            afterEach(q, on_finish_fcn);
+
+            for i = 1:n_workers
+                args = { q, batches{i} };
+                pre_batch_fcn(batches{i});
+                tp.dispatch(fcn, args, @ThreadPool.batch_complete);
+            end
+        end
+
         function fut = dispatch(tp, fcn, arg, on_finish)
             arguments
                 tp ThreadPool
@@ -29,11 +51,11 @@ classdef ThreadPool < handle
         end
 
         function n_workers = get_n_workers(~)
-            n_workers = 12;
+            n_workers = 4;
         end
     end
 
-    methods (Access = protected)
+    methods (Access = private)
 
         function remove_completed(tp)
             if isempty(tp.Futures)
@@ -52,6 +74,23 @@ classdef ThreadPool < handle
     methods (Static)
         function fut = run(fcn, arg)
             fut = parfeval(fcn, 1, arg);
+        end
+
+        function batch_complete(~, fut)
+            if ~isempty(fut.Error)
+                fprintf("Batch stopped after event: %s\n", fut.Error.message);
+                disp([fut.Error.stack.name]);
+            else
+                fprintf("Batch completed after: %s\n", fut.RunningDuration);
+            end
+        end
+
+        function batches = create_batches_modulo(lst, n)
+            full_idx = 0:(numel(lst) - 1);
+            for i = 1:n
+                idx = mod(full_idx, n) == i - 1;
+                batches{i} = lst(idx);
+            end
         end
     end
 end

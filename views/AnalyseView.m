@@ -94,13 +94,6 @@ classdef AnalyseView < Component
             view.SomaThresholdEditField.Layout.Row = 1;
             view.SomaThresholdEditField.Layout.Column = 5;
 
-            % Create ProcessAllButton
-            view.SelectAllButton = uibutton(view.SettingGrid, 'push');
-            view.SelectAllButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonSelectAll);
-            view.SelectAllButton.Layout.Row = 1;
-            view.SelectAllButton.Layout.Column = 6;
-            view.SelectAllButton.Text = 'Select All';
-
             % Create RegionTable
             view.RegionTable = uitable(view.MainGrid);
             view.RegionTable.ColumnName = {'RegionID'; 'Cell Threshold'; 'CoMarker Threshold'; 'Max CoMarker Size'; 'Soma Threshold'; 'Processed'};
@@ -116,11 +109,18 @@ classdef AnalyseView < Component
 
             % Create ButtonGrid
             view.ButtonGrid = uigridlayout(view.MainGrid);
-            view.ButtonGrid.ColumnWidth = {'1x', '1x', '1x', '1x', '1x', '1x'};
+            view.ButtonGrid.ColumnWidth = {'2x', '2x', '2x', '2x', '2x'};
             view.ButtonGrid.RowHeight = {'1x'};
             view.ButtonGrid.ColumnSpacing = 5;
             view.ButtonGrid.Layout.Row = 3;
             view.ButtonGrid.Layout.Column = 1;
+
+            % Create ProcessAllButton
+            view.SelectAllButton = uibutton(view.ButtonGrid, 'push');
+            view.SelectAllButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonSelectAll);
+            view.SelectAllButton.Layout.Row = 1;
+            view.SelectAllButton.Layout.Column = 1;
+            view.SelectAllButton.Text = 'Select All';
 
             % Create SelectUnprocessedButton
             view.SelectUnprocessedButton = uibutton(view.ButtonGrid, 'push');

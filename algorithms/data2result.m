@@ -1,6 +1,7 @@
-function [result, img] = data2result(data)
+function [result, img] = data2result(data, type_str)
     arguments
         data MicrocountData
+        type_str string = "micro"
     end
 
     MASK_INTENSITY = 65535;
@@ -23,21 +24,21 @@ function [result, img] = data2result(data)
     );
     
     % generate output image -------------------------------------------
+    if type_str == "micro"
+        cd68_adj = imadjust(data.cd68, [0.001; 0.005], []);
+        iba1_adj = imadjust(data.iba1); %, [0.0714; 0.3392], []);
     
-    cd68_adj = imadjust(data.cd68, [0.001; 0.005], []);
-    iba1_adj = imadjust(data.iba1); %, [0.0714; 0.3392], []);
-    % iba1_adj(data.iba1Mask == 0) = 0; %, [0.0714; 0.3392], []);
+        tmp = zeros([size(data.cd68), 3]);
+        tmp(:, :, 1) = iba1_adj;
+        tmp(:, :, 2) = cd68_adj .* uint16(comboMask);
+        tmp(:, :, 3) = data.poly_mask * MASK_INTENSITY;
+    else
+        poly_mask = imdilate(data.poly_mask, strel('disk', 1, 0));
+        poly_mask = Utility.color_segmentation(poly_mask) / 1.5;
+        tmp = uint16(data.cd68) * 256;
+        tmp(poly_mask > 0) = poly_mask(poly_mask > 0);
+    end
 
-    % left = zeros([size(data.cd68), 3]);
-    % left(:, :, 1) = iba1_adj;
-    % left(:, :, 2) = cd68_adj;
-
-    right = zeros([size(data.cd68), 3]);
-    right(:, :, 1) = iba1_adj;
-    right(:, :, 2) = cd68_adj .* uint16(comboMask);
-    right(:, :, 3) = data.poly_mask * MASK_INTENSITY;
-
-    % img = uint16(cat(2, left, right));
-    img = uint16(right);
+    img = uint16(tmp);
 end
 
