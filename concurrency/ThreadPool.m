@@ -76,7 +76,7 @@ classdef ThreadPool < handle
             fut = parfeval(fcn, 1, arg);
         end
 
-        function batch_complete(~, fut)
+        function batch_complete(fut)
             if ~isempty(fut.Error)
                 fprintf("Batch stopped after event: %s\n", fut.Error.message);
                 disp([fut.Error.stack.name]);
