@@ -143,7 +143,8 @@ classdef AnalyseController < ControllerBase
             bbox = round(20 * pos);
             proc_img_fn = con.SelectedRegion.ProcFn;
             pixel_region = { [bbox(2), bbox(2) + bbox(4)], [bbox(1), bbox(1) + bbox(3)] };
-            con.View.ProcessedImage.ImageSource = imread(proc_img_fn, PixelRegion = pixel_region);
+            proc_img = imread(proc_img_fn, PixelRegion = pixel_region);
+            con.View.ProcessedImage.ImageSource = proc_img;
         end
         
     end

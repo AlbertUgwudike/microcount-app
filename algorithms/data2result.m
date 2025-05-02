@@ -34,9 +34,8 @@ function [result, img] = data2result(data, type_str)
         tmp(:, :, 3) = data.poly_mask * MASK_INTENSITY;
     else
         poly_mask = imdilate(data.poly_mask, strel('disk', 1, 0));
-        % poly_mask = Utility.color_segmentation(poly_mask) / 1.5;
-        poly_mask = label2rgb(poly_mask, 'spring', 'k', 'shuffle');
-        tmp = uint16(data.cd68) * 256;
+        poly_mask = uint16(label2rgb(poly_mask, 'spring', 'k', 'shuffle')) * 256;
+        tmp = uint16(data.cd68) * 64;
         tmp(poly_mask > 0) = poly_mask(poly_mask > 0);
     end
 

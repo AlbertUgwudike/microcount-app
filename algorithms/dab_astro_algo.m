@@ -1,4 +1,4 @@
-function data = dab_algo(bfr, mask, settings)
+function data = dab_astro_algo(bfr, mask, settings)
 
     arguments
         bfr BioformatsImage

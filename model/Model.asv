@@ -422,10 +422,10 @@ classdef Model < handle
 %             [result, output_img] = data2result(data);
 
             data = dab_astro_algo(bfr_img, mask, settings);
-            [result, output_img] = data2result(data, 'dab_astro');
-
-%             data = dab_astro_algo(bfr_img, mask, settings);
-%             [result, output_img] = data2result(data, 'dab_micro');
+            [result, output_img] = data2result(data, 'astro');
+            
+            data = dab_astro_algo(bfr_img, mask, settings);
+            [result, output_img] = data2result(data, 'astro');
             
             imwrite(output_img, region.ProcFn);
         end
