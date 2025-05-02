@@ -5,7 +5,6 @@ function data = dab_algo(bfr, mask, settings)
         mask logical
         settings MicrocountSettings
     end
-
     MM2_PER_PIXEL       = prod(bfr.pxSize) / 1e6;
     MAX_CD68_SIZE       = settings.MaxCD68Size;
     CD68_SENSITIVITY    = settings.CD68Threshold;
@@ -31,10 +30,20 @@ function data = dab_algo(bfr, mask, settings)
         [bbox(1), (bbox(1) + bbox(3) - 1)]
     };
 
-    % 65535 for microglia lof images
-    scale_f = 65536;
+    % % 65535 for microglia lof images
+    % scale_f = 65536;
+    % 
+    % % astrocytes dab
+    % im_fn = bfr.filename;
+    % img = imread(im_fn, Index=1, PixelRegion=pixel_region);
+    % min_img = min(img, [], 3);
+    % scl_img = double(min_img) / scale_f;
+    % adj_img = imadjust(scl_img);
+    % iba1 = 1 - adj_img;
 
-    % astrocytes dab
+    % -----------------------
+
+    scale_f = 65535;
     im_fn = bfr.filename;
     img = imread(im_fn, Index=1, PixelRegion=pixel_region);
     min_img = min(img, [], 3);
@@ -42,13 +51,37 @@ function data = dab_algo(bfr, mask, settings)
     adj_img = imadjust(scl_img);
     iba1 = 1 - adj_img;
 
-
     cd68 = uint16(zeros(size(iba1)));
     
     r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
-
     cd68(~r_mask) = 0;
     iba1(~r_mask) = 0;
+
+    T = adaptthresh(iba1, 0.9,'ForegroundPolarity','dark');
+    op_img = imbinarize(iba1, T);
+    op_img = medfilt2(op_img, [10, 10]);
+    soma_mask = bwareafilt(op_img, [400, 5000]);
+
+    branches = mat2gray(pacefilt(iba1, 21, 5) / 4) > 0.3;
+
+    iba1_mask = uint16(soma_mask + branches);
+    [regions, segmented] = floodfill(soma_mask, iba1_mask);
+
+    % for i = 1:max(segmented, [], 'all')
+    %     if sum(segmented == i, "all") > 15000
+    %         segmented(segmented == i) = 0;
+    %     end
+    % end
+
+    % -----------------------
+
+
+    % cd68 = uint16(zeros(size(iba1)));
+    % 
+    % r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
+    % 
+    % cd68(~r_mask) = 0;
+    % iba1(~r_mask) = 0;
 
     % Segment and count -----------------------------------------
  
@@ -64,21 +97,21 @@ function data = dab_algo(bfr, mask, settings)
     % 
     % [regions, segmented]        = floodfill(soma_mask, iba1_mask);
 
-    T = adaptthresh(iba1, 0.9,'ForegroundPolarity','dark');
-    op_img = imbinarize(iba1, T);
-    op_img = medfilt2(op_img, [10, 10]);
-    soma_mask = bwareafilt(op_img, [400, 5000]);
+    % T = adaptthresh(iba1, 0.9,'ForegroundPolarity','dark');
+    % op_img = imbinarize(iba1, T);
+    % op_img = medfilt2(op_img, [10, 10]);
+    % soma_mask = bwareafilt(op_img, [400, 5000]);
+    % 
+    % branches = mat2gray(pacefilt(iba1, 21, 5) / 4) > 0.3;
+    % 
+    % iba1_mask = uint16(soma_mask + branches);
+    % [regions, segmented] = floodfill(soma_mask, iba1_mask);
 
-    branches = mat2gray(pacefilt(iba1, 21, 5) / 4) > 0.3;
-
-    iba1_mask = uint16(soma_mask + branches);
-    [regions, segmented] = floodfill(soma_mask, iba1_mask);
-
-    for i = 1:max(segmented, [], 'all')
-        if sum(segmented == i, "all") > 15000
-            segmented(segmented == i) = 0;
-        end
-    end
+    % for i = 1:max(segmented, [], 'all')
+    %     if sum(segmented == i, "all") > 15000
+    %         segmented(segmented == i) = 0;
+    %     end
+    % end
 
     [av_rotundity, poly_mask]   = rotundity(regions, soma_mask);
     [detected, skelly]          = count_branches(segmented);
@@ -113,7 +146,6 @@ function data = dab_algo(bfr, mask, settings)
         mm2_per_pixel   = MM2_PER_PIXEL, ...
         region_mask     = r_mask ...
     );
-
 
     
 end
