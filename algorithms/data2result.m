@@ -36,13 +36,19 @@ function [result, img] = data2result(data, type_str)
 
         case "dab_micro"
             poly_mask = imdilate(data.poly_mask, strel('disk', 1, 0));
-            poly_mask = uint16(label2rgb(poly_mask, 'spring', 'k', 'shuffle')) * 256;
+            poly_mask = uint16(label2rgb(poly_mask, 'jet', 'k', 'shuffle')) * 256;
             tmp = uint16(data.cd68) * 64;
             tmp(poly_mask > 0) = poly_mask(poly_mask > 0);
 
         case "dab_astro"
             poly_mask = imdilate(data.poly_mask, strel('disk', 1, 0));
-            poly_mask = uint16(label2rgb(poly_mask, 'spring', 'k', 'shuffle')) * 256;
+            poly_mask = uint16(label2rgb(poly_mask, 'jet', 'k', 'shuffle')) * 256;
+            tmp = uint16(data.cd68) * 256;
+            tmp(poly_mask > 0) = poly_mask(poly_mask > 0);
+
+        case "fluor_neun"
+            poly_mask = imdilate(data.poly_mask, strel('disk', 1, 0));
+            poly_mask = uint16(label2rgb(poly_mask, 'jet', 'k', 'shuffle')) * 256;
             tmp = uint16(data.cd68) * 256;
             tmp(poly_mask > 0) = poly_mask(poly_mask > 0);
     end

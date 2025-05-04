@@ -51,7 +51,7 @@ classdef ThreadPool < handle
         end
 
         function n_workers = get_n_workers(~)
-            n_workers = 4;
+            n_workers = 1;
         end
     end
 

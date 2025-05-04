@@ -47,13 +47,13 @@ function data = algo_dab_micro(bfr, mask, settings)
     cd68 = uint16(zeros(size(iba1)));
     
     cd68(~r_mask) = 0;
-    img(repmat(~r_mask, 1, 1, 3)) = 0;
+    % img(repmat(~r_mask, 1, 1, 3)) = 0;
 
     p_out = log_norm(pacefilt(iba1, 21, 5) / 4);
     branches = p_out > 0.5;
     
-    soma_mask = iba1 >= 0.95;
-    soma_mask = bwareafilt(soma_mask, [300, 1000]);
+    soma_mask = iba1 >= 0.9;
+    soma_mask = bwareafilt(soma_mask, [200, 1000]);
 
     iba1_mask = uint16(soma_mask + branches);
     [regions, segmented] = floodfill(soma_mask, iba1_mask);
@@ -78,6 +78,11 @@ function data = algo_dab_micro(bfr, mask, settings)
     overlap_pcs = perc(overlap_counts, all_micro_counts);
 
     nActivated = sum(overlap_pcs >= CD68_MIN_OVERLAP, "all");
+
+    border_img = uint16(bwperim(r_mask));
+    border_img = imdilate(border_img, strel('disk', 3, 0));
+
+    img = img .* repmat(1 - border_img, 1, 1, 3);
 
     data = MicrocountData( ...
         iba1            = iba1, ...
