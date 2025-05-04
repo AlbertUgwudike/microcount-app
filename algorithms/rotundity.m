@@ -1,6 +1,7 @@
 function [avRotundity, poly_mask] = rotundity(region_pts, soma_mask)
 
     total_rotundity = 0;
+    n = 0;
     N = height(region_pts);
     poly_mask = zeros(size(soma_mask));
 
@@ -14,6 +15,19 @@ function [avRotundity, poly_mask] = rotundity(region_pts, soma_mask)
         mask = zeros(H, W);
         indices = sub2ind([H, W], I, J);
         mask(indices) = true;
+       
+        % compute rotundity ----------------
+        try
+            K = convhull(I, J);
+            vertices = cat(2, J(K), I(K));
+            solid_poly = poly2mask(vertices(:, 1), vertices(:, 2), H, W);
+            total_rotundity = total_rotundity + height(pts) / sum(solid_poly, "all");
+            n = n + 1;
+        catch e
+            fprintf("Rotundity, convex hull failed: %s\n", e.message)
+            continue
+        end
+        % ----------------------------------
 
         % compute perimeters ----------------
         perim = bwperim(mask);
@@ -29,20 +43,9 @@ function [avRotundity, poly_mask] = rotundity(region_pts, soma_mask)
         
         poly_mask(idx) = i;
         % ----------------------------------
-       
-        % compute rotundity ----------------
-        if height(I) < 3
-            disp("Rotundity: Small Microglia Detected")
-            continue;
-        end
-        K = convhull(I, J);
-        vertices = cat(2, J(K), I(K));
-        solid_poly = poly2mask(vertices(:, 1), vertices(:, 2), H, W);
-        total_rotundity = total_rotundity + height(pts) / sum(solid_poly, "all");
-        % ----------------------------------
 
     end
     
-    avRotundity = total_rotundity / N;
+    avRotundity = total_rotundity / n;
 end
 

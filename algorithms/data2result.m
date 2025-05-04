@@ -24,19 +24,27 @@ function [result, img] = data2result(data, type_str)
     );
     
     % generate output image -------------------------------------------
-    if type_str == "micro"
-        cd68_adj = imadjust(data.cd68, [0.001; 0.005], []);
-        iba1_adj = imadjust(data.iba1); %, [0.0714; 0.3392], []);
-    
-        tmp = zeros([size(data.cd68), 3]);
-        tmp(:, :, 1) = iba1_adj;
-        tmp(:, :, 2) = cd68_adj .* uint16(comboMask);
-        tmp(:, :, 3) = data.poly_mask * MASK_INTENSITY;
-    else
-        poly_mask = imdilate(data.poly_mask, strel('disk', 1, 0));
-        poly_mask = uint16(label2rgb(poly_mask, 'spring', 'k', 'shuffle')) * 256;
-        tmp = uint16(data.cd68) * 64;
-        tmp(poly_mask > 0) = poly_mask(poly_mask > 0);
+    switch type_str
+        case "micro"
+            cd68_adj = imadjust(data.cd68, [0.001; 0.005], []);
+            iba1_adj = imadjust(data.iba1); %, [0.0714; 0.3392], []);
+        
+            tmp = zeros([size(data.cd68), 3]);
+            tmp(:, :, 1) = iba1_adj;
+            tmp(:, :, 2) = cd68_adj .* uint16(comboMask);
+            tmp(:, :, 3) = data.poly_mask * MASK_INTENSITY;
+
+        case "dab_micro"
+            poly_mask = imdilate(data.poly_mask, strel('disk', 1, 0));
+            poly_mask = uint16(label2rgb(poly_mask, 'spring', 'k', 'shuffle')) * 256;
+            tmp = uint16(data.cd68) * 64;
+            tmp(poly_mask > 0) = poly_mask(poly_mask > 0);
+
+        case "dab_astro"
+            poly_mask = imdilate(data.poly_mask, strel('disk', 1, 0));
+            poly_mask = uint16(label2rgb(poly_mask, 'spring', 'k', 'shuffle')) * 256;
+            tmp = uint16(data.cd68) * 256;
+            tmp(poly_mask > 0) = poly_mask(poly_mask > 0);
     end
 
     img = uint16(tmp);

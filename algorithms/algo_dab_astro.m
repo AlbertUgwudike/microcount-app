@@ -1,4 +1,4 @@
-function data = dab_astro_algo(bfr, mask, settings)
+function data = algo_dab_astro(bfr, mask, settings)
 
     arguments
         bfr BioformatsImage
@@ -30,88 +30,40 @@ function data = dab_astro_algo(bfr, mask, settings)
         [bbox(1), (bbox(1) + bbox(3) - 1)]
     };
 
-    % % 65535 for microglia lof images
-    % scale_f = 65536;
-    % 
-    % % astrocytes dab
-    % im_fn = bfr.filename;
-    % img = imread(im_fn, Index=1, PixelRegion=pixel_region);
-    % min_img = min(img, [], 3);
-    % scl_img = double(min_img) / scale_f;
-    % adj_img = imadjust(scl_img);
-    % iba1 = 1 - adj_img;
-
     % -----------------------
+
+    r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
 
     scale_f = 65535;
     im_fn = bfr.filename;
     img = imread(im_fn, Index=1, PixelRegion=pixel_region);
     min_img = min(img, [], 3);
-    scl_img = double(min_img) / scale_f;
-    adj_img = imadjust(scl_img);
+    filt_img = wiener2(min_img, [10, 10]);
+    scl_img = double(filt_img) / scale_f;
+    nan_img = nan_background(scl_img, r_mask);
+    norm_img = log_norm(nan_img);
+    adj_img = mat2gray(norm_img, [-2.5, 3.0]);
     iba1 = 1 - adj_img;
 
     cd68 = uint16(zeros(size(iba1)));
     
-    r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
     cd68(~r_mask) = 0;
-    iba1(~r_mask) = 0;
+    img(repmat(~r_mask, 1, 1, 3)) = 0;
 
-    T = adaptthresh(iba1, 0.9,'ForegroundPolarity','dark');
-    op_img = imbinarize(iba1, T);
-    op_img = medfilt2(op_img, [10, 10]);
-    soma_mask = bwareafilt(op_img, [400, 5000]);
+    p_out = log_norm(pacefilt(iba1, 21, 5) / 4);
+    branches = p_out > 0.7;
 
-    branches = mat2gray(pacefilt(iba1, 21, 5) / 4) > 0.3;
+    fp_out = medfilt2(p_out, [10, 10]);
+    soma_mask = fp_out > 2.6;
 
     iba1_mask = uint16(soma_mask + branches);
     [regions, segmented] = floodfill(soma_mask, iba1_mask);
-
-    % for i = 1:max(segmented, [], 'all')
-    %     if sum(segmented == i, "all") > 15000
-    %         segmented(segmented == i) = 0;
-    %     end
-    % end
-
-    % -----------------------
-
-
-    % cd68 = uint16(zeros(size(iba1)));
-    % 
-    % r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
-    % 
-    % cd68(~r_mask) = 0;
-    % iba1(~r_mask) = 0;
 
     % Segment and count -----------------------------------------
  
     tmp = nan_background(double(cd68), r_mask);
     cd68_mask = uint16(segment_activation(tmp, CD68_SENSITIVITY));
     cd68_mask = filter_size_cd68(cd68_mask, MAX_CD68_SIZE);
-
-    % soma_mask = segment_somas(nan_background(double(iba1), r_mask), 0.2);
-    % soma_mask = imerode(soma_mask, strel('disk', 2, 0));
-
-    % branches = segment_microglia(iba1, DENDRITE_THRESHOLD);
-    % iba1_mask = uint16(soma_mask + branches);
-    % 
-    % [regions, segmented]        = floodfill(soma_mask, iba1_mask);
-
-    % T = adaptthresh(iba1, 0.9,'ForegroundPolarity','dark');
-    % op_img = imbinarize(iba1, T);
-    % op_img = medfilt2(op_img, [10, 10]);
-    % soma_mask = bwareafilt(op_img, [400, 5000]);
-    % 
-    % branches = mat2gray(pacefilt(iba1, 21, 5) / 4) > 0.3;
-    % 
-    % iba1_mask = uint16(soma_mask + branches);
-    % [regions, segmented] = floodfill(soma_mask, iba1_mask);
-
-    % for i = 1:max(segmented, [], 'all')
-    %     if sum(segmented == i, "all") > 15000
-    %         segmented(segmented == i) = 0;
-    %     end
-    % end
 
     [av_rotundity, poly_mask]   = rotundity(regions, soma_mask);
     [detected, skelly]          = count_branches(segmented);

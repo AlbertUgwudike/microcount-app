@@ -1,19 +1,15 @@
-function data = microcount_algo(bfr, mask, settings)
+function data = algo_dab_micro(bfr, mask, settings)
 
     arguments
         bfr BioformatsImage
         mask logical
         settings MicrocountSettings
     end
-
     MM2_PER_PIXEL       = prod(bfr.pxSize) / 1e6;
     MAX_CD68_SIZE       = settings.MaxCD68Size;
     CD68_SENSITIVITY    = settings.CD68Threshold;
     CD68_MIN_OVERLAP    = settings.MinOverlap;
     DENDRITE_THRESHOLD  = settings.Iba1Threshold;
-    SOMA_THRESHOLD      = settings.SomaThreshold;
-    CHN_IBA1            = settings.ChannelIba1; 
-    CHN_CD68            = settings.ChannelCD68;
 
     % Crop region -----------------------------------------------
     
@@ -29,13 +25,38 @@ function data = microcount_algo(bfr, mask, settings)
         fprintf("WARNING: Small Image %i X %i\n", bbox(3), bbox(4));
     end
 
-    cd68 = getPlane(bfr, 1, CHN_CD68, 1, 'ROI', bbox);
-    iba1 = getPlane(bfr, 1, CHN_IBA1, 1, 'ROI', bbox);
-    
+    pixel_region = { 
+        [bbox(2), (bbox(2) + bbox(4) - 1)];
+        [bbox(1), (bbox(1) + bbox(3) - 1)]
+    };
+
+    % -----------------------
+
     r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
 
+    scale_f = 65535;
+    im_fn = bfr.filename;
+    img = imread(im_fn, Index=1, PixelRegion=pixel_region);
+    min_img = min(img, [], 3);
+    scl_img = double(min_img) / scale_f;
+    nan_img = nan_background(scl_img, r_mask);
+    norm_img = log_norm(nan_img);
+    adj_img = mat2gray(norm_img, [-2.5, 3.0]);
+    iba1 = 1 - adj_img;
+
+    cd68 = uint16(zeros(size(iba1)));
+    
     cd68(~r_mask) = 0;
-    iba1(~r_mask) = 0;
+    img(repmat(~r_mask, 1, 1, 3)) = 0;
+
+    p_out = log_norm(pacefilt(iba1, 21, 5) / 4);
+    branches = p_out > 0.5;
+    
+    soma_mask = iba1 >= 0.95;
+    soma_mask = bwareafilt(soma_mask, [300, 1000]);
+
+    iba1_mask = uint16(soma_mask + branches);
+    [regions, segmented] = floodfill(soma_mask, iba1_mask);
 
     % Segment and count -----------------------------------------
  
@@ -43,11 +64,6 @@ function data = microcount_algo(bfr, mask, settings)
     cd68_mask = uint16(segment_activation(tmp, CD68_SENSITIVITY));
     cd68_mask = filter_size_cd68(cd68_mask, MAX_CD68_SIZE);
 
-    soma_mask = segment_somas(nan_background(double(iba1), r_mask), SOMA_THRESHOLD);
-    branches = segment_microglia(iba1, DENDRITE_THRESHOLD);
-    iba1_mask = uint16(soma_mask + branches);
-
-    [regions, segmented]        = floodfill(soma_mask, iba1_mask);
     [av_rotundity, poly_mask]   = rotundity(regions, soma_mask);
     [detected, skelly]          = count_branches(segmented);
 
@@ -65,7 +81,7 @@ function data = microcount_algo(bfr, mask, settings)
 
     data = MicrocountData( ...
         iba1            = iba1, ...
-        cd68            = cd68, ...
+        cd68            = img, ... % I will not forget this
         segmented       = segmented, ...
         iba1Mask        = iba1_mask, ...
         cd68Mask        = cd68_mask, ...
@@ -81,5 +97,7 @@ function data = microcount_algo(bfr, mask, settings)
         mm2_per_pixel   = MM2_PER_PIXEL, ...
         region_mask     = r_mask ...
     );
+
+    
 end
 

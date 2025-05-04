@@ -79,7 +79,7 @@ classdef ThreadPool < handle
         function batch_complete(fut)
             if ~isempty(fut.Error)
                 fprintf("Batch stopped after event: %s\n", fut.Error.message);
-                disp([fut.Error.stack.name]);
+                disp([fut.Error.remotecause{1}]);
             else
                 fprintf("Batch completed after: %s\n", fut.RunningDuration);
             end

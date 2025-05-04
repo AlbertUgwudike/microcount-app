@@ -393,7 +393,6 @@ classdef Model < handle
             q       = args{1};
             regions = args{2};
             msg = "Placeholder";
-
             for i = 1:numel(regions)
                 try
                     tic
@@ -418,14 +417,14 @@ classdef Model < handle
             bfr_img = BioformatsImage(file_name_chrs);
             settings = region.get_microcount_settings();
 
-%             data = microcount_algo(bfr_img, mask, settings);
-%             [result, output_img] = data2result(data);
+            data = algo_fluor_micro(bfr_img, mask, settings);
+            [result, output_img] = data2result(data);
 
-            data = dab_astro_algo(bfr_img, mask, settings);
-            [result, output_img] = data2result(data, 'dab_astro');
+            % data = algo_dab_astro(bfr_img, mask, settings);
+            % [result, output_img] = data2result(data, 'dab_astro');
 
-%             data = dab_astro_algo(bfr_img, mask, settings);
-%             [result, output_img] = data2result(data, 'dab_micro');
+            % data = algo_dab_micro(bfr_img, mask, settings);
+            % [result, output_img] = data2result(data, 'dab_micro');
             
             imwrite(output_img, region.ProcFn);
         end
