@@ -417,8 +417,8 @@ classdef Model < handle
             bfr_img = BioformatsImage(file_name_chrs);
             settings = region.get_microcount_settings();
 
-            % data = algo_fluor_micro(bfr_img, mask, settings);
-            % [result, output_img] = data2result(data);
+            data = algo_fluor_micro(bfr_img, mask, settings);
+            [result, output_img] = data2result(data);
 
             % data = algo_dab_astro(bfr_img, mask, settings);
             % [result, output_img] = data2result(data, 'dab_astro');
@@ -426,8 +426,8 @@ classdef Model < handle
             % data = algo_dab_micro(bfr_img, mask, settings);
             % [result, output_img] = data2result(data, 'dab_micro');
 
-            data = algo_fluor_neun(bfr_img, mask, settings);
-            [result, output_img] = data2result(data, 'fluor_neun');
+            % data = algo_fluor_neun(bfr_img, mask, settings);
+            % [result, output_img] = data2result(data, 'fluor_neun');
             
             imwrite(output_img, region.ProcFn);
         end
