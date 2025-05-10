@@ -26,14 +26,9 @@ classdef ThreadPool < handle
             margs = { arg_vec, monitor_q };
             fut = tp.dispatch(monitor_send_fcn, margs, @(f) disp(f.Error.message));
 
-            disp(tp.Futures)
-
             tp.dispatch_batch(pre_batch_fcn, fcn, arg_vec, on_finish_fcn);
 
-            disp("yeet")
-            disp(tp.Futures)
-
-            afterAll(tp.Futures(2:numel(tp.Futures)), @(f) disp(f), 0, "PassFuture", true);
+            afterAll(tp.Futures, @(~) cancel(fut), 0, "PassFuture", true);
         end
 
         function dispatch_batch(tp, pre_batch_fcn, fcn, arg_vec, on_finish_fcn)
@@ -88,7 +83,7 @@ classdef ThreadPool < handle
             if isempty(tp.Futures)
                 idx = [];
             else
-                idx = contains([tp.Futures.State], "finished");
+                idx = [tp.Futures.State] == "finished";
             end
             tp.Futures = tp.Futures(~idx);
         end

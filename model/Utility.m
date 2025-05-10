@@ -97,6 +97,11 @@ classdef Utility
             end
         end
 
+        function out = zip(arr1, arr2)
+            idxs = 1:min(numel(arr1), numel(arr2));
+            out = arrayfun(@(i) Pair(arr1(i), arr2(i)), idxs);
+        end
+
 
     end
 end

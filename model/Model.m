@@ -148,29 +148,49 @@ classdef Model < handle
 
         function io_convert_and_downsample(mdl, idx)
 
-            q = parallel.pool.DataQueue;
-            afterEach(q, @(p) mdl.update_progress(p));
+            bool_idx = false(1, numel(mdl.WS.Images));
+            bool_idx(idx) = true;
 
-            for i = 1:numel(idx)
-                img = mdl.WS.Images(idx(i));
-                if (img.ConvertStatus == ConvertStatus.CONVERTED)
-                    continue
-                end
-                fprintf("%s\n%s\n", img.SourceFn, img.ConvFn);
-                mdl.io_mark_image_as_converting(img);
+            not_converted = [mdl.WS.Images.ConvertStatus] ~= ConvertStatus.CONVERTED;
+            not_file_exists = arrayfun(@(img) ~isfile(img.ConvFn), mdl.WS.Images);
 
-                if (isfile(img.ConvFn))
-                    fprintf("Error, image already exists!\n");
-                    fprintf("Please delete previous converted img:\n%s\n", img.ConvFn);
-                    continue
-                end
+            convert_idx = bool_idx & not_converted & not_file_exists;
+            imgs = mdl.WS.Images(convert_idx);
 
-                margs = { img, q };
-                fut = mdl.ThreadPool.dispatch(@Model.bg_monitor_progress, margs, @(~) disp("Monitor completed"));
+            app_dir_vec = repmat(mdl.AppDir, 1, numel(imgs));
+            args = Utility.zip(imgs, app_dir_vec);
 
-                args = { img, mdl.AppDir, fut };
-                mdl.ThreadPool.dispatch(@Model.bg_conv_down_img, args, @mdl.bg_conv_down_img_complete);
-            end
+            mdl.ThreadPool.dispatch_batch_monitored( ...
+                @mdl.io_mark_image_as_converting, ...
+                @Model.bg_conv_down_img, args, ...
+                @mdl.bg_conv_down_img_complete, ...
+                @Model.bg_monitor_progress, ...
+                @mdl.update_progress ...
+            )
+
+            % q = parallel.pool.DataQueue;
+            % afterEach(q, @(p) mdl.update_progress(p));
+            % 
+            % for i = 1:numel(idx)
+            %     img = mdl.WS.Images(idx(i));
+            %     if (img.ConvertStatus == ConvertStatus.CONVERTED)
+            %         continue
+            %     end
+            %     fprintf("%s\n%s\n", img.SourceFn, img.ConvFn);
+            %     mdl.io_mark_image_as_converting(img);
+            % 
+            %     if (isfile(img.ConvFn))
+            %         fprintf("Error, image already exists!\n");
+            %         fprintf("Please delete previous converted img:\n%s\n", img.ConvFn);
+            %         continue
+            %     end
+            % 
+            %     margs = { img, q };
+            %     fut = mdl.ThreadPool.dispatch(@Model.bg_monitor_progress, margs, @(~) disp("Monitor completed"));
+            % 
+            %     args = { img, mdl.AppDir, fut };
+            %     mdl.ThreadPool.dispatch(@Model.bg_conv_down_img, args, @mdl.bg_conv_down_img_complete);
+            % end
         end
 
         function img = io_get_down_img(mdl, img_md)
@@ -363,25 +383,26 @@ classdef Model < handle
             mdl.save_and_update()
         end
 
-        function io_mark_image_as_converting(mdl, img_md)
-            img_md.ConvertStatus = ConvertStatus.CONVERTING;
-            mdl.io_save()
-            mdl.call_registrars(ModelEvents.WorkspaceUpdated)
+        function io_mark_image_as_converting(mdl, pairs)
+            img_mds = arrayfun(@(p) p.Left, pairs);
+            for i = 1:numel(img_mds)
+                img_mds(i).ConvertStatus = ConvertStatus.CONVERTING;
+            end
+            mdl.save_and_update()
         end
 
-        function bg_conv_down_img_complete(mdl, fut)
-            img_md = fut.InputArguments{1}{1};
-            monitor = fut.InputArguments{1}{3};
+        function bg_conv_down_img_complete(mdl, args)
+            err     = ~args{1};
+            img_id  = args{2};
+            img_md  = mdl.WS.Images([mdl.WS.Images.ID] == img_id);
 
-            cancel(monitor);
-
-            if ~isempty(fut.Error)
-                fprintf("Convert and Downsample: Image %s stopped after event: %s\n", img_md.ID, fut.Error.message);
+            if err
+                fprintf("Convert and Downsample: Image %s stopped after event: %s\n", img_id, args{3});
                 disp([fut.Error.stack.name]);
                 img_md.ConversionProgress = 0;
                 img_md.ConvertStatus = ConvertStatus.UNCONVERTED;
             else
-                fprintf("Convert and Downsample: Image %s completed after: %s\n", img_md.ID, fut.RunningDuration);
+                fprintf("Convert and Downsample: Image %s completed after: %s\n", img_id, args{4});
                 img_md.set_metadata()
                 img_md.ConvertStatus = ConvertStatus.CONVERTED;
             end
@@ -468,9 +489,16 @@ classdef Model < handle
         end
 
         function update_progress(mdl, p)
+            ids = p{1};
+            pcs = p{2};
+
             images = [mdl.WS.Images];
-            idx = [images.ID] == p{1};
-            images(idx).ConversionProgress = p{2};
+
+            for i = 1:numel(ids)
+                idx = [images.ID] == ids(i);
+                images(idx).ConversionProgress = pcs(i);
+            end
+
             mdl.call_registrars(ModelEvents.ConversionProgress);
         end
 
@@ -479,22 +507,35 @@ classdef Model < handle
     methods (Static)
 
         function msg = bg_conv_down_img(args)
-            img_md = args{1};
-            app_dir = args{2};
-
-            [~, ~, ext] = fileparts(img_md.SourceFn);
-
-            if ismember(ext, [".tif", ".tiff"])
-                copyfile(img_md.SourceFn, img_md.ConvFn);
-            else
-                err = lof2tiff(app_dir, img_md.SourceFn, img_md.ConvFn);
-                if err == 1
-                    glumpers
-                end
-            end
-
-            Model.bg_down_img(img_md);
+            q     = args{1};
+            pairs = args{2};
             msg = "Complete";
+
+            for i = 1:numel(pairs)
+                img_md  = pairs(i).Left;
+                app_dir = pairs(i).Right;
+
+                [~, ~, ext] = fileparts(img_md.SourceFn);
+
+                try
+                    tic
+                    if ismember(ext, [".tif", ".tiff"])
+                        copyfile(img_md.SourceFn, img_md.ConvFn);
+                    else
+                        err = lof2tiff(app_dir, img_md.SourceFn, img_md.ConvFn);
+                        if err == 1
+                            err_msg = sprintf("Conversion failed for image: %s\n", img_md.SourceFn);
+                            throw(MException("ConvDown", err_msg))
+                        end
+                    end
+                    elapsed = string(toc);
+                    send(q, {true, img_md.ID, "", elapsed});
+                catch e
+                    send(q, {false, img_md.ID, e});
+                end
+    
+                Model.bg_down_img(img_md);
+            end
         end
 
         function msg = bg_down_img(img_md)
@@ -514,12 +555,11 @@ classdef Model < handle
         end
 
         function msg = bg_monitor_progress(args)
-            img_md = args{1};
+            img_mds = arrayfun(@(p) p.Left, args{1});
             q = args{2};
 
-            disp("Commenced!!")
-
-            ori_sz = dir(img_md.SourceFn).bytes;
+            ori_szs = arrayfun(@(img_md) dir(img_md.SourceFn).bytes, img_mds);
+            pcs = zeros(size(img_mds));
 
             tic
             while true
@@ -527,12 +567,17 @@ classdef Model < handle
                     break
                 end
 
-                if isfile(img_md.ConvFn)
-                    curr_size = dir(img_md.ConvFn).bytes;
-                    pc = min(100, round(100 * curr_size / ori_sz, 2));
-                    send(q, {img_md.ID, pc})
-                    pause(0.5)
+                for i = 1:numel(img_mds)
+                    img_md = img_mds(i);
+                    if isfile(img_md.ConvFn)
+                        curr_size = dir(img_md.ConvFn).bytes;
+                        pcs(i) = min(100, round(100 * curr_size / ori_szs(i), 2));
+                    end
                 end
+
+                send(q, {[img_mds.ID], pcs})
+                pause(0.5)
+
             end
 
             msg = "Done";
