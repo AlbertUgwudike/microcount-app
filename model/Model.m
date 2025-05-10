@@ -152,7 +152,7 @@ classdef Model < handle
             bool_idx(idx) = true;
 
             not_converted = [mdl.WS.Images.ConvertStatus] ~= ConvertStatus.CONVERTED;
-            not_file_exists = arrayfun(@(img) ~isfile(img.ConvFn), mdl.WS.Images);
+            not_file_exists = arrayfun(@(img) ~isfile(img.ConvFn), mdl.WS.Images)';
 
             convert_idx = bool_idx & not_converted & not_file_exists;
             imgs = mdl.WS.Images(convert_idx);
@@ -167,30 +167,6 @@ classdef Model < handle
                 @Model.bg_monitor_progress, ...
                 @mdl.update_progress ...
             )
-
-            % q = parallel.pool.DataQueue;
-            % afterEach(q, @(p) mdl.update_progress(p));
-            % 
-            % for i = 1:numel(idx)
-            %     img = mdl.WS.Images(idx(i));
-            %     if (img.ConvertStatus == ConvertStatus.CONVERTED)
-            %         continue
-            %     end
-            %     fprintf("%s\n%s\n", img.SourceFn, img.ConvFn);
-            %     mdl.io_mark_image_as_converting(img);
-            % 
-            %     if (isfile(img.ConvFn))
-            %         fprintf("Error, image already exists!\n");
-            %         fprintf("Please delete previous converted img:\n%s\n", img.ConvFn);
-            %         continue
-            %     end
-            % 
-            %     margs = { img, q };
-            %     fut = mdl.ThreadPool.dispatch(@Model.bg_monitor_progress, margs, @(~) disp("Monitor completed"));
-            % 
-            %     args = { img, mdl.AppDir, fut };
-            %     mdl.ThreadPool.dispatch(@Model.bg_conv_down_img, args, @mdl.bg_conv_down_img_complete);
-            % end
         end
 
         function img = io_get_down_img(mdl, img_md)
@@ -509,11 +485,12 @@ classdef Model < handle
         function msg = bg_conv_down_img(args)
             q     = args{1};
             pairs = args{2};
-            msg = "Complete";
+            msg = "Complete --";
 
             for i = 1:numel(pairs)
                 img_md  = pairs(i).Left;
                 app_dir = pairs(i).Right;
+                msg = msg + " " + img_md.ID;
 
                 [~, ~, ext] = fileparts(img_md.SourceFn);
 

@@ -19,24 +19,20 @@ classdef ThreadPool < handle
                 monitor_send_fcn
                 monitor_rec_fcn
             end
+            tp.remove_completed();
 
             monitor_q = parallel.pool.DataQueue;
             afterEach(monitor_q, @(p) monitor_rec_fcn(p));
 
             margs = { arg_vec, monitor_q };
-            fut = tp.dispatch(monitor_send_fcn, margs, @(f) disp(f.Error.message));
+            monitor_fut = tp.dispatch(monitor_send_fcn, margs, @(f) disp(f.Error.message));
 
-            disp(tp.Futures)
+            conv_futs = tp.dispatch_batch(pre_batch_fcn, fcn, arg_vec, on_finish_fcn);
 
-            tp.dispatch_batch(pre_batch_fcn, fcn, arg_vec, on_finish_fcn);
-
-            disp("yeet")
-            disp(tp.Futures)
-
-            afterAll(tp.Futures(2:numel(tp.Futures)), @(f) disp(f), 0, "PassFuture", true);
+            afterAll(conv_futs, @(~) cancel(monitor_fut), 0, "PassFuture", true);
         end
 
-        function dispatch_batch(tp, pre_batch_fcn, fcn, arg_vec, on_finish_fcn)
+        function futs = dispatch_batch(tp, pre_batch_fcn, fcn, arg_vec, on_finish_fcn)
             arguments
                 tp ThreadPool
                 pre_batch_fcn
@@ -54,7 +50,7 @@ classdef ThreadPool < handle
             for i = 1:n_workers
                 args = { q, batches{i} };
                 pre_batch_fcn(batches{i});
-                tp.dispatch(fcn, args, @ThreadPool.batch_complete);
+                futs(i) = tp.dispatch(fcn, args, @ThreadPool.batch_complete);
             end
         end
 
@@ -66,7 +62,7 @@ classdef ThreadPool < handle
                 on_finish 
             end
 
-            tp.remove_completed();
+            % tp.remove_completed();
             fut = ThreadPool.run(fcn, arg);
             afterEach(fut, on_finish, 0, "PassFuture", true);
             new_idx = tp.new_process_idx();
@@ -109,6 +105,7 @@ classdef ThreadPool < handle
                 disp([fut.Error.remotecause{1}]);
             else
                 fprintf("Batch completed after: %s\n", fut.RunningDuration);
+                fprintf("Batch completed after: %s\n", fut.OutputArguments{1});
             end
         end
 
