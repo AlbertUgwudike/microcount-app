@@ -373,8 +373,8 @@ classdef Model < handle
             img_md  = mdl.WS.Images([mdl.WS.Images.ID] == img_id);
 
             if err
-                fprintf("Convert and Downsample: Image %s stopped after event: %s\n", img_id, args{3});
-                disp([fut.Error.stack.name]);
+                fprintf("Convert and Downsample: Image %s stopped after event: %s\n", img_id, args{3}.message);
+                disp([args{3}.stack.name]);
                 img_md.ConversionProgress = 0;
                 img_md.ConvertStatus = ConvertStatus.UNCONVERTED;
             else
@@ -505,13 +505,12 @@ classdef Model < handle
                             throw(MException("ConvDown", err_msg))
                         end
                     end
+                    Model.bg_down_img(img_md);
                     elapsed = string(toc);
                     send(q, {true, img_md.ID, "", elapsed});
                 catch e
                     send(q, {false, img_md.ID, e});
                 end
-    
-                Model.bg_down_img(img_md);
             end
         end
 
