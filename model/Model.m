@@ -130,18 +130,11 @@ classdef Model < handle
             mdl.save_and_update();
         end
 
-        function update_channel_order(mdl, idx, ch_str)
+        function update_channel_indices(mdl, idx, reg_ch, cell_ch, co_ch)
             img_md = mdl.WS.Images(idx);
-            if ImageMetadata.valid_channel_order_str(ch_str, img_md.ChannelCount)
-                img_md.set_channel_order_str(ch_str)
-            end
-            mdl.save_and_update();
-        end
-
-        function update_channel_names(mdl, idx, ch_str)
-            img_md = mdl.WS.Images(idx);
-            if ImageMetadata.valid_channel_names_str(ch_str, img_md.ChannelCount)
-                img_md.set_channel_names_str(ch_str)
+            valid_order = ImageMetadata.valid_channel_indices(reg_ch, cell_ch, co_ch, img_md.ChannelCount);
+            if valid_order
+                img_md.set_channel_indices(reg_ch, cell_ch, co_ch);
             end
             mdl.save_and_update();
         end
@@ -183,7 +176,9 @@ classdef Model < handle
                 img = zeros(10, 10);
                 return
             end
-            img = uint16(imread(img_md.DownFn));
+            reg_ch = img_md.RegistrationChannel;
+            raw_img = tiffreadVolume(img_md.DownFn);
+            img = uint16(raw_img(:, :, reg_ch));
             if ~isempty(img_md.TransformationData)
                 img = imrotate(img, img_md.TransformationData.Direction.to_angle());
             end
@@ -481,7 +476,12 @@ classdef Model < handle
         function msg = bg_conv_down_img(args)
             img_md = args{1};
             app_dir = args{2};
+            Model.bg_conv_img(img_md, app_dir);
+            Model.bg_down_img(img_md);
+            msg = "Complete";
+        end
 
+        function bg_conv_img(img_md, app_dir)
             [~, ~, ext] = fileparts(img_md.SourceFn);
 
             if ismember(ext, [".tif", ".tiff"])
@@ -492,32 +492,26 @@ classdef Model < handle
                     glumpers
                 end
             end
-
-            Model.bg_down_img(img_md);
-            msg = "Complete";
         end
 
-        function msg = bg_down_img(img_md)
+        function bg_down_img(img_md)
             arguments
                 img_md ImageMetadata
             end
             RESIZE = 20;
-            CHN_BRT = 1;
             info = imfinfo(img_md.ConvFn);
-            H = [info.Height];
-            W = [info.Width];
+            H = [info.Height]; W = [info.Width];
             pixel_region = { [1 RESIZE H(1)], [1 RESIZE W(1)] };
-            img = imread(img_md.ConvFn, "PixelRegion", pixel_region);
-            dn_img = img(:, :, CHN_BRT);
-            imwrite(imadjust(dn_img), img_md.DownFn);
-            msg = "Completed";
+            img = uint16(tiffreadVolume(img_md.ConvFn, "PixelRegion", pixel_region));
+            N = size(img, 3);
+            channels = arrayfun(@(i) imadjust(img(:, :, i)), 1:N, 'UniformOutput', false);
+            down_img = cat(3, channels{:});
+            Utility.write_tiff(down_img, img_md.DownFn);
         end
 
         function msg = bg_monitor_progress(args)
             img_md = args{1};
             q = args{2};
-
-            disp("Commenced!!")
 
             ori_sz = dir(img_md.SourceFn).bytes;
 

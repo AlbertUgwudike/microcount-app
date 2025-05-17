@@ -42,24 +42,27 @@ classdef SelectImagesController < ControllerBase
         function on_channel_order_edited(con, event)
             disp("SelectImagesController::on_channel_order_edited")
             idx = event.Indices(1);
-            ch_str = con.View.ImageTable.Data(idx, 3);
-            con.Model.update_channel_order(idx, ch_str);
+            data = uint16(str2double(con.View.ImageTable.Data(idx, 3:5)));
+            img_md = con.Model.WS.Images(idx);
+
+            % TODO: Move this to model --------
+            if ~ImageMetadata.valid_channel_indices(data(1), data(2), data(3), img_md.ChannelCount)
+                original_indices = [img_md.RegistrationChannel, img_md.CellMarkerChannel, img_md.CoMarkerChannel];
+                con.View.ImageTable.Data(idx, 3:5) = original_indices;
+            else
+                con.Model.update_channel_indices(idx, data(1), data(2), data(3));
+                con.Model.io_save()
+            end
         end
 
         function on_apply_channel_order_button_pushed(con)
             disp("SelectImagesController::on_apply_channel_order_button_pushed")
-            ch_str = con.View.ChannelOrderField.Value;
+            reg_ch  = uint16(con.View.RegistrationChannelField.Value);
+            cell_ch = uint16(con.View.CellMarkerChannelField.Value);
+            co_ch   = uint16(con.View.CoMarkerChannelField.Value);
             idx = con.View.ImageTable.Selection;
             for i = 1:numel(idx)
-                con.Model.update_channel_order(idx(i), ch_str);
-            end
-        end
-
-        function on_apply_channel_names_button_pushed(con)
-            ch_str = con.View.ChannelNamesField.Value;
-            idx = con.View.ImageTable.Selection;
-            for i = 1:numel(idx)
-                con.Model.update_channel_names(idx(i), ch_str);
+                con.Model.update_channel_indices(idx(i), reg_ch, cell_ch, co_ch);
             end
         end
 
@@ -73,11 +76,12 @@ classdef SelectImagesController < ControllerBase
             img_mds = con.Model.WS.Images;
             source_fns  = Utility.path2name([img_mds.SourceFn]');
             ch_counts   = [img_mds.ChannelCount];
-            ch_orders   = cellfun(@(o) string(o).join(","), {img_mds.ChannelOrder});
-            ch_names    = cellfun(@(s) s.join(","), {img_mds.ChannelNames});
+            reg_chs     = [img_mds.RegistrationChannel];
+            cell_chs    = [img_mds.CellMarkerChannel];
+            co_chs      = [img_mds.CoMarkerChannel];
             downsampled = string([img_mds.ConvertStatus]);
             progress    = string([img_mds.ConversionProgress]) + "%";
-            new_data    = [source_fns ch_counts' ch_orders' ch_names' downsampled' progress'];
+            new_data    = [source_fns ch_counts' reg_chs' cell_chs' co_chs' downsampled' progress'];
             con.View.ImageTable.Data = new_data;
         end
         
@@ -100,14 +104,11 @@ classdef SelectImagesController < ControllerBase
                 case (SelectImagesEvent.ButtonAddImages)
                     con.onAddImagesButtonPushed()
 
-                case (SelectImagesEvent.ButtonApplyChannelOrder)
+                case (SelectImagesEvent.ButtonApplyChannelIndex)
                     con.on_apply_channel_order_button_pushed()
 
                 case (SelectImagesEvent.ChannelOrderEdited)
                     con.on_channel_order_edited(d)
-
-                case (SelectImagesEvent.ButtonApplyChannelNames)
-                    con.on_apply_channel_names_button_pushed()
 
                 case (SelectImagesEvent.ButtonCancel)
                     con.on_cancel_all_button_pushed()

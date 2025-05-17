@@ -10,10 +10,10 @@ classdef SelectImagesView < Component
                 CancelButton
             ImageTable
             ChannelOrderGrid
-                ApplyChannelOrderButton
-                ChannelOrderField
-                ApplyChannelNamesButton
-                ChannelNamesField
+                ApplyChannelIndexButton
+                RegistrationChannelField
+                CellMarkerChannelField
+                CoMarkerChannelField
     end
 
     methods
@@ -83,9 +83,9 @@ classdef SelectImagesView < Component
 
             % Create ImageTable
             view.ImageTable = uitable(view.MainGrid);
-            view.ImageTable.ColumnName = {'Image'; 'Channel Count'; 'Channel Order'; 'Channel Names'; 'Converted'; 'Progress'};
+            view.ImageTable.ColumnName = {'Image'; 'Channel Count'; 'Ch. Align'; 'Ch. Cell'; 'Ch. CoMarker'; 'Converted'; 'Progress'};
             view.ImageTable.RowName = {};
-            view.ImageTable.ColumnEditable = [false false true false, false];
+            view.ImageTable.ColumnEditable = [false false true true true false, false];
             view.ImageTable.Layout.Row = 2;
             view.ImageTable.Layout.Column = 1;
             view.ImageTable.Multiselect = 'on';
@@ -94,35 +94,33 @@ classdef SelectImagesView < Component
 
             % Create ChannelOrderGrid
             view.ChannelOrderGrid = uigridlayout(view.MainGrid);
-            view.ChannelOrderGrid.ColumnWidth = {'1x', '1x', '0.5x', '1x', '1x'};
+            view.ChannelOrderGrid.ColumnWidth = {'2x', '1x', '1x', '1x', '1x', '1x'};
             view.ChannelOrderGrid.RowHeight = {'1x'};
             view.ChannelOrderGrid.Padding = [1 1 1 1];
             view.ChannelOrderGrid.Layout.Row = 3;
             view.ChannelOrderGrid.Layout.Column = 1;
 
-            % Create ApplyChannelOrderButton
-            view.ApplyChannelOrderButton = uibutton(view.ChannelOrderGrid, 'push');
-            view.ApplyChannelOrderButton.Layout.Row = 1;
-            view.ApplyChannelOrderButton.Layout.Column = 1;
-            view.ApplyChannelOrderButton.Text = 'Apply Channel Order';
-            view.ApplyChannelOrderButton.ButtonPushedFcn = @(~, ~) view.call_registrar(SelectImagesEvent.ButtonApplyChannelOrder);
+            % Create ApplyChannelIndexButton
+            view.ApplyChannelIndexButton = uibutton(view.ChannelOrderGrid, 'push');
+            view.ApplyChannelIndexButton.Layout.Row = 1;
+            view.ApplyChannelIndexButton.Layout.Column = 1;
+            view.ApplyChannelIndexButton.Text = 'Apply Channel Order';
+            view.ApplyChannelIndexButton.ButtonPushedFcn = @(~, ~) view.call_registrar(SelectImagesEvent.ButtonApplyChannelIndex);
 
-            % Create ChannelOrderField
-            view.ChannelOrderField = uieditfield(view.ChannelOrderGrid, 'text');
-            view.ChannelOrderField.Layout.Row = 1;
-            view.ChannelOrderField.Layout.Column = 2;
+            % Create RegistrationChannelField
+            view.RegistrationChannelField = uieditfield(view.ChannelOrderGrid, 'numeric', 'RoundFractionalValues', 'on');
+            view.RegistrationChannelField.Layout.Row = 1;
+            view.RegistrationChannelField.Layout.Column = 2;
 
-            % Create ApplyChannelNamesButton
-            view.ApplyChannelNamesButton = uibutton(view.ChannelOrderGrid, 'push');
-            view.ApplyChannelNamesButton.Layout.Row = 1;
-            view.ApplyChannelNamesButton.Layout.Column = 4;
-            view.ApplyChannelNamesButton.Text = 'Apply Channel Names';
-            view.ApplyChannelNamesButton.ButtonPushedFcn = @(~, ~) view.call_registrar(SelectImagesEvent.ButtonApplyChannelNames);
+            % Create CellMarkerChannelField
+            view.CellMarkerChannelField = uieditfield(view.ChannelOrderGrid, 'numeric', 'RoundFractionalValues', 'on');
+            view.CellMarkerChannelField.Layout.Row = 1;
+            view.CellMarkerChannelField.Layout.Column = 3;
 
-            % Create ChannelNamesField
-            view.ChannelNamesField = uieditfield(view.ChannelOrderGrid, 'text');
-            view.ChannelNamesField.Layout.Row = 1;
-            view.ChannelNamesField.Layout.Column = 5;
+            % Create CoMarkerChannelField
+            view.CoMarkerChannelField = uieditfield(view.ChannelOrderGrid, 'numeric', 'RoundFractionalValues', 'on');
+            view.CoMarkerChannelField.Layout.Row = 1;
+            view.CoMarkerChannelField.Layout.Column = 4;
 
         end
 

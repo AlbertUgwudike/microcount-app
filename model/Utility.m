@@ -96,7 +96,22 @@ classdef Utility
                 end
             end
         end
-
+        
+        function write_tiff(img, fn)
+            bt = Tiff(fn, 'w8');
+            tags.ImageLength         = size(img,1);
+            tags.ImageWidth          = size(img,2);
+            tags.Photometric         = Tiff.Photometric.LinearRaw;
+            tags.BitsPerSample       = 16;
+            tags.SamplesPerPixel     = size(img,3);
+            tags.TileWidth           = 128;
+            tags.TileLength          = 128;
+            tags.PlanarConfiguration = Tiff.PlanarConfiguration.Chunky;
+            tags.Software            = 'MATLAB';
+            
+            setTag(bt, tags);
+            bt.write(img)
+        end
 
     end
 end
