@@ -159,7 +159,7 @@ classdef Model < handle
                 @mdl.bg_conv_down_img_complete, ...
                 @Model.bg_monitor_progress, ...
                 @mdl.update_progress ...
-                )
+            )
         end
         
         function img = io_get_down_img(mdl, img_md)
@@ -312,7 +312,7 @@ classdef Model < handle
                 @(batch) mdl.io_set_processing_status(batch, ProcessStatus.PROCESSING), ...
                 @mdl.bg_run_microcount_batch, regions, ...
                 @mdl.bg_run_microcount_complete ...
-                );
+            );
         end
         
         function io_cancel_microcount_processes(mdl)
@@ -373,7 +373,7 @@ classdef Model < handle
                 img_md.ConversionProgress = 0;
                 img_md.ConvertStatus = ConvertStatus.UNCONVERTED;
             else
-                fprintf("Convert and Downsample: Image %s completed after: %s\n", img_id, args{4});
+                fprintf("Convert and Downsample: Image %s completed after: %s\n", img_id, args{3});
                 img_md.set_metadata()
                 img_md.ConvertStatus = ConvertStatus.CONVERTED;
             end
@@ -486,29 +486,28 @@ classdef Model < handle
                 img_md  = pairs(i).Left;
                 app_dir = pairs(i).Right;
                 msg = msg + " " + img_md.ID;
-                Model.bg_conv_img(img_md, app_dir, q);
-                Model.bg_down_img(img_md);
+
+                try
+                    tic
+                    Model.bg_conv_img(img_md, app_dir);
+                    Model.bg_down_img(img_md);
+                    send(q, {true, img_md.ID, string(toc)});
+                catch e
+                    send(q, {false, img_md.ID, e});
+                end
             end
         end
         
-        function bg_conv_img(img_md, app_dir, q)
+        function bg_conv_img(img_md, app_dir)
             [~, ~, ext] = fileparts(img_md.SourceFn);
-            
-            try
-                tic
-                if ismember(ext, [".tif", ".tiff"])
-                    copyfile(img_md.SourceFn, img_md.ConvFn);
-                else
-                    err = lof2tiff(app_dir, img_md.SourceFn, img_md.ConvFn);
-                    if err == 1
-                        err_msg = sprintf("Conversion failed for image: %s\n", img_md.SourceFn);
-                        throw(MException("ConvDown", err_msg))
-                    end
+            if ismember(ext, [".tif", ".tiff"])
+                copyfile(img_md.SourceFn, img_md.ConvFn);
+            else
+                err = lof2tiff(app_dir, img_md.SourceFn, img_md.ConvFn);
+                if err == 1
+                    err_msg = sprintf("Conversion failed for image: %s\n", img_md.SourceFn);
+                    throw(MException("ConvDown", err_msg))
                 end
-                elapsed = string(toc);
-                send(q, {true, img_md.ID, "", elapsed});
-            catch e
-                send(q, {false, img_md.ID, e});
             end
         end
         
