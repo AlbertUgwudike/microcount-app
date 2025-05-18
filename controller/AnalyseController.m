@@ -32,7 +32,7 @@ classdef AnalyseController < ControllerBase
             result = con.SelectedRegion.Result;
             con.draw_image_subview();
             if (isempty(result))
-                con.View.ProcessedImage.ImageSource = "";
+                con.View.ProcessedImage.ImageSource = zeros(3, 3, 3);
                 con.set_text_areas_empty()
             else
                 con.on_image_subview_moved(con.ImageSubviewRect.Position)
@@ -208,12 +208,12 @@ classdef AnalyseController < ControllerBase
                 con AnalyseController
                 result MicrocountResult
             end
-            con.View.PercentageCellAreaTextArea.Value = string(result.PercentageIba1Area);
-            con.View.CellCountTextArea.Value = string(result.MicrogliaDensity);
-            con.View.PercentageCoMarkerAreaTextArea.Value = string(result.PercentageCD68Area);
-            con.View.PercentageCoMarkerNumTextArea.Value = string(result.PercentageActivatedMicroglia);
-            con.View.BranchCountTextArea.Value = string(result.AverageBranchCount);
-            con.View.ConvexityTextArea.Value = string(result.AverageRotundity);
+            con.View.PercentageCellAreaLabel.Text      = con.stick(Constants.LABEL_CELL_AREA   , string(result.PercentageIba1Area));
+            con.View.CellCountLabel.Text               = con.stick(Constants.LABEL_CELL_DENSITY, string(result.MicrogliaDensity));
+            con.View.PercentageCoMarkerAreaLabel.Text  = con.stick(Constants.LABEL_CO_AREA     , string(result.PercentageCD68Area));
+            con.View.PercentageCoMarkerNumLabel.Text   = con.stick(Constants.LABEL_CO_NUM      , string(result.PercentageActivatedMicroglia));
+            con.View.BranchCountLabel.Text             = con.stick(Constants.LABEL_BRANCH      , string(result.AverageBranchCount));
+            con.View.ConvexityLabel.Text               = con.stick(Constants.LABEL_CONVEXITY   , string(result.AverageRotundity));
 
         end
 
@@ -221,12 +221,19 @@ classdef AnalyseController < ControllerBase
             arguments
                 con AnalyseController
             end
-            con.View.PercentageCellAreaTextArea.Value = "--";
-            con.View.CellCountTextArea.Value = "--";
-            con.View.PercentageCoMarkerAreaTextArea.Value = "--";
-            con.View.PercentageCoMarkerNumTextArea.Value = "--";
-            con.View.BranchCountTextArea.Value = "--";
-            con.View.ConvexityTextArea.Value = "--";
+            con.View.PercentageCellAreaLabel.Text      = con.stick(Constants.LABEL_CELL_AREA   , "--");
+            con.View.CellCountLabel.Text               = con.stick(Constants.LABEL_CELL_DENSITY, "--");
+            con.View.PercentageCoMarkerAreaLabel.Text  = con.stick(Constants.LABEL_CO_AREA     , "--");
+            con.View.PercentageCoMarkerNumLabel.Text   = con.stick(Constants.LABEL_CO_NUM      , "--");
+            con.View.BranchCountLabel.Text             = con.stick(Constants.LABEL_BRANCH      , "--");
+            con.View.ConvexityLabel.Text               = con.stick(Constants.LABEL_CONVEXITY   , "--");
+        end
+    end
+
+    methods (Static)
+        function s = stick(s1, s2)
+            format_str = join(repmat("%s\n", 1, numel(s1)), "") + "%s";
+            s = sprintf(format_str, s1, s2);
         end
     end
     

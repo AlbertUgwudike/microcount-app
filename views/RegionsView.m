@@ -41,6 +41,7 @@ classdef RegionsView < Component
             view.MainGrid.ColumnWidth = {'1x'};
             view.MainGrid.RowHeight = {'0.75x', '1.3x'};
             view.MainGrid.RowSpacing = 1;
+            view.MainGrid.Padding = [5 5 5 5];
 
             % Create TopGrid
             view.TopGrid = uigridlayout(view.MainGrid);
@@ -49,14 +50,16 @@ classdef RegionsView < Component
             view.TopGrid.RowSpacing = 1;
             view.TopGrid.Layout.Row = 1;
             view.TopGrid.Layout.Column = 1;
+            view.TopGrid.Padding = 0;
 
             % Create LeftGrid
             view.LeftGrid = uigridlayout(view.TopGrid);
             view.LeftGrid.ColumnWidth = {'1x'};
-            view.LeftGrid.RowHeight = {'1x', '6x'};
+            view.LeftGrid.RowHeight = {'1x', '7x'};
             view.LeftGrid.RowSpacing = 1;
             view.LeftGrid.Layout.Row = 1;
             view.LeftGrid.Layout.Column = 1;
+            view.LeftGrid.Padding = [1, 1, 1, 2];
 
             % Create ImageTableButtonGrid
             view.ImageTableButtonGrid = uigridlayout(view.LeftGrid);
@@ -85,6 +88,7 @@ classdef RegionsView < Component
             % Create ImageTable
             view.ImageTable = uitable(view.LeftGrid);
             view.ImageTable.ColumnName = {'Images'; 'Regions'};
+            view.ImageTable.ColumnWidth = {'1x', '2x'};
             view.ImageTable.RowName = {};
             view.ImageTable.SelectionType = 'row';
             view.ImageTable.Multiselect = 'on';
@@ -95,10 +99,11 @@ classdef RegionsView < Component
             % Create RightGrid
             view.RightGrid = uigridlayout(view.TopGrid);
             view.RightGrid.ColumnWidth = {'1x'};
-            view.RightGrid.RowHeight = {'1x', '6x'};
+            view.RightGrid.RowHeight = {'1x', '7x'};
             view.RightGrid.RowSpacing = 1;
             view.RightGrid.Layout.Row = 1;
             view.RightGrid.Layout.Column = 2;
+            view.RightGrid.Padding = [1, 2, 1, 1];
 
             % Create RegionSelectorButtonGrid
             view.RegionSelectorButtonGrid = uigridlayout(view.RightGrid);
@@ -158,6 +163,7 @@ classdef RegionsView < Component
             view.HistologyImage = uiimage(view.BottomGrid);
             view.HistologyImage.Layout.Row = 1;
             view.HistologyImage.Layout.Column = 1;
+            view.HistologyImage.ImageSource = zeros(3, 3, 3);
 
         end
 

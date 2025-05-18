@@ -9,5 +9,13 @@ classdef Constants < handle
         PAD (1, 1) uint16 = 100
 
         REG_ERROR char = 'Registration failed because optimization diverged. Try reducing the InitialRadius property of the optimizer.';
+
+        LABEL_CELL_AREA = "Cell Area (%)";
+        LABEL_CELL_DENSITY = "Cell Density";
+        LABEL_CO_AREA = ["CoMarker","(% Area)"];
+        LABEL_CO_NUM = ["CoMarker", "(% Number)"];
+        LABEL_BRANCH = "Branch Points";
+        LABEL_CONVEXITY = "Convexity";
+
     end
 end

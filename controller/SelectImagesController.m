@@ -1,5 +1,11 @@
 classdef SelectImagesController < ControllerBase
     
+    properties (Access = private)
+        SelectedImage ImageMetadata
+        ImageSubviewRect images.roi.Rectangle
+        CurrentChannel uint16 = 0
+    end
+    
     methods
         
         function ctl = SelectImagesController(model, view)
@@ -71,18 +77,56 @@ classdef SelectImagesController < ControllerBase
             con.Model.io_cancel_microcount_processes()
         end
 
+        function on_image_selected(con)
+            disp("SelectImagesController::on_image_selected")
+            if numel(con.View.ImageTable.Selection) == 0
+                return
+            end
+            idx = con.View.ImageTable.Selection(1);
+            con.SelectedImage = con.Model.WS.Images(idx);
+            if (~isfile(con.SelectedImage.ConvFn))
+                con.View.ProcessedImage.ImageSource = zeros(3, 3, 3);
+            else
+                con.CurrentChannel = mod(con.CurrentChannel, con.SelectedImage.ChannelCount);
+                con.View.ChannelButton.Text = sprintf("Channel %d/%d", con.CurrentChannel + 1, con.SelectedImage.ChannelCount);
+                con.draw_image_subview();
+                con.on_image_subview_moved(con.ImageSubviewRect.Position)
+            end
+        end
+
+        function on_cycle_channel_button_pushed(con) 
+            disp("SelectImagesController::on_cycle_channel_button_pushed")
+            con.CurrentChannel = mod(con.CurrentChannel + 1, con.SelectedImage.ChannelCount);
+            con.on_image_selected();
+        end
+
         function onWorkspaceUpdated(con)
             disp("SelectImagesController::on_workspace_updated")
             img_mds = con.Model.WS.Images;
             source_fns  = Utility.path2name([img_mds.SourceFn]');
-            ch_counts   = [img_mds.ChannelCount];
             reg_chs     = [img_mds.RegistrationChannel];
             cell_chs    = [img_mds.CellMarkerChannel];
             co_chs      = [img_mds.CoMarkerChannel];
             downsampled = string([img_mds.ConvertStatus]);
             progress    = string([img_mds.ConversionProgress]) + "%";
-            new_data    = [source_fns ch_counts' reg_chs' cell_chs' co_chs' downsampled' progress'];
+            new_data    = [source_fns reg_chs' cell_chs' co_chs' downsampled' progress'];
             con.View.ImageTable.Data = new_data;
+        end
+
+
+        function on_image_subview_moved(con, pos)
+            disp("SelectImagesController::on_image_subview_moved")
+            bbox = round(20 * pos);
+            conv_img_fn = con.SelectedImage.ConvFn;
+            pixel_region = { [bbox(2), bbox(2) + bbox(4)], [bbox(1), bbox(1) + bbox(3)] };
+            info = imfinfo(conv_img_fn);
+            if numel(info) == 1
+                conv_img = imread(conv_img_fn, PixelRegion = pixel_region);
+                conv_img = conv_img(:, :, con.CurrentChannel + 1);
+            else
+                conv_img = imread(conv_img_fn, PixelRegion = pixel_region, Index = con.CurrentChannel + 1);
+            end
+            con.View.ProcessedImage.ImageSource = repmat(imadjust(conv_img), 1, 1, 3);
         end
         
     end
@@ -113,6 +157,12 @@ classdef SelectImagesController < ControllerBase
                 case (SelectImagesEvent.ButtonCancel)
                     con.on_cancel_all_button_pushed()
 
+                case (SelectImagesEvent.SelectionImageTable)
+                    con.on_image_selected()
+
+                case(SelectImagesEvent.ButtonCycleChannel)
+                    con.on_cycle_channel_button_pushed()
+
                 case (ModelEvents.WorkspaceUpdated)
                     con.onWorkspaceUpdated()
 
@@ -121,6 +171,22 @@ classdef SelectImagesController < ControllerBase
             end
         end
         
+    end
+
+    methods (Access=private)
+
+        function draw_image_subview(con)
+            down_fn = con.SelectedImage.DownFn;
+            dn_mask = imread(down_fn);
+            dn_mask = dn_mask(:, :, con.CurrentChannel + 1);
+            imshow(dn_mask, 'Parent', con.View.Thumbnail, 'InitialMagnification', 20);
+            if ~isempty(con.ImageSubviewRect)
+                delete(con.ImageSubviewRect);
+            end
+            rect_r = min(size(dn_mask, 1:2)) / 10;
+            con.ImageSubviewRect = drawrectangle("Position", [10, 10, rect_r, rect_r], "Parent", con.View.Thumbnail);
+            con.ImageSubviewRect.addlistener('ROIMoved', @(~, e) con.on_image_subview_moved(e.CurrentPosition));
+        end
     end
     
 end
