@@ -7,6 +7,8 @@ classdef SelectImagesEvent
         ButtonApplyChannelIndex
         ButtonCancel
         ChannelOrderEdited
+        SelectionImageTable
+        ButtonCycleChannel
     end
 end
 

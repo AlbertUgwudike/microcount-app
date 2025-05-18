@@ -51,6 +51,7 @@ classdef RegisterView < Component
             view.MainGrid.ColumnWidth = {'1x'};
             view.MainGrid.RowHeight = {'0.5x' '1.2x'};
             view.MainGrid.RowSpacing = 1;
+            view.MainGrid.Padding = 5;
             
             % Create TopGrid
             view.TopGrid = uigridlayout(view.MainGrid);
@@ -58,6 +59,7 @@ classdef RegisterView < Component
             view.TopGrid.RowHeight = {'1x'};
             view.TopGrid.Layout.Row = 1;
             view.TopGrid.Layout.Column = 1;
+            view.TopGrid.Padding = 1;
 
             % Create AlignmentTable
             view.AlignmentTable = uitable(view.TopGrid);
@@ -118,7 +120,7 @@ classdef RegisterView < Component
             view.AtlasSliderGrid = uigridlayout(view.AtlasGrid);
             view.AtlasSliderGrid.ColumnWidth = {'3x', '1x'};
             view.AtlasSliderGrid.RowHeight = {'1x'};
-            view.AtlasSliderGrid.Padding = [1,1,1,1];
+            view.AtlasSliderGrid.Padding = 5;
             view.AtlasSliderGrid.Layout.Row = 3;
             view.AtlasSliderGrid.Layout.Column = 1;
             view.AtlasSliderGrid.BackgroundColor = [0, 0, 0];
