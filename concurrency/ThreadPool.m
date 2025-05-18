@@ -9,7 +9,30 @@ classdef ThreadPool < handle
         function obj = ThreadPool()
         end
         
-        function dispatch_batch(tp, pre_batch_fcn, fcn, arg_vec, on_finish_fcn)
+        function dispatch_batch_monitored(tp, pre_batch_fcn, fcn, arg_vec, on_finish_fcn, monitor_send_fcn, monitor_rec_fcn)
+            arguments
+                tp ThreadPool
+                pre_batch_fcn
+                fcn 
+                arg_vec
+                on_finish_fcn 
+                monitor_send_fcn
+                monitor_rec_fcn
+            end
+            tp.remove_completed();
+
+            monitor_q = parallel.pool.DataQueue;
+            afterEach(monitor_q, @(p) monitor_rec_fcn(p));
+
+            margs = { arg_vec, monitor_q };
+            monitor_fut = tp.dispatch(monitor_send_fcn, margs, @(f) disp(f.Error.message));
+
+            conv_futs = tp.dispatch_batch(pre_batch_fcn, fcn, arg_vec, on_finish_fcn);
+
+            afterAll(conv_futs, @(~) cancel(monitor_fut), 0, "PassFuture", true);
+        end
+
+        function futs = dispatch_batch(tp, pre_batch_fcn, fcn, arg_vec, on_finish_fcn)
             arguments
                 tp ThreadPool
                 pre_batch_fcn
@@ -27,7 +50,7 @@ classdef ThreadPool < handle
             for i = 1:n_workers
                 args = { q, batches{i} };
                 pre_batch_fcn(batches{i});
-                tp.dispatch(fcn, args, @ThreadPool.batch_complete);
+                futs(i) = tp.dispatch(fcn, args, @ThreadPool.batch_complete);
             end
         end
 
@@ -39,7 +62,7 @@ classdef ThreadPool < handle
                 on_finish 
             end
 
-            tp.remove_completed();
+            % tp.remove_completed();
             fut = ThreadPool.run(fcn, arg);
             afterEach(fut, on_finish, 0, "PassFuture", true);
             new_idx = tp.new_process_idx();
@@ -61,7 +84,7 @@ classdef ThreadPool < handle
             if isempty(tp.Futures)
                 idx = [];
             else
-                idx = [tp.Futures.State] == "finished";
+                idx = contains([tp.Futures.State], "finished");
             end
             tp.Futures = tp.Futures(~idx);
         end
@@ -82,6 +105,7 @@ classdef ThreadPool < handle
                 disp([fut.Error.remotecause{1}]);
             else
                 fprintf("Batch completed after: %s\n", fut.RunningDuration);
+                fprintf("Batch completed after: %s\n", fut.OutputArguments{1});
             end
         end
 
