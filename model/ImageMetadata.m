@@ -75,10 +75,13 @@ classdef ImageMetadata < handle
 
             img_md.Regions = cat(1, img_md.Regions, region);
 
-            c_mask = imcrop(dn_mask, bbox);
             dn_img = imread(img_md.DownFn);
+            c_mask = imcrop(dn_mask, bbox);
+            r_mask = repmat(c_mask, 1, 1, size(dn_img, 3));
+
             dn_region = imcrop(dn_img, bbox);
-            dn_region(c_mask == 0) = 0;
+            dn_region(r_mask == 0) = 0;
+            dn_region = cat(3, dn_region(:, :, img_md.CellMarkerChannel), dn_region(:, :, img_md.CoMarkerChannel), zeros(size(c_mask)));
 
             imwrite(dn_region, region.MaskFn);
         end

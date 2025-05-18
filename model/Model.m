@@ -502,9 +502,17 @@ classdef Model < handle
             info = imfinfo(img_md.ConvFn);
             H = [info.Height]; W = [info.Width];
             pixel_region = { [1 RESIZE H(1)], [1 RESIZE W(1)] };
-            img = uint16(tiffreadVolume(img_md.ConvFn, "PixelRegion", pixel_region));
-            N = size(img, 3);
-            channels = arrayfun(@(i) imadjust(img(:, :, i)), 1:N, 'UniformOutput', false);
+
+            if info(1).SamplesPerPixel == 1
+                N = numel(info);
+                reader_fcn = @(i) imadjust(imread(img_md.ConvFn, "PixelRegion", pixel_region, "Index", i));
+                channels = arrayfun(reader_fcn, 1:N, 'UniformOutput', false);
+            else
+                img = imread(img_md.ConvFn, "PixelRegion", pixel_region);
+                N = size(img, 3);
+                channels = arrayfun(@(i) imadjust(img(:, :, i)), 1:N, "UniformOutput", false);
+            end
+            
             down_img = cat(3, channels{:});
             Utility.write_tiff(down_img, img_md.DownFn);
         end
