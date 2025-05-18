@@ -198,7 +198,7 @@ classdef AnalyseController < ControllerBase
             if ~isempty(con.ImageSubviewRect)
                 delete(con.ImageSubviewRect);
             end
-            rect_r = min(size(dn_mask)) / 5;
+            rect_r = min(size(dn_mask, 1:2)) / 5;
             con.ImageSubviewRect = drawrectangle("Position", [10, 10, rect_r, rect_r], "Parent", con.View.Thumbnail);
             con.ImageSubviewRect.addlistener('ROIMoved', @(~, e) con.on_image_subview_moved(e.CurrentPosition));
         end

@@ -4,8 +4,7 @@ classdef SelectImagesEvent
         ButtonRemoveSelected
         ButtonConvert
         ButtonAddImages
-        ButtonApplyChannelOrder
-        ButtonApplyChannelNames
+        ButtonApplyChannelIndex
         ButtonCancel
         ChannelOrderEdited
     end

@@ -9,9 +9,11 @@ classdef ImageMetadata < handle
 
         Size (1, 2) uint16
         DownSize (1, 2) uint16
-        ChannelOrder (1, :) uint16 = uint16.empty
+
         ChannelCount (1, 1) uint16 = 0
-        ChannelNames (1, :) string = string.empty
+        RegistrationChannel (1, 1) uint16
+        CellMarkerChannel (1, 1) uint16
+        CoMarkerChannel (1, 1) uint16
     end
 
     properties
@@ -44,8 +46,9 @@ classdef ImageMetadata < handle
             img_md.Size = [H(1), W(1)];
 
             img_md.ChannelCount = max([info.SamplesPerPixel, numel(info)]);
-            img_md.ChannelOrder = 1:img_md.ChannelCount;
-            img_md.ChannelNames = arrayfun(@(n) sprintf("CH%d", n), 1:img_md.ChannelCount);
+            img_md.RegistrationChannel = 1;
+            img_md.CellMarkerChannel = 1 + mod(1, img_md.ChannelCount);
+            img_md.CoMarkerChannel = 1 + mod(2, img_md.ChannelCount);
 
             info = imfinfo(img_md.DownFn);
             H = [info.Height];
@@ -72,10 +75,13 @@ classdef ImageMetadata < handle
 
             img_md.Regions = cat(1, img_md.Regions, region);
 
-            c_mask = imcrop(dn_mask, bbox);
             dn_img = imread(img_md.DownFn);
+            c_mask = imcrop(dn_mask, bbox);
+            r_mask = repmat(c_mask, 1, 1, size(dn_img, 3));
+
             dn_region = imcrop(dn_img, bbox);
-            dn_region(c_mask == 0) = 0;
+            dn_region(r_mask == 0) = 0;
+            dn_region = cat(3, dn_region(:, :, img_md.CellMarkerChannel), dn_region(:, :, img_md.CoMarkerChannel), zeros(size(c_mask)));
 
             imwrite(dn_region, region.MaskFn);
         end
@@ -94,21 +100,16 @@ classdef ImageMetadata < handle
         end
 
 
-        function set_channel_order_str(img_md, ch_str)
+        function set_channel_indices(img_md, reg_ch, cell_ch, co_ch)
             arguments
                 img_md ImageMetadata
-                ch_str string
+                reg_ch uint16
+                cell_ch uint16
+                co_ch uint16
             end
-            order = uint16(arrayfun(@(s) double(strip(s)), ch_str.split(',')));
-            img_md.ChannelOrder = order;
-        end
-
-        function set_channel_names_str(img_md, ch_str)
-            arguments
-                img_md ImageMetadata
-                ch_str string
-            end
-            img_md.ChannelNames = ch_str.split(',');
+            img_md.RegistrationChannel = reg_ch;
+            img_md.CellMarkerChannel   = cell_ch;
+            img_md.CoMarkerChannel     = co_ch;
         end
         
     end
@@ -147,20 +148,15 @@ classdef ImageMetadata < handle
             );
         end
 
-        function v = valid_channel_order_str(ch_str, N)
+        function v = valid_channel_indices(reg_ch, cell_ch, co_ch, N)
             arguments
-                ch_str string
+                reg_ch uint16
+                cell_ch uint16
+                co_ch uint16
                 N
             end
-            v = isequal(sort(arrayfun(@(s) double(strip(s)), ch_str.split(',')))', 1:N);
-        end
-
-        function v = valid_channel_names_str(ch_str, N)
-            arguments
-                ch_str string
-                N
-            end
-            v = numel(ch_str.split(',')) == N;
+            arr = [reg_ch, cell_ch, co_ch];
+            v = all(arr > 0) & all(arr <= N);
         end
 
     end
