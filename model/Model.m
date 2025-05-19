@@ -522,12 +522,12 @@ classdef Model < handle
             
             if info(1).SamplesPerPixel == 1
                 N = numel(info);
-                reader_fcn = @(i) imadjust(imread(img_md.ConvFn, "PixelRegion", pixel_region, "Index", i));
+                reader_fcn = @(i) imadjust(uint16(imread(img_md.ConvFn, "PixelRegion", pixel_region, "Index", i)));
                 channels = arrayfun(reader_fcn, 1:N, 'UniformOutput', false);
             else
                 img = imread(img_md.ConvFn, "PixelRegion", pixel_region);
                 N = size(img, 3);
-                channels = arrayfun(@(i) imadjust(img(:, :, i)), 1:N, "UniformOutput", false);
+                channels = arrayfun(@(i) imadjust(uint16(img(:, :, i))), 1:N, "UniformOutput", false);
             end
             
             down_img = cat(3, channels{:});
