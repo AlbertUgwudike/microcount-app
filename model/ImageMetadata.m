@@ -79,7 +79,7 @@ classdef ImageMetadata < handle
             c_mask = imcrop(dn_mask, bbox);
             r_mask = repmat(c_mask, 1, 1, size(dn_img, 3));
 
-            dn_region = imcrop(dn_img, bbox);
+            dn_region = Utility.imcrop(dn_img, bbox);
             dn_region(r_mask == 0) = 0;
             dn_region = cat(3, dn_region(:, :, img_md.CellMarkerChannel), dn_region(:, :, img_md.CoMarkerChannel), zeros(size(c_mask)));
 

@@ -117,6 +117,12 @@ classdef Utility
             setTag(bt, tags);
             bt.write(img)
         end
+
+        function out = imcrop(img, bbox)
+            N = size(img, 3);
+            c_img = arrayfun(@(i) imcrop(img(:, :, i), bbox), 1:N, UniformOutput=false);
+            out = cat(3, c_img{:});
+        end
         
     end
 end
