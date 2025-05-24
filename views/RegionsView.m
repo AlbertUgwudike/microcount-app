@@ -64,7 +64,7 @@ classdef RegionsView < Component
 
             % Create ImageTableButtonGrid
             view.ImageTableButtonGrid = uigridlayout(view.LeftGrid);
-            view.ImageTableButtonGrid.ColumnWidth = {'1x', '1x', '1x'};
+            view.ImageTableButtonGrid.ColumnWidth = {'2x', '2x', '2x', '1x'};
             view.ImageTableButtonGrid.RowHeight = {'1x'};
             view.ImageTableButtonGrid.ColumnSpacing = 1;
             view.ImageTableButtonGrid.RowSpacing = 1;
