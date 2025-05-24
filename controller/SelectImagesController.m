@@ -84,7 +84,7 @@ classdef SelectImagesController < ControllerBase
             end
             idx = con.View.ImageTable.Selection(1);
             con.SelectedImage = con.Model.WS.Images(idx);
-            if (~isfile(con.SelectedImage.ConvFn))
+            if (~isfile(con.SelectedImage.ConvFn) || ~isfile(con.SelectedImage.DownFn))
                 con.View.ProcessedImage.ImageSource = zeros(3, 3, 3);
             else
                 con.CurrentChannel = mod(con.CurrentChannel, con.SelectedImage.ChannelCount);

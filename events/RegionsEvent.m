@@ -6,6 +6,7 @@ classdef RegionsEvent
         ButtonAddToSelected
         ButtonRemoveFromSelected
         RegionChecked
+        ButtonExportRegions
     end
 end
 
