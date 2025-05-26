@@ -1,8 +1,8 @@
-function out = branch_length(seg_skelly, soma_mask)
-    dirs = [ [0, 1]; [0, -1]; [-1, 0]; [1, 0]; ];
+function [av_length, labelled_img] = branch_length(seg_skelly, soma_mask)
+    dirs = [ [0, 1]; [0, -1]; [-1, 0]; [1, 0]; [1, 1]; [-1, -1]; [-1, 1]; [1, -1]; ];
     [H, W] = size(seg_skelly);
 
-    centroids = regionprops(soma_mask == 0, 'centroid');
+    centroids = regionprops(soma_mask > 0, 'centroid');
     N = height(centroids);
     labelled_img = 0 * seg_skelly;
     visited = seg_skelly == 0;
@@ -25,7 +25,6 @@ function out = branch_length(seg_skelly, soma_mask)
 
     while ~isempty(frontier)
         for i = 1:numel(frontier)
-            disp(labelled_img)
             pts = frontier{i};
             new_pts = [];
             for j = 1:height(pts)
@@ -34,10 +33,10 @@ function out = branch_length(seg_skelly, soma_mask)
 
                 neighbours = [];
 
-                for k = 1:4
+                for k = 1:8
                     neighbour = pt + dirs(k, :);
                     if ~in_bounds(neighbour, H, W); continue; end
-                    if visited(neighbour(1), neighbour(2)); continue; end
+                    if visited(neighbour(1), neighbour(2)) || seg_skelly(neighbour(1), neighbour(2)) ~= seg_skelly(pt(1), pt(2)); continue; end
                     neighbours = cat(1, neighbours, neighbour);
                 end
 
@@ -58,6 +57,11 @@ function out = branch_length(seg_skelly, soma_mask)
         end
         frontier = remove_empty(frontier);
     end
+
+    N_branches = sum(cellfun("length", out));
+    total_length = sum(cellfun(@(r) sum(r), out));
+    av_length = total_length / N_branches;
+
 
 end
 

@@ -20,6 +20,8 @@ classdef MicrocountData
         hemisphere uint16
         brt uint16
         region_mask logical
+        av_length double
+        dists_img uint16
     end
     
     methods
@@ -44,6 +46,8 @@ classdef MicrocountData
                 args.hemisphere = -1
                 args.brt = uint16.empty
                 args.region_mask = logical.empty
+                args.av_length
+                args.dists_img
             end
 
             data.iba1           = args.iba1;
@@ -65,6 +69,8 @@ classdef MicrocountData
             data.hemisphere     = args.hemisphere;
             data.brt            = args.brt;
             data.region_mask    = args.region_mask;
+            data.av_length      = args.av_length;
+            data.dists_img      = args.dists_img;
         end
     end
 end

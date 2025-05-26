@@ -15,6 +15,7 @@ classdef Constants < handle
         LABEL_CO_AREA = ["CoMarker","(% Area)"];
         LABEL_CO_NUM = ["CoMarker", "(% Number)"];
         LABEL_BRANCH = "Branch Points";
+        LABEL_LENGTH = "Convexity";
         LABEL_CONVEXITY = "Convexity";
 
     end
