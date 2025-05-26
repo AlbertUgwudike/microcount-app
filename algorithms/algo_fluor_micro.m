@@ -50,6 +50,7 @@ function data = algo_fluor_micro(bfr, mask, settings)
     [regions, segmented]        = floodfill(soma_mask, iba1_mask);
     [av_rotundity, poly_mask]   = rotundity(regions, soma_mask);
     [detected, skelly]          = count_branches(segmented);
+    [av_length, dists]          = branch_length(skelly, soma_mask);
 
     nMicroglia = max(segmented, [], "all");
 
