@@ -1,4 +1,4 @@
-function [av_length, labelled_img] = branch_length(seg_skelly, soma_mask)
+function [av_length, labelled_img, c_img] = branch_length(seg_skelly, soma_mask)
     dirs = [ [0, 1]; [0, -1]; [-1, 0]; [1, 0]; [1, 1]; [-1, -1]; [-1, 1]; [1, -1]; ];
     [H, W] = size(seg_skelly);
 
@@ -22,6 +22,8 @@ function [av_length, labelled_img] = branch_length(seg_skelly, soma_mask)
         labelled_img(pt(1), pt(2)) = 1;
         visited(pt(1), pt(2)) = true;
     end
+
+    c_img = labelled_img > 0;
 
     while ~isempty(frontier)
         for i = 1:numel(frontier)
