@@ -544,7 +544,7 @@ classdef Model < handle
             
             tic
             while true
-                if toc > 15 * 60
+                if toc > 60 * 60
                     break
                 end
                 
