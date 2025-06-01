@@ -212,6 +212,7 @@ classdef AnalyseController < ControllerBase
             con.View.CellCountLabel.Text               = con.stick(Constants.LABEL_CELL_DENSITY, string(result.MicrogliaDensity));
             con.View.PercentageCoMarkerAreaLabel.Text  = con.stick(Constants.LABEL_CO_AREA     , string(result.PercentageCD68Area));
             con.View.PercentageCoMarkerNumLabel.Text   = con.stick(Constants.LABEL_CO_NUM      , string(result.PercentageActivatedMicroglia));
+            con.View.BranchLengthLabel.Text            = con.stick(Constants.LABEL_LENGTH      , string(result.AverageBranchLengthUm));
             con.View.BranchCountLabel.Text             = con.stick(Constants.LABEL_BRANCH      , string(result.AverageBranchCount));
             con.View.ConvexityLabel.Text               = con.stick(Constants.LABEL_CONVEXITY   , string(result.AverageRotundity));
 
@@ -226,6 +227,7 @@ classdef AnalyseController < ControllerBase
             con.View.PercentageCoMarkerAreaLabel.Text  = con.stick(Constants.LABEL_CO_AREA     , "--");
             con.View.PercentageCoMarkerNumLabel.Text   = con.stick(Constants.LABEL_CO_NUM      , "--");
             con.View.BranchCountLabel.Text             = con.stick(Constants.LABEL_BRANCH      , "--");
+            con.View.BranchLengthLabel.Text            = con.stick(Constants.LABEL_LENGTH      , "--");
             con.View.ConvexityLabel.Text               = con.stick(Constants.LABEL_CONVEXITY   , "--");
         end
     end

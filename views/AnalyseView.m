@@ -28,6 +28,7 @@ classdef AnalyseView < Component
                     PercentageCoMarkerNumLabel
                     BranchCountLabel
                     ConvexityLabel
+                    BranchLengthLabel
     end
 
     methods
@@ -198,7 +199,7 @@ classdef AnalyseView < Component
 
             % Create ResultGrid
             view.ResultGrid = uigridlayout(view.ResultsPanel);
-            view.ResultGrid.RowHeight = repmat({'1x'}, 6, 1);
+            view.ResultGrid.RowHeight = repmat({'1x'}, 7, 1);
             view.ResultGrid.ColumnWidth = {'1x'};
             view.ResultGrid.Padding = 1;
             view.ResultGrid.Padding = 1;
@@ -218,8 +219,11 @@ classdef AnalyseView < Component
             % Create BranchCountTextAreaLabel
             view.BranchCountLabel = view.create_result_label(Constants.LABEL_BRANCH, 5);
 
+            % Create BranchLengthTextAreaLabel
+            view.BranchLengthLabel = view.create_result_label(Constants.LABEL_LENGTH, 6);
+
             % Create ConvexityTextAreaLabel
-            view.ConvexityLabel = view.create_result_label(Constants.LABEL_CONVEXITY, 6);
+            view.ConvexityLabel = view.create_result_label(Constants.LABEL_CONVEXITY, 7);
 
         end
 
