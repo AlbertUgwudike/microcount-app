@@ -7,6 +7,7 @@ function data = algo_fluor_micro(bfr, mask, settings)
     end
 
     MM2_PER_PIXEL       = prod(bfr.pxSize) / 1e6;
+    UM_PER_PIXEL        = mean(bfr.pxSize);
     MAX_CD68_SIZE       = settings.MaxCD68Size;
     CD68_SENSITIVITY    = settings.CD68Threshold;
     CD68_MIN_OVERLAP    = settings.MinOverlap;
@@ -50,7 +51,7 @@ function data = algo_fluor_micro(bfr, mask, settings)
     [regions, segmented]        = floodfill(soma_mask, iba1_mask);
     [av_rotundity, poly_mask]   = rotundity(regions, soma_mask);
     [detected, skelly]          = count_branches(segmented);
-    [av_length, dists_img]      = branch_length(skelly, soma_mask);
+    [av_length, dists_img, ~]   = branch_length(skelly, soma_mask);
 
     nMicroglia = max(segmented, [], "all");
 
@@ -80,6 +81,7 @@ function data = algo_fluor_micro(bfr, mask, settings)
         skelly          = skelly, ...
         soma_mask       = soma_mask, ...
         mm2_per_pixel   = MM2_PER_PIXEL, ...
+        um_per_pixel    = UM_PER_PIXEL, ...
         av_length       = av_length, ...
         dists_img       = dists_img, ...
         region_mask     = r_mask ...

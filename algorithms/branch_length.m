@@ -17,7 +17,6 @@ function [av_length, labelled_img, c_img] = branch_length(seg_skelly, soma_mask)
         pts = cat(2, I, J);
         [~, min_idx] = min(sum((pts - c_pt).^2, 2), [], 1);
         pt = pts(min_idx(1), :);
-
         frontier{i} = pt; 
         labelled_img(pt(1), pt(2)) = 1;
         visited(pt(1), pt(2)) = true;

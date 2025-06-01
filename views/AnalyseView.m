@@ -28,6 +28,7 @@ classdef AnalyseView < Component
                     PercentageCoMarkerNumLabel
                     BranchCountLabel
                     ConvexityLabel
+                    BranchLengthLabel
     end
 
     methods

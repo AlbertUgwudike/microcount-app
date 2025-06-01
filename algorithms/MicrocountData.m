@@ -16,6 +16,7 @@ classdef MicrocountData
         nMicroglia double
         nPixels double
         mm2_per_pixel double
+        um_per_pixel double
         region_acronym (1, :) char
         hemisphere uint16
         brt uint16
@@ -42,6 +43,7 @@ classdef MicrocountData
                 args.nMicroglia  
                 args.nPixels        
                 args.mm2_per_pixel = -1.0
+                args.um_per_pixel = -1.0
                 args.region_acronym = 'NONE'
                 args.hemisphere = -1
                 args.brt = uint16.empty
@@ -65,6 +67,7 @@ classdef MicrocountData
             data.nMicroglia     = args.nMicroglia;
             data.nPixels        = args.nPixels;
             data.mm2_per_pixel  = args.mm2_per_pixel;
+            data.um_per_pixel   = args.um_per_pixel;
             data.region_acronym = args.region_acronym;
             data.hemisphere     = args.hemisphere;
             data.brt            = args.brt;
