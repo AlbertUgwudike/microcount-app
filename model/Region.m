@@ -67,7 +67,7 @@ classdef Region < handle
 
     methods (Static)
         function region = default_settings(img_md, location)
-            region = Region(img_md, location, 0.35, 0.5, 10000, 0.5);
+            region = Region(img_md, location, 0.35, 0.5, 10000, 0.45);
         end
 
         function id = generate_id(identifier, location)

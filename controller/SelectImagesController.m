@@ -48,13 +48,13 @@ classdef SelectImagesController < ControllerBase
         function on_channel_order_edited(con, event)
             disp("SelectImagesController::on_channel_order_edited")
             idx = event.Indices(1);
-            data = uint16(str2double(con.View.ImageTable.Data(idx, 3:5)));
+            data = uint16(str2double(con.View.ImageTable.Data(idx, 2:4)));
             img_md = con.Model.WS.Images(idx);
 
             % TODO: Move this to model --------
             if ~ImageMetadata.valid_channel_indices(data(1), data(2), data(3), img_md.ChannelCount)
                 original_indices = [img_md.RegistrationChannel, img_md.CellMarkerChannel, img_md.CoMarkerChannel];
-                con.View.ImageTable.Data(idx, 3:5) = original_indices;
+                con.View.ImageTable.Data(idx, 2:4) = original_indices;
             else
                 con.Model.update_channel_indices(idx, data(1), data(2), data(3));
                 con.Model.io_save()
@@ -86,6 +86,7 @@ classdef SelectImagesController < ControllerBase
             con.SelectedImage = con.Model.WS.Images(idx);
             if (~isfile(con.SelectedImage.ConvFn) || ~isfile(con.SelectedImage.DownFn))
                 con.View.ProcessedImage.ImageSource = zeros(3, 3, 3);
+                imshow(zeros(1, 1), 'Parent', con.View.Thumbnail);
             else
                 con.CurrentChannel = mod(con.CurrentChannel, con.SelectedImage.ChannelCount);
                 con.View.ChannelButton.Text = sprintf("Channel %d/%d", con.CurrentChannel + 1, con.SelectedImage.ChannelCount);
@@ -120,11 +121,13 @@ classdef SelectImagesController < ControllerBase
             conv_img_fn = con.SelectedImage.ConvFn;
             pixel_region = { [bbox(2), bbox(2) + bbox(4)], [bbox(1), bbox(1) + bbox(3)] };
             info = imfinfo(conv_img_fn);
-            if numel(info) == 1
+            if isscalar(info)
                 conv_img = imread(conv_img_fn, PixelRegion = pixel_region);
                 conv_img = conv_img(:, :, con.CurrentChannel + 1);
+                disp("Single RGB")
             else
                 conv_img = imread(conv_img_fn, PixelRegion = pixel_region, Index = con.CurrentChannel + 1);
+                disp("Multipanel")
             end
             con.View.ProcessedImage.ImageSource = repmat(imadjust(conv_img), 1, 1, 3);
         end
