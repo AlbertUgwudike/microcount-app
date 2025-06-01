@@ -433,6 +433,7 @@ classdef Model < handle
             
             if err
                 fprintf("Microcount: Region %s stopped after event: %s\n", region.ID, args{3}.message);
+                disp([args{3}.stack.name]);
                 region.ProcessStatus = ProcessStatus.UNPROCESSED;
             else
                 fprintf("Microcount: Region %s completed after: %s\n", region.ID, args{4});

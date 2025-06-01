@@ -15,5 +15,7 @@ function [detected, skelly] = count_branches(labelled_img)
         detected = detected | conv2(skelly, bfilter, 'same') == 5;
     end
 
+    skelly(skelly > 0) = labelled_img(skelly > 0);
+
 end
 
