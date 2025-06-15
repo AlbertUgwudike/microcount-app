@@ -351,7 +351,7 @@ classdef Model < handle
             for i = 1:numel(regions)
                 regions(i).ProcessStatus = status;
             end
-            mdl.save_and_update()
+            mdl.save_and_update_analyse_tab()
         end
         
         function io_mark_image_as_converting(mdl, pairs)
@@ -441,7 +441,7 @@ classdef Model < handle
                 region.ProcessStatus = ProcessStatus.PROCESSED;
             end
             
-            mdl.save_and_update()
+            mdl.save_and_update_analyse_tab()
         end
         
         function panic(mdl, err_enum)
@@ -458,6 +458,11 @@ classdef Model < handle
         function save_and_update(mdl)
             mdl.io_save()
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
+        end
+
+        function save_and_update_analyse_tab(mdl)
+            mdl.io_save()
+            mdl.call_registrars(ModelEvents.UpdateAnaylseTab)
         end
         
         function update_progress(mdl, p)

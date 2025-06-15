@@ -29,11 +29,15 @@ function [result, img] = data2result(data, type_str)
         case "micro"
             cd68_adj = imadjust(data.cd68, [0.001; 0.005], []);
             iba1_adj = imadjust(data.iba1); %, [0.0714; 0.3392], []);
+
+            % poly_mask = imdilate(data.poly_mask, strel("disk", 1, 0));
+            poly_mask = data.poly_mask;
+            poly_mask = poly_mask * MASK_INTENSITY;
         
             tmp = zeros([size(data.cd68), 3]);
             tmp(:, :, 1) = iba1_adj;
-            tmp(:, :, 2) = cd68_adj .* uint16(comboMask);
-            tmp(:, :, 3) = data.poly_mask * MASK_INTENSITY;
+            tmp(:, :, 2) = cd68_adj .* uint16(comboMask) + poly_mask;
+            tmp(:, :, 3) = poly_mask;
 
         case "dab_micro"
             poly_mask = imdilate(data.poly_mask, strel('disk', 1, 0));
