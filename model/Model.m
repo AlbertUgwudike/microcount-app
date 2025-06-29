@@ -512,7 +512,7 @@ classdef Model < handle
                 err = lof2tiff(app_dir, img_md.SourceFn, img_md.ConvFn);
                 if err == 1
                     err_msg = sprintf("Conversion failed for image: %s\n", img_md.SourceFn);
-                    throw(MException("ConvDown", err_msg))
+                    throw(MException("Model:ConvDown", err_msg))
                 end
             end
         end
