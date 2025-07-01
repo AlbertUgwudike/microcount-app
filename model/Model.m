@@ -173,6 +173,7 @@ classdef Model < handle
                 return
             end
             reg_ch = img_md.RegistrationChannel;
+            disp(reg_ch)
             raw_img = tiffreadVolume(img_md.DownFn);
             img = uint16(raw_img(:, :, reg_ch));
             if ~isempty(img_md.TransformationData)
@@ -341,6 +342,51 @@ classdef Model < handle
             export_fn = fullfile(path, file);
             export_table = Utility.region2export(regions);
             writetable(export_table, export_fn);
+        end
+
+        function io_export_regions(mdl, img_mds)
+            arguments
+                mdl Model
+                img_mds (:, 1) ImageMetadata
+            end
+
+            dir_name = uigetdir('', 'Select Export Directory');
+
+            for i = 1:numel(img_mds)
+                img_md = img_mds(i);
+                for j = 1:numel(img_md.Regions)
+                    region = img_md.Regions(j);
+                    mask = mdl.Atlas.create_full_size_mask(region);
+
+                    bbox = bounding_box(mask);
+                    pixel_region = { [bbox(2), bbox(2) + bbox(4) - 1], [bbox(1), bbox(1) + bbox(3) - 1] };
+
+                    info = imfinfo(img_md.ConvFn);
+
+                    if numel(info) == 1
+                        img = imread(img_md.ConvFn, PixelRegion = pixel_region);
+                        com_img = img(:, :, img_md.CoMarkerChannel);
+                        cell_img = img(:, :, img_md.CellMarkerChannel);
+                        reg_img = img(:, :, img_md.RegistrationChannel);
+                    else
+                        com_img  = imread(img_md.ConvFn, PixelRegion = pixel_region, Index = img_md.CoMarkerChannel);
+                        cell_img = imread(img_md.ConvFn, PixelRegion = pixel_region, Index = img_md.CellMarkerChannel);
+                        reg_img = imread(img_md.ConvFn, PixelRegion = pixel_region, Index = img_md.RegistrationChannel);
+                    end
+                    
+                    r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
+                
+                    com_img(~r_mask) = 0;
+                    cell_img(~r_mask) = 0;
+                    reg_img(~r_mask) = 0;
+
+                    out_img = uint16(cat(3, cell_img, com_img, reg_img));
+                    out_fn = sprintf("%s/%s.tiff", dir_name, region.ID);
+
+                    imwrite(out_img, out_fn);
+                end
+            end
+
         end
         
     end

@@ -7,6 +7,7 @@ classdef RegionsView < Component
                     ImageTableButtonGrid
                         SelectAllButton
                         EraseRegionsButton
+                        ExportRegionsButton
                     ImageTable
                 RightGrid
                     RegionSelectorButtonGrid
@@ -63,7 +64,7 @@ classdef RegionsView < Component
 
             % Create ImageTableButtonGrid
             view.ImageTableButtonGrid = uigridlayout(view.LeftGrid);
-            view.ImageTableButtonGrid.ColumnWidth = {'1x', '1x', '1x'};
+            view.ImageTableButtonGrid.ColumnWidth = {'2x', '2x', '2x', '1x'};
             view.ImageTableButtonGrid.RowHeight = {'1x'};
             view.ImageTableButtonGrid.ColumnSpacing = 1;
             view.ImageTableButtonGrid.RowSpacing = 1;
@@ -84,6 +85,13 @@ classdef RegionsView < Component
             view.EraseRegionsButton.Layout.Row = 1;
             view.EraseRegionsButton.Layout.Column = 2;
             view.EraseRegionsButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegionsEvent.ButtonEraseRegions);
+
+            % Create ExportRegionsButton
+            view.ExportRegionsButton = uibutton(view.ImageTableButtonGrid, 'push');
+            view.ExportRegionsButton.Text = 'Export Regions';
+            view.ExportRegionsButton.Layout.Row = 1;
+            view.ExportRegionsButton.Layout.Column = 3;
+            view.ExportRegionsButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegionsEvent.ButtonExportRegions);
 
             % Create ImageTable
             view.ImageTable = uitable(view.LeftGrid);

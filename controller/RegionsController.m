@@ -80,6 +80,16 @@ classdef RegionsController < ControllerBase
             end
         end
 
+        function onExportRegionsButtonPushed(con)
+            disp("RegionsController::onEraseRegionsButtonPushed")
+            if (isempty(con.View.ImageTable.Selection))
+                return
+            end
+            idx = con.View.ImageTable.Selection;
+            img_mds = con.ImageSet(idx);
+            con.Model.io_export_regions(img_mds);
+        end
+
         function onSelectAllButtonPushed(con)
             disp("RegionsController::onSelectAllButtonPushed")
             N = height(con.View.ImageTable.Data);
@@ -136,6 +146,9 @@ classdef RegionsController < ControllerBase
 
                 case (RegionsEvent.ButtonEraseRegions)
                     con.onEraseRegionsButtonPushed()
+
+                case (RegionsEvent.ButtonExportRegions)
+                    con.onExportRegionsButtonPushed()
 
                 case (RegionsEvent.ButtonSelectAll)
                     con.onSelectAllButtonPushed()

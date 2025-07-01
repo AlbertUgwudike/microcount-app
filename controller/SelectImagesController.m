@@ -84,7 +84,7 @@ classdef SelectImagesController < ControllerBase
             end
             idx = con.View.ImageTable.Selection(1);
             con.SelectedImage = con.Model.WS.Images(idx);
-            if (~isfile(con.SelectedImage.ConvFn))
+            if (~isfile(con.SelectedImage.ConvFn) || ~isfile(con.SelectedImage.DownFn))
                 con.View.ProcessedImage.ImageSource = zeros(3, 3, 3);
                 imshow(zeros(1, 1), 'Parent', con.View.Thumbnail);
             else
