@@ -76,13 +76,14 @@ classdef Utility
             
             results = [regions.Result];
             
-            export_table.cel_density = [results.MicrogliaDensity]';
+            export_table.cell_density = [results.MicrogliaDensity]';
             export_table.percentage_cell_area = [results.PercentageIba1Area]';
             export_table.percentage_comarker_area = [results.PercentageCD68Area]';
             export_table.percentage_comarker_num = [results.PercentageActivatedMicroglia]';
             export_table.average_convexity = [results.AverageRotundity]';
             export_table.average_soma_size = [results.AverageSomaSizeUm]';
             export_table.average_branch_count = [results.AverageBranchCount]';
+            export_table.average_branch_length = [results.AverageBranchLengthUm]';
             
             export_table = struct2table(export_table);
         end
