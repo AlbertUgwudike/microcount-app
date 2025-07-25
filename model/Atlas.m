@@ -15,11 +15,11 @@ classdef Atlas
         function atlas = Atlas(app_dir)
             disp('Loading Allen CCF atlas...')
 
-            % ref_path = sprintf('%s/assets/reference.tiff', app_dir);
-            % ann_path = sprintf('%s/assets/annotation.tiff', app_dir);
-
-            ref_path = sprintf('%s/assets/reference_high.tiff', app_dir);
-            ann_path = sprintf('%s/assets/annotation_high.tiff', app_dir);
+            ref_path = sprintf('%s/assets/reference.tiff', app_dir);
+            ann_path = sprintf('%s/assets/annotation.tiff', app_dir);
+            % 
+            % ref_path = sprintf('%s/assets/reference_high.tiff', app_dir);
+            % ann_path = sprintf('%s/assets/annotation_high.tiff', app_dir);
 
             
             str_path = sprintf('%s/assets/structures.csv', app_dir);

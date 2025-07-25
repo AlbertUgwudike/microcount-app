@@ -14,18 +14,14 @@ function av_scholl_idx = scholl(l_skelly, l_soma, px_dims, plot_please)
 
     for i = 1:N
 
-        if isempty(idxs{i})
-            coeffs(i) = nan;
-            continue
-        end
-
         [I, J] = ind2sub(sz, idxs{i});
         pts = cat(2, J, I) .* repmat(px_dims, [height(I), 1]);
         com = center_of_mass(l_soma == i) .* px_dims;
         dists = ceil(sqrt(sum((pts - com).^2, 2)));
         max_dist = max(dists);
         radius_bins = 1:max_dist;
-        counts = histcounts(dists, 1:max_dist+1);
+        counts = histcounts(dists, BinEdges=1:max_dist+1);
+
         areas = pi * radius_bins.^2;
         y = log10(counts ./ areas);
         ex_idx = y ~= -Inf;

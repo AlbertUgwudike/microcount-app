@@ -76,7 +76,7 @@ classdef MicrocountData
             data.region_mask    = args.region_mask;
             data.av_length      = args.av_length;
             data.dists_img      = args.dists_img;
-            data.av_scholl_idx  = arg.av_scholl_idx;
+            data.av_scholl_idx  = args.av_scholl_idx;
         end
     end
 end
