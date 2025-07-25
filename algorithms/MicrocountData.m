@@ -22,6 +22,7 @@ classdef MicrocountData
         brt uint16
         region_mask logical
         av_length double
+        av_scholl_idx double
         dists_img uint16
     end
     
@@ -50,6 +51,7 @@ classdef MicrocountData
                 args.region_mask = logical.empty
                 args.av_length
                 args.dists_img
+                args.av_scholl_idx
             end
 
             data.iba1           = args.iba1;
@@ -74,6 +76,7 @@ classdef MicrocountData
             data.region_mask    = args.region_mask;
             data.av_length      = args.av_length;
             data.dists_img      = args.dists_img;
+            data.av_scholl_idx  = arg.av_scholl_idx;
         end
     end
 end

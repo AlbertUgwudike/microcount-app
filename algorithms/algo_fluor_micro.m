@@ -37,21 +37,23 @@ function data = algo_fluor_micro(bfr, mask, settings)
 
     cd68(~r_mask) = 0;
     iba1(~r_mask) = 0;
-
-    % Segment and count -----------------------------------------
  
-    tmp = nan_background(double(cd68), r_mask);
+    tmp       = nan_background(double(cd68), r_mask);
     cd68_mask = uint16(segment_activation(tmp, CD68_SENSITIVITY));
     cd68_mask = filter_size_cd68(cd68_mask, MAX_CD68_SIZE);
 
     soma_mask = segment_somas(nan_background(double(iba1), r_mask), SOMA_THRESHOLD);
-    branches = segment_microglia(iba1, DENDRITE_THRESHOLD);
+    branches  = segment_microglia(iba1, DENDRITE_THRESHOLD);
     iba1_mask = uint16(soma_mask + branches);
 
     [regions, segmented]        = floodfill(soma_mask, iba1_mask);
     [av_rotundity, poly_mask]   = rotundity(regions, soma_mask);
     [detected, skelly]          = count_branches(segmented);
     [av_length, dists_img, ~]   = branch_length(skelly, soma_mask);
+
+    l_skelly        = uint16(skelly) .* segmented;
+    l_soma          = uint16(soma_mask) .* segmented;
+    av_scholl_idx   = scholl(l_skelly, l_soma, bfr.pxSize);
 
     nMicroglia = max(segmented, [], "all");
 
@@ -84,6 +86,7 @@ function data = algo_fluor_micro(bfr, mask, settings)
         um_per_pixel    = UM_PER_PIXEL, ...
         av_length       = av_length, ...
         dists_img       = dists_img, ...
+        av_scholl_idx   = av_scholl_idx, ...
         region_mask     = r_mask ...
     );
 end

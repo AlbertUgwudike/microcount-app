@@ -9,6 +9,7 @@ classdef MicrocountResult
         AverageSomaSizeUm (1, 1) double
         AverageBranchCount (1, 1) uint16
         AverageBranchLengthUm (1, 1) double
+        AverageSchollIndex (1, 1) double
     end
     
     methods
@@ -22,6 +23,7 @@ classdef MicrocountResult
                 args.AverageSomaSizeUm
                 args.AverageBranchCount
                 args.AverageBranchLengthUm
+                args.AverageSchollIndex
             end
 
             obj.MicrogliaDensity = args.MicrogliaDensity;
@@ -32,6 +34,7 @@ classdef MicrocountResult
             obj.AverageSomaSizeUm = args.AverageSomaSizeUm;
             obj.AverageBranchCount = args.AverageBranchCount;
             obj.AverageBranchLengthUm = args.AverageBranchLengthUm;
+            obj.AverageSchollIndex = args.AverageSchollIndex;
         end
     end
 end

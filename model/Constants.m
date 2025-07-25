@@ -17,6 +17,7 @@ classdef Constants < handle
         LABEL_BRANCH = "Branch Points";
         LABEL_LENGTH = "Branch Length";
         LABEL_CONVEXITY = "Convexity";
+        LABEL_SCHOLL = "Scholl Index"
 
     end
 end
