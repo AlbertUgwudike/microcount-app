@@ -13,6 +13,12 @@ function av_scholl_idx = scholl(l_skelly, l_soma, px_dims, plot_please)
     coeffs = zeros(N, 1);
 
     for i = 1:N
+
+        if isempty(idxs{i})
+            coeffs(i) = nan;
+            continue
+        end
+
         [I, J] = ind2sub(sz, idxs{i});
         pts = cat(2, J, I) .* repmat(px_dims, [height(I), 1]);
         com = center_of_mass(l_soma == i) .* px_dims;
@@ -41,8 +47,8 @@ function av_scholl_idx = scholl(l_skelly, l_soma, px_dims, plot_please)
             pause(2);
         end
     end
-    av_scholl_idx = mean(coeffs);
-    disp(coeffs)
+    av_scholl_idx = mean(coeffs, 'omitnan');
+%     disp(coeffs)
 end
 
 function pt = center_of_mass(b_img)
