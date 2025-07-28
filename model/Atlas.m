@@ -73,6 +73,11 @@ classdef Atlas
                 atlas Atlas
                 region Region
             end
+
+            if region.Location.RegionKey == RegionKey.WI
+                r_mask = true(region.Parent.DownSize);
+                return
+            end
             
             tform_data = region.Parent.TransformationData;
             [ali_img, lat_img] = atlas.transform_atlas_slice(tform_data);

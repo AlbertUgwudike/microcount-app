@@ -6,6 +6,7 @@ classdef Region < handle
         ID (1, 1) string
         MaskFn (1, 1) string
         ProcFn (1, 1) string
+        SchollFn (1, 1) string
     end
 
     properties
@@ -19,15 +20,16 @@ classdef Region < handle
     
     methods
         function region = Region(img_md, location, iba1, cd68, cd68_max, soma)
-            region.Parent = img_md;
+            region.Parent   = img_md;
             region.Location = location;
-            region.ID = Region.generate_id(img_md.ID, location);
-            region.MaskFn = Region.get_mask_fn(img_md.WS_Dir, region.ID);
-            region.ProcFn = Region.get_proc_fn(img_md.WS_Dir, region.ID);
+            region.ID       = Region.generate_id(img_md.ID, location);
+            region.MaskFn   = Region.get_mask_fn(img_md.WS_Dir, region.ID);
+            region.ProcFn   = Region.get_proc_fn(img_md.WS_Dir, region.ID);
+            region.SchollFn = Region.get_scholl_fn(img_md.WS_Dir, region.ID);
 
             region.Iba1Threshold = iba1;
             region.CD68Threshold = cd68;
-            region.MaxCD68Size = cd68_max;
+            region.MaxCD68Size   = cd68_max;
             region.SomaThreshold = soma;
         end
 
@@ -67,6 +69,16 @@ classdef Region < handle
 
     methods (Static)
         function region = default_settings(img_md, location)
+            arguments
+                img_md ImageMetadata
+                location Location
+            end
+
+            % This is where the ambiguity of whole image spec is resolved
+            if location.RegionKey == RegionKey.WI
+                location.Laterality = Laterality.BILAT;
+            end
+
             region = Region(img_md, location, 0.35, 0.5, 10000, 0.45);
         end
 
@@ -114,6 +126,21 @@ classdef Region < handle
                 "%s/%s/%s.tiff", ...
                 ws_dir, ...
                 Constants.DIR_SLUG_MASK, ...
+                id ...
+            );
+        end
+
+        function mask_fn = get_scholl_fn(ws_dir, id)
+
+            arguments
+                ws_dir string
+                id string
+            end
+
+            mask_fn = sprintf( ...
+                "%s/%s/%s.csv", ...
+                ws_dir, ...
+                Constants.DIR_SLUG_SCHOLL, ...
                 id ...
             );
         end

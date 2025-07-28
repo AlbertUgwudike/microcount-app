@@ -1,4 +1,4 @@
-function av_scholl_idx = scholl(l_skelly, l_soma, px_dims, plot_please)
+function [av_scholl_idx, cross_mat] = scholl(l_skelly, l_soma, px_dims, plot_please)
     arguments
         l_skelly, 
         l_soma,
@@ -11,6 +11,7 @@ function av_scholl_idx = scholl(l_skelly, l_soma, px_dims, plot_please)
 
     N = max(l_skelly, [], "all");
     coeffs = zeros(N, 1);
+    cross_mat = cell(N, 1);
 
     for i = 1:N
 
@@ -20,7 +21,18 @@ function av_scholl_idx = scholl(l_skelly, l_soma, px_dims, plot_please)
         dists = ceil(sqrt(sum((pts - com).^2, 2)));
         max_dist = max(dists);
         radius_bins = 1:max_dist;
-        counts = histcounts(dists, BinEdges=1:max_dist+1);
+
+        try
+            counts = histcounts(dists, BinEdges=1:max_dist+1);
+        catch err
+%             throw( ...
+%                 MException( ...
+%                     "scholl:histcounts", ...
+%                     sprintf("MaxDist = [%d, %d], N = %d, i = %d, pts = [%d, %d]", px_dims(1), px_dims(2), sum(l_soma, "all"), i, I(1), J(1)) ...
+%                 ) ...
+%             )
+            continue;
+        end
 
         areas = pi * radius_bins.^2;
         y = log10(counts ./ areas);
@@ -31,6 +43,7 @@ function av_scholl_idx = scholl(l_skelly, l_soma, px_dims, plot_please)
         mdl = fitlm(radii, crossings);
 
         coeffs(i) = -mdl.Coefficients.Estimate(2);
+        cross_mat{i} = y;
         if plot_please
             subplot(1, 2, 1)
             bbox = bounding_box(l_skelly == i);

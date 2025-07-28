@@ -48,11 +48,11 @@ function data = algo_fluor_micro(bfr, mask, settings)
 
     [regions, segmented]        = floodfill(soma_mask, iba1_mask);
     [av_rotundity, poly_mask]   = rotundity(regions, soma_mask);
-    [detected, l_skelly]          = count_branches(segmented);
+    [detected, l_skelly]        = count_branches(segmented);
     [av_length, dists_img, ~]   = branch_length(l_skelly, soma_mask);
 
     l_soma          = uint16(soma_mask) .* segmented;
-    av_scholl_idx   = scholl(l_skelly, l_soma, bfr.pxSize);
+    [av_si, c_mat]  = scholl(l_skelly, l_soma, bfr.pxSize);
 
     nMicroglia = max(segmented, [], "all");
 
@@ -85,7 +85,8 @@ function data = algo_fluor_micro(bfr, mask, settings)
         um_per_pixel    = UM_PER_PIXEL, ...
         av_length       = av_length, ...
         dists_img       = dists_img, ...
-        av_scholl_idx   = av_scholl_idx, ...
+        av_scholl_idx   = av_si, ...
+        cross_matrix    = c_mat, ...
         region_mask     = r_mask ...
     );
 end

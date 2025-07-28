@@ -127,7 +127,7 @@ classdef SelectImagesView < Component
             view.ConvertSelectedButton.Text = 'Convert Selected';
             view.ConvertSelectedButton.ButtonPushedFcn = @(~, ~) view.call_registrar(SelectImagesEvent.ButtonConvert);
 
-            % Create ConvertSelectedButton
+            % Create CancelButton
             view.CancelButton = uibutton(view.ButtonGrid, 'push');
             view.CancelButton.Layout.Row = 1;
             view.CancelButton.Layout.Column = 5;

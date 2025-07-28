@@ -24,6 +24,7 @@ classdef RegionKey
     end
 
     enumeration
+        WI              ("WI") % Whole Image
         VI              ("VI")
         ACVII           ("ACVII")
         AOB             ("AOB")

@@ -1,4 +1,4 @@
-function [result, img] = data2result(data, type_str)
+function [result, img, cross_matrix] = data2result(data, type_str)
     arguments
         data MicrocountData
         type_str string = "micro"
@@ -60,5 +60,6 @@ function [result, img] = data2result(data, type_str)
     end
 
     img = uint16(tmp);
+    cross_matrix = data.cross_matrix;
 end
 

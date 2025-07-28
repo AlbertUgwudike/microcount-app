@@ -49,6 +49,7 @@ classdef Model < handle
             mkdir(full_path(Constants.DIR_SLUG_DOWN));
             mkdir(full_path(Constants.DIR_SLUG_PROC));
             mkdir(full_path(Constants.DIR_SLUG_MASK));
+            mkdir(full_path(Constants.DIR_SLUG_SCHOLL));
             
             disp("Workspace updated.")
         end
@@ -93,7 +94,7 @@ classdef Model < handle
             [home_dir, ~, ~] = fileparts(mdl.WS.DirName);
             
             [file, path, ~] = uigetfile( ...
-                {'*.tif;*.tiff;*.czi;*.lof;*.png;*.jpg;*.jpeg', 'Image files' }, ...
+                {'*.tif;*.tiff;*.czi;*.lof;*.png;*.jpg;*.jpeg;*.lsm', 'Image files' }, ...
                 "Select your images", ...
                 home_dir, ...
                 MultiSelect = "on" ...
@@ -225,6 +226,11 @@ classdef Model < handle
             img_md.Aligned = true;
             mdl.save_and_update()
         end
+
+        function io_align_whole_image(mdl, img_md)
+            img_md.WholeAligned = true;
+            mdl.save_and_update()
+        end
         
         function io_rotate_image(mdl, img_md)
             arguments
@@ -287,7 +293,7 @@ classdef Model < handle
             
             locs = [img_md.Regions.Location];
             region_idx = ismember([locs.RegionKey], keys);
-            laterality_idx = [locs.Laterality] == laterality;
+            laterality_idx = [locs.Laterality] == laterality | [locs.Laterality] == Laterality.BILAT;
             idx = ~(region_idx & laterality_idx);
             img_md.Regions = img_md.Regions(idx);
             mdl.save_and_update()
@@ -456,10 +462,10 @@ classdef Model < handle
             settings = region.get_microcount_settings();
             
             data = algo_fluor_micro(bfr_img, mask, settings);
-            [result, output_img] = data2result(data);
+            [result, output_img, cross_matrix] = data2result(data);
             
-            % data = algo_dab_astro(bfr_img, mask, settings);
-            % [result, output_img] = data2result(data, 'dab_astro');
+%             data = algo_dab_astro(bfr_img, mask, settings);
+%             [result, output_img, cross_matrix] = data2result(data, 'dab_astro');
             
             % data = algo_dab_micro(bfr_img, mask, settings);
             % [result, output_img] = data2result(data, 'dab_micro');
@@ -468,6 +474,7 @@ classdef Model < handle
             % [result, output_img] = data2result(data, 'fluor_neun');
             
             imwrite(output_img, region.ProcFn);
+            writecell(cross_matrix, region.SchollFn);
         end
         
         function bg_run_microcount_complete(mdl, args)
@@ -479,7 +486,8 @@ classdef Model < handle
             
             if err
                 fprintf("Microcount: Region %s stopped after event: %s\n", region.ID, args{3}.message);
-                disp([args{3}.stack.name]);
+                errs = cellfun(@(a) convertCharsToStrings(a), {args{3}.stack.name});
+                disp(join(errs, " -- "));
                 region.ProcessStatus = ProcessStatus.UNPROCESSED;
             else
                 fprintf("Microcount: Region %s completed after: %s\n", region.ID, args{4});

@@ -66,6 +66,12 @@ classdef RegisterController < ControllerBase
             con.toggleOverlayOn()
         end
 
+        function onAlignWholeButtonPushed(con)
+            disp("RegisterController::onAlignWholeButtonPushed")
+            con.Model.io_align_whole_image(con.SelectedImage);
+            con.toggleOverlayOff()
+        end
+
         function onToggleOverlayButtonPushed(con)
             if con.ShowOverlay
                 con.toggleOverlayOff()
@@ -137,11 +143,12 @@ classdef RegisterController < ControllerBase
 
         function onWorkspaceUpdated(con) 
             disp("RegisterController::on_workspace_updated")
-            down_idx  = [con.Model.WS.Images.ConvertStatus] == ConvertStatus.CONVERTED;
+            down_idx     = [con.Model.WS.Images.ConvertStatus] == ConvertStatus.CONVERTED;
             con.ImageSet = con.Model.WS.Images(down_idx);
-            checks = Utility.apply_check([con.ImageSet.Aligned]');
-            fns = Utility.path2name([con.ImageSet.SourceFn]');
-            new_data  = [fns checks];
+            checks       = Utility.apply_check([con.ImageSet.Aligned]');
+            whole_checks = Utility.apply_check([con.ImageSet.WholeAligned]');
+            fns          = Utility.path2name([con.ImageSet.SourceFn]');
+            new_data     = [fns checks whole_checks];
             con.View.AlignmentTable.Data = new_data;
         end
         
@@ -160,6 +167,9 @@ classdef RegisterController < ControllerBase
 
                 case (RegisterEvent.ButtonAlignControl)
                     con.onAlignControlButtonPushed()
+
+                case (RegisterEvent.ButtonAlignWhole)
+                    con.onAlignWholeButtonPushed()
 
                 case (RegisterEvent.ButtonToggleOverlay)
                     con.onToggleOverlayButtonPushed()

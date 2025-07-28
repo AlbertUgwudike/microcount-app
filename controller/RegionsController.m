@@ -32,7 +32,14 @@ classdef RegionsController < ControllerBase
             p_img = padarray(d_img, double([Constants.PAD, Constants.PAD]), 0);
             tform_d = con.SelectedImage.TransformationData;
             locs = con.SelectedImage.all_locations();
-            img = imadjust(p_img) + con.Model.Atlas.calc_borders(tform_d, locs);
+
+            if con.SelectedImage.Aligned
+                borders = con.Model.Atlas.calc_borders(tform_d, locs);
+            else
+                borders = uint16(zeros(size(p_img)));
+            end
+
+            img = imadjust(p_img) + borders;
             con.View.HistologyImage.ImageSource = cat(3, img, img, img);
         end
 
@@ -99,7 +106,7 @@ classdef RegionsController < ControllerBase
         function onWorkspaceUpdated(con) 
             disp("RegionsController::on_workspace_updated")
 
-            reg_idx         = [con.Model.WS.Images.Aligned];
+            reg_idx         = [con.Model.WS.Images.Aligned] | [con.Model.WS.Images.WholeAligned];
             con.ImageSet    = con.Model.WS.Images(reg_idx);
             
             if (isempty(con.ImageSet))
@@ -163,8 +170,9 @@ classdef RegionsController < ControllerBase
     methods (Access=private)
         function keys = get_selected_keys(con)
             selected = con.View.RegionSelector.CheckedNodes;
-            node = con.View.RegionSelector.Children(1);
-            keys = RegionsController.extract_keys(node, selected);
+            kids = con.View.RegionSelector.Children;
+            keys = arrayfun(@(n) RegionsController.extract_keys(n, selected), kids, UniformOutput=false);
+            keys = Utility.cat_cells(keys);
         end
     end
 
