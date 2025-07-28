@@ -1,4 +1,4 @@
-function data = algo_dab_astro(bfr, mask, settings)
+function [data, c_mat] = algo_dab_astro(bfr, mask, settings)
 
     arguments
         bfr BioformatsImage
@@ -10,6 +10,8 @@ function data = algo_dab_astro(bfr, mask, settings)
     CD68_SENSITIVITY    = settings.CD68Threshold;
     CD68_MIN_OVERLAP    = settings.MinOverlap;
     DENDRITE_THRESHOLD  = settings.Iba1Threshold;
+
+    UM_PER_PIXEL        = 1;
 
     % Crop region -----------------------------------------------
     
@@ -36,14 +38,18 @@ function data = algo_dab_astro(bfr, mask, settings)
 
     scale_f = 65535;
     im_fn = bfr.filename;
-    img = imread(im_fn, Index=1, PixelRegion=pixel_region);
+    img = imread(im_fn, Index=3, PixelRegion=pixel_region);
     min_img = min(img, [], 3);
     filt_img = wiener2(min_img, [10, 10]);
     scl_img = double(filt_img) / scale_f;
     nan_img = nan_background(scl_img, r_mask);
     norm_img = log_norm(nan_img);
-    adj_img = mat2gray(norm_img, [-2.5, 3.0]);
-    iba1 = 1 - adj_img;
+    disp(min(norm_img, [], "all"))
+    disp(max(norm_img, [], "all"))
+    adj_img = mat2gray(norm_img, [-15, 1.0]);
+%     adj_img = mat2gray(norm_img, [-2.5, 3.0]);
+%     iba1 = 1 - adj_img;
+    iba1 = adj_img;
 
     cd68 = uint16(zeros(size(iba1)));
     
@@ -51,10 +57,15 @@ function data = algo_dab_astro(bfr, mask, settings)
     % img(repmat(~r_mask, 1, 1, 3)) = 0;
 
     p_out = log_norm(pacefilt(iba1, 21, 5) / 4);
-    branches = p_out > 0.7;
+    imshow(imadjust(iba1))
+%     branches = p_out > 0.7;
+    branches = p_out > 0.2;
 
     fp_out = medfilt2(p_out, [10, 10]);
-    soma_mask = fp_out > 2.6;
+%     soma_mask = fp_out > 2.6;
+    soma_mask = fp_out > 0.7;
+%     figure()
+%     imshow(imadjust(uint8(soma_mask)))
 
     iba1_mask = uint16(soma_mask + branches);
     [regions, segmented] = floodfill(soma_mask, iba1_mask);
@@ -66,7 +77,12 @@ function data = algo_dab_astro(bfr, mask, settings)
     cd68_mask = filter_size_cd68(cd68_mask, MAX_CD68_SIZE);
 
     [av_rotundity, poly_mask]   = rotundity(regions, soma_mask);
-    [detected, skelly]          = count_branches(segmented);
+    [detected, l_skelly]        = count_branches(segmented);
+    [av_length, dists_img, ~]   = branch_length(l_skelly, soma_mask);
+
+    l_soma          = uint16(soma_mask) .* segmented;
+    [av_si, c_mat]  = scholl(l_skelly, l_soma, bfr.pxSize);
+
 
     nMicroglia = max(segmented, [], "all");
 
@@ -86,8 +102,8 @@ function data = algo_dab_astro(bfr, mask, settings)
     img = uint16(img) .* repmat(1 - border_img, 1, 1, 3);
 
     data = MicrocountData( ...
-        iba1            = iba1, ...
-        cd68            = img, ... % I will not forget this
+        iba1            = uint16(65535 * iba1), ...
+        cd68            = img, ...
         segmented       = segmented, ...
         iba1Mask        = iba1_mask, ...
         cd68Mask        = cd68_mask, ...
@@ -98,12 +114,16 @@ function data = algo_dab_astro(bfr, mask, settings)
         nPixels         = n_pixels, ...
         overlap_pcs     = overlap_pcs, ...
         poly_mask       = poly_mask, ...
-        skelly          = skelly, ...
+        skelly          = l_skelly, ...
         soma_mask       = soma_mask, ...
         mm2_per_pixel   = MM2_PER_PIXEL, ...
+        um_per_pixel    = UM_PER_PIXEL, ...
+        av_length       = av_length, ...
+        dists_img       = dists_img, ...
+        av_scholl_idx   = av_si, ...
+        cross_matrix    = c_mat, ...
         region_mask     = r_mask ...
     );
 
-    
 end
 

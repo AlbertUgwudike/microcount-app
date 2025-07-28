@@ -3,6 +3,7 @@ classdef RegisterEvent
         SelectionAlignmentTable
         ButtonAlignColor
         ButtonAlignControl
+        ButtonAlignWhole
         ButtonToggleOverlay
         ButtonRotateImage
         ButtonCycleOrientation

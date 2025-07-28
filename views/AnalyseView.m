@@ -29,6 +29,7 @@ classdef AnalyseView < Component
                     BranchCountLabel
                     ConvexityLabel
                     BranchLengthLabel
+                    SchollLabel
     end
 
     methods
@@ -199,7 +200,7 @@ classdef AnalyseView < Component
 
             % Create ResultGrid
             view.ResultGrid = uigridlayout(view.ResultsPanel);
-            view.ResultGrid.RowHeight = repmat({'1x'}, 7, 1);
+            view.ResultGrid.RowHeight = repmat({'1x'}, 8, 1);
             view.ResultGrid.ColumnWidth = {'1x'};
             view.ResultGrid.Padding = 1;
             view.ResultGrid.Padding = 1;
@@ -224,6 +225,9 @@ classdef AnalyseView < Component
 
             % Create ConvexityTextAreaLabel
             view.ConvexityLabel = view.create_result_label(Constants.LABEL_CONVEXITY, 7);
+
+            % Create SchollTextAreaLabel
+            view.SchollLabel = view.create_result_label(Constants.LABEL_SCHOLL, 8);
 
         end
 

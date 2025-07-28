@@ -184,10 +184,15 @@ classdef RegionsView < Component
             [curr_dir, ~, ~] = fileparts(this_fn);
             rt_fn = sprintf("%s/../assets/RegionTree.mat", curr_dir);
             region_tree = load(rt_fn).rt;
+            
             Node = uitreenode(ui_tree);
             Node.Text = name;
             Node.NodeData = RegionKey.root;
             RegionsView.create_rs_tree(Node, region_tree.Descendants)
+
+            WholeNode = uitreenode(ui_tree);
+            WholeNode.Text = "Whole Image";
+            WholeNode.NodeData = RegionKey.WI;
         end
 
         function create_rs_tree(parent_node, descendants)

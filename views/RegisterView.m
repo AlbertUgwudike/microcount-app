@@ -18,6 +18,7 @@ classdef RegisterView < Component
                     HistologyButtonGrid
                         AlignColorButton
                         AlignControlButton
+                        AlignWholeButton
                     HistSliceAxes
                     HistologyButtonGrid2
                         ToggleOverlayButton
@@ -60,11 +61,11 @@ classdef RegisterView < Component
             view.TopGrid.Layout.Row = 1;
             view.TopGrid.Layout.Column = 1;
             view.TopGrid.Padding = 1;
-
+            
             % Create AlignmentTable
             view.AlignmentTable = uitable(view.TopGrid);
-            view.AlignmentTable.ColumnName = {'Image'; 'Aligned'};
-            view.AlignmentTable.ColumnWidth = {'4x', '1x'};
+            view.AlignmentTable.ColumnName = {'Image'; 'Atlas Aligned'; 'Whole Aligned'};
+            view.AlignmentTable.ColumnWidth = {'4x', '1x', '1x'};
             view.AlignmentTable.RowName = {};
             view.AlignmentTable.SelectionType = 'row';
             view.AlignmentTable.CellSelectionCallback = @(~, ~) view.call_registrar(RegisterEvent.SelectionAlignmentTable);
@@ -158,7 +159,7 @@ classdef RegisterView < Component
 
             % Create HistologyButtonGrid
             view.HistologyButtonGrid = uigridlayout(view.HistologyGrid);
-            view.HistologyButtonGrid.ColumnWidth = {'1x', '1x'};
+            view.HistologyButtonGrid.ColumnWidth = {'1x', '1x', '1x'};
             view.HistologyButtonGrid.RowHeight = {'1x'};
             view.HistologyButtonGrid.Padding = [5,5,5,5];
             view.HistologyButtonGrid.Layout.Row = 1;
@@ -170,14 +171,21 @@ classdef RegisterView < Component
             view.AlignColorButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegisterEvent.ButtonAlignColor);
             view.AlignColorButton.Layout.Row = 1;
             view.AlignColorButton.Layout.Column = 1;
-            view.AlignColorButton.Text = 'Automatic Registration';
+            view.AlignColorButton.Text = 'Register (Auto)';
 
             % Create AlignControlButton
             view.AlignControlButton = uibutton(view.HistologyButtonGrid, 'push');
             view.AlignControlButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegisterEvent.ButtonAlignControl);
             view.AlignControlButton.Layout.Row = 1;
             view.AlignControlButton.Layout.Column = 2;
-            view.AlignControlButton.Text = 'C.P. Registration';
+            view.AlignControlButton.Text = 'Register (CP)';
+
+            % Create AlignWholeButton
+            view.AlignWholeButton = uibutton(view.HistologyButtonGrid, 'push');
+            view.AlignWholeButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegisterEvent.ButtonAlignWhole);
+            view.AlignWholeButton.Layout.Row = 1;
+            view.AlignWholeButton.Layout.Column = 3;
+            view.AlignWholeButton.Text = 'Register (WI)';
 
             % Create HistSliceAxes
             view.HistSliceAxes = uiaxes(view.HistologyGrid);

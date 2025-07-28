@@ -1,4 +1,4 @@
-function [result, img] = data2result(data, type_str)
+function [result, img, cross_matrix] = data2result(data, type_str)
     arguments
         data MicrocountData
         type_str string = "micro"
@@ -21,7 +21,8 @@ function [result, img] = data2result(data, type_str)
         AverageRotundity = perc(data.avRotundity, 1), ...
         AverageSomaSizeUm = perc(soma_area, data.nMicroglia) / 100, ...
         AverageBranchCount = perc(total_branches, data.nMicroglia) / 100, ...
-        AverageBranchLengthUm = data.av_length * data.um_per_pixel ...
+        AverageBranchLengthUm = data.av_length * data.um_per_pixel, ...
+        AverageSchollIndex = data.av_scholl_idx ...
     );
     
     % generate output image -------------------------------------------
@@ -59,5 +60,6 @@ function [result, img] = data2result(data, type_str)
     end
 
     img = uint16(tmp);
+    cross_matrix = data.cross_matrix;
 end
 

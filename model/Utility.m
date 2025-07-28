@@ -124,6 +124,11 @@ classdef Utility
             c_img = arrayfun(@(i) imcrop(img(:, :, i), bbox), 1:N, UniformOutput=false);
             out = cat(3, c_img{:});
         end
+
+        function pad_vec = pad_to(vec, N, v)
+            pad_vec = v * ones(1, N);
+            pad_vec(1:min(numel(vec), N)) = vec(1:min(numel(vec), N));
+        end
         
     end
 end

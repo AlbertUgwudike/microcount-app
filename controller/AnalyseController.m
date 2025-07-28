@@ -219,6 +219,7 @@ classdef AnalyseController < ControllerBase
                 con AnalyseController
                 result MicrocountResult
             end
+            disp(result)
             con.View.PercentageCellAreaLabel.Text      = con.stick(Constants.LABEL_CELL_AREA   , string(result.PercentageIba1Area));
             con.View.CellCountLabel.Text               = con.stick(Constants.LABEL_CELL_DENSITY, string(result.MicrogliaDensity));
             con.View.PercentageCoMarkerAreaLabel.Text  = con.stick(Constants.LABEL_CO_AREA     , string(result.PercentageCD68Area));
@@ -226,6 +227,7 @@ classdef AnalyseController < ControllerBase
             con.View.BranchLengthLabel.Text            = con.stick(Constants.LABEL_LENGTH      , string(result.AverageBranchLengthUm));
             con.View.BranchCountLabel.Text             = con.stick(Constants.LABEL_BRANCH      , string(result.AverageBranchCount));
             con.View.ConvexityLabel.Text               = con.stick(Constants.LABEL_CONVEXITY   , string(result.AverageRotundity));
+            con.View.SchollLabel.Text                  = con.stick(Constants.LABEL_SCHOLL      , string(result.AverageSchollIndex));
 
         end
 
@@ -240,6 +242,7 @@ classdef AnalyseController < ControllerBase
             con.View.BranchCountLabel.Text             = con.stick(Constants.LABEL_BRANCH      , "--");
             con.View.BranchLengthLabel.Text            = con.stick(Constants.LABEL_LENGTH      , "--");
             con.View.ConvexityLabel.Text               = con.stick(Constants.LABEL_CONVEXITY   , "--");
+            con.View.SchollLabel.Text                  = con.stick(Constants.LABEL_SCHOLL      , "--");
         end
     end
 
