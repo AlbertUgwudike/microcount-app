@@ -603,7 +603,7 @@ classdef Model < handle
             
             tic
             while true
-                if toc > 60 * 60
+                if toc > 60 * 60 * 6
                     break
                 end
                 

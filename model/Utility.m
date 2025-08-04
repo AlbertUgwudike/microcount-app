@@ -71,8 +71,9 @@ classdef Utility
             export_table.mask_file_name = [regions.MaskFn]';
             export_table.region_ID = [regions.ID]';
             export_table.cell_threshold = [regions.Iba1Threshold]';
-            export_table.max_comarker_size = [regions.MaxCD68Size]';
             export_table.comarker_threshold = [regions.CD68Threshold]';
+            export_table.max_comarker_size = [regions.MaxCD68Size]';
+            export_table.min_comarker_overlap = [regions.OverlapPercentage]';
             
             results = [regions.Result];
             
@@ -84,6 +85,7 @@ classdef Utility
             export_table.average_soma_size = [results.AverageSomaSizeUm]';
             export_table.average_branch_count = [results.AverageBranchCount]';
             export_table.average_branch_length = [results.AverageBranchLengthUm]';
+            export_table.average_scholl_index = [results.AverageSchollIndex]';
             
             export_table = struct2table(export_table);
         end

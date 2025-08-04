@@ -48,12 +48,12 @@ classdef AnalyseController < ControllerBase
             end
             disp("AnalyseController::on_cell_edited")
             idx = event.Indices(1, 1);
-            data = con.View.RegionTable.Data(idx, 2:5);
+            data = con.View.RegionTable.Data(idx, 2:6);
             region = con.RegionSet(idx);
 
             if ~Region.valid_setting_str_list(data)
                 original_settings = region.get_setting_str_list();
-                con.View.RegionTable.Data(idx, 2:5) = original_settings;
+                con.View.RegionTable.Data(idx, 2:6) = original_settings;
             else
                 con.RegionSet(idx).apply_setting_str_list(data);
                 if save_model
@@ -68,13 +68,14 @@ classdef AnalyseController < ControllerBase
                 con.View.CellThresholdEditField.Value, ...
                 con.View.CoMarkerThresholdEditField.Value, ...
                 con.View.MaxSizeEditField.Value, ...
+                con.View.OverlapEditField.Value, ...
                 con.View.SomaThresholdEditField.Value ...
             ];
 
             selection = con.View.RegionTable.Selection;
             for i = 1:numel(selection)
                 event.Indices = selection(i);
-                con.View.RegionTable.Data(event.Indices, 2:5) = options;
+                con.View.RegionTable.Data(event.Indices, 2:6) = options;
                 con.on_cell_edited(event, false)
             end
             con.Model.io_save()
@@ -131,9 +132,10 @@ classdef AnalyseController < ControllerBase
             iba1_col        = [con.RegionSet.Iba1Threshold]';
             cd68_col        = [con.RegionSet.CD68Threshold]';
             max_col         = [con.RegionSet.MaxCD68Size]';
+            act_col         = [con.RegionSet.OverlapPercentage]';
             soma_col        = [con.RegionSet.SomaThreshold]';
             pro_col         = string([con.RegionSet.ProcessStatus]');
-            con.View.RegionTable.Data = [region_ids iba1_col cd68_col max_col soma_col, pro_col];
+            con.View.RegionTable.Data = [region_ids iba1_col cd68_col max_col act_col soma_col, pro_col];
 
             if height(con.RegionSet) == 0
                 return
@@ -219,7 +221,6 @@ classdef AnalyseController < ControllerBase
                 con AnalyseController
                 result MicrocountResult
             end
-            disp(result)
             con.View.PercentageCellAreaLabel.Text      = con.stick(Constants.LABEL_CELL_AREA   , string(result.PercentageIba1Area));
             con.View.CellCountLabel.Text               = con.stick(Constants.LABEL_CELL_DENSITY, string(result.MicrogliaDensity));
             con.View.PercentageCoMarkerAreaLabel.Text  = con.stick(Constants.LABEL_CO_AREA     , string(result.PercentageCD68Area));

@@ -35,10 +35,25 @@ function [result, img, cross_matrix] = data2result(data, type_str)
             poly_mask = data.poly_mask;
             poly_mask = poly_mask * MASK_INTENSITY;
         
-            tmp = zeros([size(data.cd68), 3]);
-            tmp(:, :, 1) = iba1_adj;
-            tmp(:, :, 2) = cd68_adj .* uint16(comboMask) + poly_mask;
-            tmp(:, :, 3) = poly_mask;
+            % tmp = zeros([size(data.cd68), 3]);
+            % tmp(:, :, 1) = iba1_adj;
+            % tmp(:, :, 2) = cd68_adj .* uint16(comboMask) + poly_mask;
+            % tmp(:, :, 3) = poly_mask;
+
+            cd68_perim = bwperim(comboMask);
+            cd68_poly = MASK_INTENSITY * uint16(cd68_perim);
+
+            red = iba1_adj + poly_mask;
+            red(cd68_perim) = cd68_poly(cd68_perim) / 50;
+
+            green = cd68_adj + poly_mask;
+            green(cd68_perim) = cd68_poly(cd68_perim) / 25;
+
+            blue = poly_mask;
+            blue(cd68_perim) = cd68_poly(cd68_perim) / 1.4;
+
+            tmp = cat(3, red, green, blue);
+
 
         case "dab_micro"
             poly_mask = imdilate(data.poly_mask, strel('disk', 1, 0));

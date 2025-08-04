@@ -59,12 +59,12 @@ classdef Atlas
 
             if ~isempty(l_keys)
                 l_abrs = [l_keys.Name];
-                borders = borders + 65536 * atlas.fill_region(l_abrs, ali_img) .* uint16(lat_img);
+                borders = borders + 65535 * atlas.fill_region(l_abrs, ali_img) .* uint16(lat_img);
             end
 
             if ~isempty(r_keys)
                 r_abrs = [r_keys.Name];
-                borders = borders + 65536 * atlas.fill_region(r_abrs, ali_img) .* uint16(~lat_img);
+                borders = borders + 65535 * atlas.fill_region(r_abrs, ali_img) .* uint16(~lat_img);
             end
         end
         

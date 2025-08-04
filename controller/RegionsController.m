@@ -39,7 +39,7 @@ classdef RegionsController < ControllerBase
                 borders = uint16(zeros(size(p_img)));
             end
 
-            img = imadjust(p_img) + borders;
+            img = imadjust(p_img) + 0.5 * borders;
             con.View.HistologyImage.ImageSource = cat(3, img, img, img);
         end
 
