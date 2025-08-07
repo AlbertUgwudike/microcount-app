@@ -8,6 +8,7 @@ classdef AnalyseEvent
         ButtonSelectAll
         ButtonExport
         ButtonCancel
+        ButtonMagic
     end
 end
 

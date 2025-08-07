@@ -99,14 +99,22 @@ classdef AnalyseController < ControllerBase
             disp("AnalyseController::on_process_all_button_pushed")
             N = height(con.View.RegionTable.Data);
             con.View.RegionTable.Selection = 1:N;
-            % regions = con.Model.get_all_regions();
-            % idx = [regions.ProcessStatus] == ProcessStatus.PROCESSING;
-            % proc_regions = regions(idx);
-            % for i = 1:numel(proc_regions)
-            %     region = proc_regions(i);
-            %     region.ProcessStatus = ProcessStatus.UNPROCESSED;
-            % end
-            % con.Model.save_and_update()
+
+        end
+
+        function on_magic_button_pushed(con)
+            beginnings = ["24_6_", "24_5_", "24_3_", ];
+            regionIDs = con.View.RegionTable.Data(:, 1);
+            idx = arrayfun(@(s) ismember(s.extractBetween(1, 5), beginnings), regionIDs);
+            N = height(con.View.RegionTable.Data);
+            all_idxs = 1:N;
+            con.View.RegionTable.Selection = all_idxs(idx);
+            con.View.RegionTable.Data(all_idxs(idx), 3) = 0.55;
+
+            for i = 1:numel(con.View.RegionTable.Selection)
+                event.Indices = con.View.RegionTable.Selection(i);
+                con.on_cell_edited(event, false)
+            end
         end
 
         function on_cancel_button_pushed(con) 
@@ -193,6 +201,9 @@ classdef AnalyseController < ControllerBase
 
                 case (ModelEvents.WorkspaceUpdated)
                     con.on_workspace_update()
+
+                case (AnalyseEvent.ButtonMagic)
+                    % con.on_magic_button_pushed()
             end
         end
         

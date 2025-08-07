@@ -9,9 +9,10 @@ classdef AnalyseView < Component
                 MaxSizeEditField
                 OverlapEditField
                 SomaThresholdEditField
-                SelectAllButton
+                MagicButton
             RegionTable matlab.ui.control.Table
             ButtonGrid
+                SelectAllButton
                 SelectUnprocessedButton
                 ProcessSelectedButton
                 CancelButton
@@ -100,6 +101,13 @@ classdef AnalyseView < Component
             view.SomaThresholdEditField.HorizontalAlignment = 'center';
             view.SomaThresholdEditField.Layout.Row = 1;
             view.SomaThresholdEditField.Layout.Column = 6;
+
+            % Create MagicButton
+            view.MagicButton = uibutton(view.SettingGrid, 'push');
+            view.MagicButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonMagic);
+            view.MagicButton.Layout.Row = 1;
+            view.MagicButton.Layout.Column = 7;
+            view.MagicButton.Text = 'Magic';
 
             % Create RegionTable
             view.RegionTable = uitable(view.MainGrid);

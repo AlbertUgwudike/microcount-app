@@ -7,7 +7,7 @@ function [result, img, cross_matrix] = data2result(data, type_str)
     MASK_INTENSITY = 65535;
 
     imageArea = data.nPixels * data.mm2_per_pixel;
-    comboMask = data.iba1Mask & data.cd68Mask;
+    comboMask = (data.segmented > 0) & data.cd68Mask;
     totalActivatedArea = sum(comboMask, 'all') * data.mm2_per_pixel;
     iba1Area = sum(data.iba1Mask, 'all') * data.mm2_per_pixel;
     soma_area = sum(data.soma_mask, 'all') * data.mm2_per_pixel * 1e6;
