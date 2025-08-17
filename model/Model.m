@@ -464,8 +464,11 @@ classdef Model < handle
             data = algo_fluor_micro(bfr_img, mask, settings);
             [result, output_img, cross_matrix] = data2result(data);
             
-%             data = algo_dab_astro(bfr_img, mask, settings);
-%             [result, output_img, cross_matrix] = data2result(data, 'dab_astro');
+            % data = algo_dab_astro(bfr_img, mask, settings);
+            % [result, output_img, cross_matrix] = data2result(data, 'dab_astro');
+          
+            % data = algo_fluor_astro(bfr_img, mask, settings);
+            % [result, output_img, cross_matrix] = data2result(data, 'fluor_astro');
             
             % data = algo_dab_micro(bfr_img, mask, settings);
             % [result, output_img] = data2result(data, 'dab_micro');
@@ -492,6 +495,7 @@ classdef Model < handle
             else
                 fprintf("Microcount: Region %s completed after: %s\n", region.ID, args{4});
                 region.Result = args{3};
+                disp(region.Result)
                 region.ProcessStatus = ProcessStatus.PROCESSED;
             end
             
