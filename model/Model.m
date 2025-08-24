@@ -461,11 +461,11 @@ classdef Model < handle
             bfr_img = BioformatsImage(file_name_chrs);
             settings = region.get_microcount_settings();
             
-            data = algo_fluor_micro(bfr_img, mask, settings);
-            [result, output_img, cross_matrix] = data2result(data);
+%             data = algo_fluor_micro(bfr_img, mask, settings);
+%             [result, output_img, cross_matrix] = data2result(data);
             
-            % data = algo_dab_astro(bfr_img, mask, settings);
-            % [result, output_img, cross_matrix] = data2result(data, 'dab_astro');
+            data = algo_dab_astro(bfr_img, mask, settings);
+            [result, output_img, cross_matrix] = data2result(data, 'dab_astro');
           
             % data = algo_fluor_astro(bfr_img, mask, settings);
             % [result, output_img, cross_matrix] = data2result(data, 'fluor_astro');

@@ -129,7 +129,7 @@ classdef SelectImagesController < ControllerBase
                 conv_img = imread(conv_img_fn, PixelRegion = pixel_region, Index = con.CurrentChannel + 1);
                 disp("Multipanel")
             end
-            con.View.ProcessedImage.ImageSource = repmat(imadjust(conv_img), 1, 1, 3);
+            con.View.ProcessedImage.ImageSource = repmat(imadjust(conv_img(:, :, 1)), 1, 1, 3);
         end
         
     end

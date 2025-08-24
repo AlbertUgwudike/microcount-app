@@ -38,7 +38,7 @@ function [data, c_mat] = algo_dab_astro(bfr, mask, settings)
 
     r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
 
-    img = imread(bfr.filename, Index=3, PixelRegion=pixel_region);
+    img = imread(bfr.filename, Index=1, PixelRegion=pixel_region);
     min_img = min(img, [], 3);
     filt_img = wiener2(min_img, [10, 10]);
     scl_img = double(filt_img) / 65535;
@@ -53,7 +53,6 @@ function [data, c_mat] = algo_dab_astro(bfr, mask, settings)
     cd68(~r_mask) = 0;
 
     p_out = log_norm(pacefilt(iba1, 21, 5) / 4);
-    imshow(imadjust(iba1))
     branches = p_out > DENDRITE_THRESHOLD; % 0.2
 
     fp_out = medfilt2(p_out, [10, 10]);
@@ -88,8 +87,8 @@ function [data, c_mat] = algo_dab_astro(bfr, mask, settings)
     nActivated = sum(overlap_pcs >= CD68_MIN_OVERLAP, "all");
 
     data = MicrocountData( ...
-        iba1            = img, ...
-        cd68            = cd68, ...
+        iba1            = min_img, ...
+        cd68            = min_img, ...
         segmented       = segmented, ...
         iba1Mask        = iba1_mask, ...
         cd68Mask        = cd68_mask, ...

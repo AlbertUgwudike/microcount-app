@@ -58,7 +58,7 @@ function [result, img, cross_matrix] = data2result(data, type_str)
         case "dab_astro"
             poly_mask = imdilate(data.poly_mask, strel('disk', 1, 0));
             poly_mask = uint16(label2rgb(poly_mask, 'jet', 'k', 'shuffle')) * 256;
-            tmp = uint16(data.cd68) * 256;
+            tmp = uint16(repmat(data.iba1, 1, 1, 3)) * 256;
             tmp(poly_mask > 0) = poly_mask(poly_mask > 0);
 
         case "fluor_astro"
