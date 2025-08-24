@@ -467,8 +467,8 @@ classdef Model < handle
             % data = algo_dab_astro(bfr_img, mask, settings);
             % [result, output_img, cross_matrix] = data2result(data, 'dab_astro');
           
-            % data = algo_fluor_astro(bfr_img, mask, settings);
-            % [result, output_img, cross_matrix] = data2result(data, 'fluor_astro');
+%             data = algo_fluor_astro(bfr_img, mask, settings);
+%             [result, output_img, cross_matrix] = data2result(data, 'fluor_astro');
             
             % data = algo_dab_micro(bfr_img, mask, settings);
             % [result, output_img] = data2result(data, 'dab_micro');

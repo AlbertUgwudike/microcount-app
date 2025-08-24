@@ -31,14 +31,8 @@ function [result, img, cross_matrix] = data2result(data, type_str)
             cd68_adj = imadjust(data.cd68, [0.001; 0.005], []);
             iba1_adj = imadjust(data.iba1); %, [0.0714; 0.3392], []);
 
-            % poly_mask = imdilate(data.poly_mask, strel("disk", 1, 0));
             poly_mask = data.poly_mask;
             poly_mask = poly_mask * MASK_INTENSITY;
-        
-            % tmp = zeros([size(data.cd68), 3]);
-            % tmp(:, :, 1) = iba1_adj;
-            % tmp(:, :, 2) = cd68_adj .* uint16(comboMask) + poly_mask;
-            % tmp(:, :, 3) = poly_mask;
 
             cd68_perim = bwperim(comboMask);
             cd68_poly = MASK_INTENSITY * uint16(cd68_perim);
@@ -68,10 +62,32 @@ function [result, img, cross_matrix] = data2result(data, type_str)
             tmp(poly_mask > 0) = poly_mask(poly_mask > 0);
 
         case "fluor_astro"
+            % --------------------------------------------------
             poly_mask = imdilate(data.poly_mask, strel('disk', 1, 0));
             poly_mask = uint16(label2rgb(poly_mask, 'jet', 'k', 'shuffle')) * 256;
             tmp = uint16(repmat(data.iba1, 1, 1, 3)) * 256;
             tmp(poly_mask > 0) = poly_mask(poly_mask > 0);
+            % ------------------------------------------------------------
+
+%             cd68_adj = imadjust(data.cd68, [0.001; 0.005], []);
+%             iba1_adj = imadjust(data.iba1); %, [0.0714; 0.3392], []);
+%             
+%             poly_mask = data.poly_mask;
+%             poly_mask = poly_mask * MASK_INTENSITY;
+% 
+%             cd68_perim = bwperim(comboMask);
+%             cd68_poly = MASK_INTENSITY * uint16(cd68_perim);
+% 
+%             red = iba1_adj + poly_mask;
+%             red(cd68_perim) = cd68_poly(cd68_perim) / 50;
+% 
+%             green = cd68_adj + poly_mask;
+%             green(cd68_perim) = cd68_poly(cd68_perim) / 25;
+% 
+%             blue = poly_mask;
+%             blue(cd68_perim) = cd68_poly(cd68_perim) / 1.4;
+% 
+%             tmp = cat(3, red, green, blue);
 
         case "fluor_neun"
             poly_mask = imdilate(data.poly_mask, strel('disk', 1, 0));

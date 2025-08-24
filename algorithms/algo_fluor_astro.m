@@ -11,7 +11,7 @@ function [data, c_mat] = algo_fluor_astro(bfr, mask, settings)
     CD68_SENSITIVITY    = settings.CD68Threshold;
     CD68_MIN_OVERLAP    = settings.MinOverlap;
     DENDRITE_THRESHOLD  = settings.Iba1Threshold;
-    % SOMA_THRESHOLD      = settings.SomaThreshold;
+    SOMA_THRESHOLD      = settings.SomaThreshold;
     CoMarkerChannel     = settings.ChannelCD68;
     CellMarkerChannel   = settings.ChannelIba1;
 
@@ -37,36 +37,32 @@ function [data, c_mat] = algo_fluor_astro(bfr, mask, settings)
     % -----------------------
 
     r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
-
-    scale_f = 65535;
-    im_fn = bfr.filename;
-    img = imread(im_fn, Index=CellMarkerChannel, PixelRegion=pixel_region);
-    disp(class(img))
-    filt_img = img;
-    scl_img = double(filt_img) / scale_f;
+    img = imread(bfr.filename, Index=CellMarkerChannel, PixelRegion=pixel_region);
+    scl_img = double(img) / 65535;
     nan_img = nan_background(scl_img, r_mask);
     norm_img = log_norm(nan_img);
     iba1 = mat2gray(norm_img, [-2, 2]);
 
-%     imshow(erode_mask)
-%     figure()
-
+    % ------------ Segment Cells --------------------
     p_out = log_norm(pacefilt(iba1, 21, 5) / 4);
-
     branches = p_out > DENDRITE_THRESHOLD;
 
-    cd68 = imread(im_fn, Index=CoMarkerChannel, PixelRegion=pixel_region);
+    % ------------ Segment Activation --------------------
+    cd68 = imread(bfr.filename, Index=CoMarkerChannel, PixelRegion=pixel_region);
     cd68(~r_mask) = 0;
     tmp = nan_background(double(cd68), r_mask);
     cd68_mask = uint16(segment_activation(tmp, CD68_SENSITIVITY));
     cd68_mask = filter_size_cd68(cd68_mask, MAX_CD68_SIZE);
 
     % ------------ Segment Somas --------------------
+%     T = adaptthresh(img, 1 - SOMA_THRESHOLD);
+%     mask = imbinarize(img, T);
 
-    mask = img > 150;
+    ad_img = adapthisteq(img, 'clipLimit', 0.02, 'Distribution', 'rayleigh');
+    mask = mat2gray(ad_img) > SOMA_THRESHOLD;
+    
     mask = imfill(mask, "holes");
     soma_mask = imopen(mask, strel('disk', 5, 0));
-
     % -----------------------------------------------
 
     iba1_mask = uint16(soma_mask + branches);
