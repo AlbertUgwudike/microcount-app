@@ -1,6 +1,6 @@
 classdef Model < handle
     
-    properties ( SetAccess = private )
+    properties ( SetAccess = public )
         WS Workspace = Workspace.empty
         ErrorCache Error
         ThreadPool ThreadPool = ThreadPool()
@@ -174,7 +174,6 @@ classdef Model < handle
                 return
             end
             reg_ch = img_md.RegistrationChannel;
-            disp(reg_ch)
             raw_img = tiffreadVolume(img_md.DownFn);
             img = uint16(raw_img(:, :, reg_ch));
             if ~isempty(img_md.TransformationData)
@@ -314,6 +313,8 @@ classdef Model < handle
                 mdl Model
                 regions (:, 1) Region
             end
+
+            disp(mdl.WS.Algo)
             
             mdl.ThreadPool.dispatch_batch( ...
                 @(batch) mdl.io_set_processing_status(batch, ProcessStatus.PROCESSING), ...
@@ -460,21 +461,25 @@ classdef Model < handle
             file_name_chrs = convertStringsToChars(region.Parent.ConvFn);
             bfr_img = BioformatsImage(file_name_chrs);
             settings = region.get_microcount_settings();
+
+            switch mdl.WS.Algo
+                case Algorithm.MicroFluor
+                    data = algo_fluor_micro(bfr_img, mask, settings);
+                    [result, output_img, cross_matrix] = data2result(data);
+
+                case Algorithm.MicroDab
+                    data = algo_dab_micro(bfr_img, mask, settings);
+                    [result, output_img, cross_matrix] = data2result(data, 'dab_micro');
             
-%             data = algo_fluor_micro(bfr_img, mask, settings);
-%             [result, output_img, cross_matrix] = data2result(data);
-            
-            data = algo_dab_astro(bfr_img, mask, settings);
-            [result, output_img, cross_matrix] = data2result(data, 'dab_astro');
-          
-            % data = algo_fluor_astro(bfr_img, mask, settings);
-            % [result, output_img, cross_matrix] = data2result(data, 'fluor_astro');
-            
-            % data = algo_dab_micro(bfr_img, mask, settings);
-            % [result, output_img] = data2result(data, 'dab_micro');
-            
-            % data = algo_fluor_neun(bfr_img, mask, settings);
-            % [result, output_img] = data2result(data, 'fluor_neun');
+                case Algorithm.AstroFluor
+                    data = algo_fluor_astro(bfr_img, mask, settings);
+                    [result, output_img, cross_matrix] = data2result(data, 'fluor_astro');
+
+                case Algorithm.AstroDab
+                    data = algo_dab_astro(bfr_img, mask, settings);
+                    [result, output_img, cross_matrix] = data2result(data, 'dab_astro');
+
+            end
             
             imwrite(output_img, region.ProcFn);
             writecell(cross_matrix, region.SchollFn);

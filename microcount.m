@@ -19,6 +19,7 @@ function microcount(f)
     select_view = SelectImagesView(app_view.SelectTab);
     register_view = RegisterView(app_view.RegisterTab);
     regions_view = RegionsView(app_view.RegionsTab);
+    algo_view = SelectAlgoView(app_view.SelectAlgoTab);
     analyse_view = AnalyseView(app_view.AnalyseTab);
     
     AppController(model, app_view);
@@ -26,6 +27,7 @@ function microcount(f)
     SelectImagesController(model, select_view);
     RegisterController(model, register_view);
     RegionsController(model, regions_view);
+    SelectAlgoController(model, algo_view);
     AnalyseController(model, analyse_view);
 
 end

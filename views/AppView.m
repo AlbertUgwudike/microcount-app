@@ -5,6 +5,7 @@ classdef AppView < Component
         SelectTab matlab.ui.container.Tab
         RegisterTab matlab.ui.container.Tab
         RegionsTab matlab.ui.container.Tab
+        SelectAlgoTab matlab.ui.container.Tab
         AnalyseTab matlab.ui.container.Tab
         TabGroup matlab.ui.container.TabGroup
     end
@@ -41,6 +42,9 @@ classdef AppView < Component
 
             view.RegionsTab = uitab(view.TabGroup);
             view.RegionsTab.Title = 'Select Regions';
+
+            view.SelectAlgoTab = uitab(view.TabGroup);
+            view.SelectAlgoTab.Title = 'Select Algorithm';
 
             view.AnalyseTab = uitab(view.TabGroup);
             view.AnalyseTab.Title = 'Analyse';

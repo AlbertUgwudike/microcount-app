@@ -3,6 +3,7 @@ classdef Workspace
     properties
         DirName string
         Images (:, 1) ImageMetadata = ImageMetadata.empty
+        Algo Algorithm = Algorithm.MicroFluor
     end
     
     methods
