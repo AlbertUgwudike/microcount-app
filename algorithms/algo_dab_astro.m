@@ -44,9 +44,9 @@ function [data, c_mat] = algo_dab_astro(bfr, mask, settings)
     scl_img = double(filt_img) / 65535;
     nan_img = nan_background(scl_img, r_mask);
     norm_img = log_norm(nan_img);
-%     adj_img = mat2gray(norm_img, [-15, 1.0]);
     adj_img = mat2gray(norm_img, [-2.5, 3.0]);
     iba1 = 1 - adj_img;
+    iba1(~r_mask) = 0;
 
 
     cd68 = uint16(zeros(size(iba1)));
@@ -87,7 +87,7 @@ function [data, c_mat] = algo_dab_astro(bfr, mask, settings)
     nActivated = sum(overlap_pcs >= CD68_MIN_OVERLAP, "all");
 
     data = MicrocountData( ...
-        iba1            = min_img, ...
+        iba1            = uint16(65535 * iba1), ...
         cd68            = min_img, ...
         segmented       = segmented, ...
         iba1Mask        = iba1_mask, ...

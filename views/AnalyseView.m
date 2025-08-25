@@ -20,19 +20,25 @@ classdef AnalyseView < Component
                 ExportButton
             BottomGrid
                 ThumbnailPanel 
-                Thumbnail matlab.ui.control.UIAxes
+                    Thumbnail matlab.ui.control.UIAxes
                 ProcessedImagePanel 
-                ProcessedImage 
+                    ProcessedGrid
+                        ProcessedImage 
+                        ProcessedButtonGrid
+                            ToggleCellMarkerButton
+                            ToggleCoMarkerButton
+                            ToggleCellPolyButton
+                            ToggleCoMarkerPolyButton
                 ResultsPanel 
-                ResultGrid
-                    PercentageCellAreaLabel
-                    CellCountLabel
-                    PercentageCoMarkerAreaLabel
-                    PercentageCoMarkerNumLabel
-                    BranchCountLabel
-                    ConvexityLabel
-                    BranchLengthLabel
-                    SchollLabel
+                    ResultGrid
+                        PercentageCellAreaLabel
+                        CellCountLabel
+                        PercentageCoMarkerAreaLabel
+                        PercentageCoMarkerNumLabel
+                        BranchCountLabel
+                        ConvexityLabel
+                        BranchLengthLabel
+                        SchollLabel
     end
 
     methods
@@ -211,11 +217,55 @@ classdef AnalyseView < Component
             view.ProcessedImagePanel.BackgroundColor = [0, 0, 0];
             view.ProcessedImagePanel.Padding = 1;
 
+            % Create ProcessedGrid
+            view.ProcessedGrid = uigridlayout(view.ProcessedImagePanel);
+            view.ProcessedGrid.ColumnWidth = {'1x'};
+            view.ProcessedGrid.RowHeight = {'8x', '1x'};
+            view.ProcessedGrid.Padding = [1 1 1 1];
+            view.ProcessedGrid.BackgroundColor = [0, 0, 0];
+
             % Create ProcessedImage
-            view.ProcessedImage = uiimage(view.ProcessedImagePanel);
+            view.ProcessedImage = uiimage(view.ProcessedGrid);
             view.ProcessedImage.Layout.Row = 1;
             view.ProcessedImage.Layout.Column = 1;
             view.ProcessedImage.ImageSource = zeros(3, 3, 3);
+
+            % Create ProcessedButtonGrid
+            view.ProcessedButtonGrid = uigridlayout(view.ProcessedGrid);
+            view.ProcessedButtonGrid.ColumnWidth = {'1x', '1x', '1x'};
+            view.ProcessedButtonGrid.RowHeight = {'1x'};
+            view.ProcessedButtonGrid.Padding = [5,5,5,5];
+            view.ProcessedButtonGrid.Layout.Row = 2;
+            view.ProcessedButtonGrid.Layout.Column = 1;
+            view.ProcessedButtonGrid.BackgroundColor = [0, 0, 0];
+
+            % Create ToggleCellMarkerButton
+            view.ToggleCellMarkerButton = uibutton(view.ProcessedButtonGrid, 'push');
+            view.ToggleCellMarkerButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.Overlay, 1);
+            view.ToggleCellMarkerButton.Layout.Row = 1;
+            view.ToggleCellMarkerButton.Layout.Column = 1;
+            view.ToggleCellMarkerButton.Text = 'Cell Marker';
+
+            % Create ToggleCoMarkerButton
+            view.ToggleCoMarkerButton = uibutton(view.ProcessedButtonGrid, 'push');
+            view.ToggleCoMarkerButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.Overlay, 2);
+            view.ToggleCoMarkerButton.Layout.Row = 1;
+            view.ToggleCoMarkerButton.Layout.Column = 2;
+            view.ToggleCoMarkerButton.Text = 'CoMarker';
+
+            % Create ToggleCellPolyButton
+            view.ToggleCellPolyButton = uibutton(view.ProcessedButtonGrid, 'push');
+            view.ToggleCellPolyButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.Overlay, 3);
+            view.ToggleCellPolyButton.Layout.Row = 1;
+            view.ToggleCellPolyButton.Layout.Column = 3;
+            view.ToggleCellPolyButton.Text = 'Cell Marker Poly';
+
+            % Create ToggleCoMarkerPolyButton
+            view.ToggleCoMarkerPolyButton = uibutton(view.ProcessedButtonGrid, 'push');
+            view.ToggleCoMarkerPolyButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.Overlay, 4);
+            view.ToggleCoMarkerPolyButton.Layout.Row = 1;
+            view.ToggleCoMarkerPolyButton.Layout.Column = 4;
+            view.ToggleCoMarkerPolyButton.Text = 'CoMarker Poly';
 
             % Creat ResultsPanel
             view.ResultsPanel = uipanel(view.BottomGrid);

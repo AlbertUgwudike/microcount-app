@@ -6,7 +6,7 @@ function microcount(f)
     
     % Rename figure.
     f.Name = "Microcount"; 
-    f.Position = [1 1 714 631];
+    f.Position = [1 1 1100 631];
 
     this_fn = mfilename('fullpath');
     [app_dir, ~, ~] = fileparts(this_fn);

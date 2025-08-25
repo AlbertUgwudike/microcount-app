@@ -465,23 +465,20 @@ classdef Model < handle
             switch mdl.WS.Algo
                 case Algorithm.MicroFluor
                     data = algo_fluor_micro(bfr_img, mask, settings);
-                    [result, output_img, cross_matrix] = data2result(data);
 
                 case Algorithm.MicroDab
                     data = algo_dab_micro(bfr_img, mask, settings);
-                    [result, output_img, cross_matrix] = data2result(data, 'dab_micro');
             
                 case Algorithm.AstroFluor
                     data = algo_fluor_astro(bfr_img, mask, settings);
-                    [result, output_img, cross_matrix] = data2result(data, 'fluor_astro');
 
                 case Algorithm.AstroDab
                     data = algo_dab_astro(bfr_img, mask, settings);
-                    [result, output_img, cross_matrix] = data2result(data, 'dab_astro');
 
             end
             
-            imwrite(output_img, region.ProcFn);
+            [result, output_img, cross_matrix] = data2result(data);
+            Utility.write_tiff_multi(output_img, region.ProcFn);
             writecell(cross_matrix, region.SchollFn);
         end
         

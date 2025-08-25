@@ -10,6 +10,7 @@ classdef AnalyseEvent
         ButtonCancel
         ButtonMagic
         AlgoSelected
+        Overlay
     end
 end
 

@@ -42,6 +42,7 @@ function [data, c_mat] = algo_fluor_astro(bfr, mask, settings)
     nan_img = nan_background(scl_img, r_mask);
     norm_img = log_norm(nan_img);
     iba1 = mat2gray(norm_img, [-2, 2]);
+    iba1(~r_mask) = 0;
 
     % ------------ Segment Cells --------------------
     p_out = log_norm(pacefilt(iba1, 21, 5) / 4);

@@ -4,6 +4,7 @@ classdef AnalyseController < ControllerBase
         RegionSet (:, 1) Region
         SelectedRegion Region
         ImageSubviewRect images.roi.Rectangle
+        OverlayFlag (1, 4) logical = [false, false, false, false];
     end
 
     methods
@@ -164,13 +165,42 @@ classdef AnalyseController < ControllerBase
             con.on_region_selected()
         end
 
+        function on_overlay_toggled(con, idx) 
+            disp("AnalyseController::on_overlay_toggled")
+            con.OverlayFlag(idx) = ~con.OverlayFlag(idx);
+            con.on_image_subview_moved(con.ImageSubviewRect.Position);
+        end
+
         function on_image_subview_moved(con, pos)
             disp("AnalyseController::on_image_subview_moved")
             bbox = round(20 * pos);
             proc_img_fn = con.SelectedRegion.ProcFn;
             pixel_region = { [bbox(2), bbox(2) + bbox(4)], [bbox(1), bbox(1) + bbox(3)] };
-            proc_img = imread(proc_img_fn, PixelRegion = pixel_region);
-            con.View.ProcessedImage.ImageSource = proc_img;
+
+            img = uint16(zeros([bbox(4) + 1, bbox(3) + 1, 3]));
+
+            if con.OverlayFlag(1)
+                chn = imread(proc_img_fn, PixelRegion = pixel_region, Index = 1);
+                img(:, :, 1) = img(:, :, 1) + chn(:, :, 1);
+            end
+
+            if con.OverlayFlag(2)
+                chn = imread(proc_img_fn, PixelRegion = pixel_region, Index = 2);
+                img(:, :, 2) = img(:, :, 2) + chn(:, :, 1);
+            end
+
+            if con.OverlayFlag(3)
+                chn = imread(proc_img_fn, PixelRegion = pixel_region, Index = 3);
+                img(chn > 0) = chn(chn > 0);
+            end
+
+            if con.OverlayFlag(4)
+                chn = imread(proc_img_fn, PixelRegion = pixel_region, Index = 4);
+                img(chn > 0) = 0;
+                img(:, :, 3) = img(:, :, 3) + 60000 *chn(:, :, 1);
+            end
+
+            con.View.ProcessedImage.ImageSource = img;
         end
         
     end
@@ -215,6 +245,9 @@ classdef AnalyseController < ControllerBase
 
                 case (AnalyseEvent.AlgoSelected)
                     con.on_algo_selected()
+
+                case (AnalyseEvent.Overlay)
+                    con.on_overlay_toggled(data)
             end
         end
         

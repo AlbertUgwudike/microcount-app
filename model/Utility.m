@@ -107,18 +107,38 @@ classdef Utility
         
         function write_tiff(img, fn)
             bt = Tiff(fn, 'w8');
-            tags.ImageLength         = size(img,1);
-            tags.ImageWidth          = size(img,2);
-            tags.Photometric         = Tiff.Photometric.LinearRaw;
+            sz = size(img);
+            setTag(bt, Utility.default_tags(sz(1), sz(2), sz(3)));
+            bt.write(img)
+            bt.close();
+        end
+
+        function write_tiff_multi(imgs, fn)
+            bt = Tiff(fn, 'w8');
+
+            for n = 1:numel(imgs)
+                sz = size(imgs{n});
+                tags = Utility.default_tags(sz(1), sz(2), sz(3));
+                bt.setTag(tags);
+                currentImage = squeeze(imgs{n});
+                bt.write(currentImage);
+                bt.writeDirectory();
+            end
+
+            bt.close();
+        end
+
+        function tags = default_tags(h, w, spp) 
+            tags.ImageLength         = h;
+            tags.ImageWidth          = w;
+            tags.Photometric         = Tiff.Photometric.MinIsBlack;
             tags.BitsPerSample       = 16;
-            tags.SamplesPerPixel     = size(img,3);
+            tags.SamplesPerPixel     = spp;
             tags.TileWidth           = 128;
             tags.TileLength          = 128;
             tags.PlanarConfiguration = Tiff.PlanarConfiguration.Chunky;
             tags.Software            = 'MATLAB';
-            
-            setTag(bt, tags);
-            bt.write(img)
+            tags.Compression         = 1; 
         end
 
         function out = imcrop(img, bbox)
