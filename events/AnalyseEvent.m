@@ -9,6 +9,7 @@ classdef AnalyseEvent
         ButtonExport
         ButtonCancel
         ButtonMagic
+        AlgoSelected
     end
 end
 

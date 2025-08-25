@@ -117,6 +117,13 @@ classdef AnalyseController < ControllerBase
             end
         end
 
+        function on_algo_selected(con)
+            disp("AnalyseController::on_algo_selected")
+            con.Model.WS.Algo = con.View.AlgoSelector.Value;
+            con.Model.io_save();
+            disp(con.Model.WS.Algo)
+        end
+
         function on_cancel_button_pushed(con) 
             disp("AnalyseController::on_cancel_button_pushed")
             con.Model.io_cancel_microcount_processes()
@@ -144,6 +151,7 @@ classdef AnalyseController < ControllerBase
             soma_col        = [con.RegionSet.SomaThreshold]';
             pro_col         = string([con.RegionSet.ProcessStatus]');
             con.View.RegionTable.Data = [region_ids iba1_col cd68_col max_col act_col soma_col, pro_col];
+            con.View.AlgoSelector.Value = con.Model.WS.Algo;
 
             if height(con.RegionSet) == 0
                 return
@@ -204,6 +212,9 @@ classdef AnalyseController < ControllerBase
 
                 case (AnalyseEvent.ButtonMagic)
                     % con.on_magic_button_pushed()
+
+                case (AnalyseEvent.AlgoSelected)
+                    con.on_algo_selected()
             end
         end
         

@@ -43,9 +43,6 @@ classdef AppView < Component
             view.RegionsTab = uitab(view.TabGroup);
             view.RegionsTab.Title = 'Select Regions';
 
-            view.SelectAlgoTab = uitab(view.TabGroup);
-            view.SelectAlgoTab.Title = 'Select Algorithm';
-
             view.AnalyseTab = uitab(view.TabGroup);
             view.AnalyseTab.Title = 'Analyse';
         end

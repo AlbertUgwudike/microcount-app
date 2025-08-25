@@ -9,7 +9,8 @@ classdef AnalyseView < Component
                 MaxSizeEditField
                 OverlapEditField
                 SomaThresholdEditField
-                MagicButton
+%                 MagicButton
+                AlgoSelector
             RegionTable matlab.ui.control.Table
             ButtonGrid
                 SelectAllButton
@@ -103,11 +104,19 @@ classdef AnalyseView < Component
             view.SomaThresholdEditField.Layout.Column = 6;
 
             % Create MagicButton
-            view.MagicButton = uibutton(view.SettingGrid, 'push');
-            view.MagicButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonMagic);
-            view.MagicButton.Layout.Row = 1;
-            view.MagicButton.Layout.Column = 7;
-            view.MagicButton.Text = 'Magic';
+%             view.MagicButton = uibutton(view.SettingGrid, 'push');
+%             view.MagicButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonMagic);
+%             view.MagicButton.Layout.Row = 1;
+%             view.MagicButton.Layout.Column = 7;
+%             view.MagicButton.Text = 'Magic';
+
+            % Create AlgoSelector
+            view.AlgoSelector = uidropdown(view.SettingGrid);
+            view.AlgoSelector.Items = ["Fluorescent Microglia", "DAB-Stained Microglia", "Fluorescent Astrocytes", "DAB-Stained Astrocytes"];
+            view.AlgoSelector.ItemsData = [Algorithm.MicroFluor, Algorithm.MicroDab, Algorithm.AstroFluor, Algorithm.AstroDab];
+            view.AlgoSelector.ValueChangedFcn = @(~, ~) view.call_registrar(AnalyseEvent.AlgoSelected);
+            view.AlgoSelector.Layout.Row = 1;
+            view.AlgoSelector.Layout.Column = 7;
 
             % Create RegionTable
             view.RegionTable = uitable(view.MainGrid);
