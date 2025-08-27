@@ -37,7 +37,7 @@ classdef HomeView < Component
 
             % Create Title
             view.Title = uilabel(view.MainGrid);
-            view.Title.Text = "Microcount";
+            view.Title.Text = ["Microcount"; "(May Edition)"];
             view.Title.FontSize = 62;
             view.Title.FontWeight = 'bold';
             view.Title.HorizontalAlignment = 'center';

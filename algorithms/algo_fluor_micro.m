@@ -6,8 +6,10 @@ function data = algo_fluor_micro(bfr, mask, settings)
         settings MicrocountSettings
     end
 
-    MM2_PER_PIXEL       = prod(bfr.pxSize) / 1e6;
-    UM_PER_PIXEL        = mean(bfr.pxSize);
+    % MM2_PER_PIXEL       = prod(bfr.pxSize) / 1e6;
+    MM2_PER_PIXEL       = 0.288 * 0.288 / 1e6;
+    % UM_PER_PIXEL        = mean(bfr.pxSize);
+    UM_PER_PIXEL        = 0.288;
     MAX_CD68_SIZE       = settings.MaxCD68Size;
     CD68_SENSITIVITY    = settings.CD68Threshold;
     CD68_MIN_OVERLAP    = settings.MinOverlap;
