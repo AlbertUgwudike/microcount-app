@@ -91,13 +91,8 @@ classdef Utility
         end
         
         function out = color_segmentation(seg)
-            out = uint16(zeros([size(seg) 3]));
-            N = max(seg, [], "all");
-            for i = 1:N
-                for j = 1:3
-                    out(:, :, j) = out(:, :, j) + uint16((seg == i) * (rand() * 20000 + 40000));
-                end
-            end
+            out = label2rgb(seg, "winter", [0, 0, 0], "shuffle");
+            out = uint16(out) * 256;
         end
         
         function out = zip(arr1, arr2)
