@@ -13,7 +13,11 @@ function [av_length, labelled_img, c_img] = branch_length(seg_skelly, soma_mask)
 
     for i = 1:N
         c_pt = [flip(round(centroids(i).Centroid))];
-        [I, J] = ind2sub([H, W], find(seg_skelly == i));
+        fnd = find(seg_skelly == i);
+        if numel(fnd) == 0
+            continue;
+        end
+        [I, J] = ind2sub([H, W], fnd);
         pts = cat(2, I, J);
         [~, min_idx] = min(sum((pts - c_pt).^2, 2), [], 1);
         pt = pts(min_idx(1), :);
