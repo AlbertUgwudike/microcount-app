@@ -83,14 +83,24 @@ classdef Utility
             export_table.percentage_comarker_num = [results.PercentageActivatedMicroglia]';
             export_table.average_convexity = [results.AverageRotundity]';
             export_table.average_soma_size = [results.AverageSomaSizeUm]';
-            export_table.average_branch_count = [results.AverageBranchCount]';
+            export_table.average_branch_point_count = [results.AverageBranchCount]';
             export_table.average_branch_length = [results.AverageBranchLengthUm]';
             export_table.average_scholl_index = [results.AverageSchollIndex]';
             
             export_table = struct2table(export_table);
         end
-        
+
         function out = color_segmentation(seg)
+            out = uint16(zeros([size(seg) 3]));
+            N = max(seg, [], "all");
+            for i = 1:N
+                for j = 1:3
+                    out(:, :, j) = out(:, :, j) + uint16((seg == i) * (rand() * 20000 + 40000));
+                end
+            end
+        end
+        
+        function out = color_segmentation_(seg)
             out = label2rgb(seg, "winter", [0, 0, 0], "shuffle");
             out = uint16(out) * 256;
         end
@@ -113,7 +123,12 @@ classdef Utility
 
             for n = 1:numel(imgs)
                 sz = size(imgs{n});
-                tags = Utility.default_tags(sz(1), sz(2), sz(3));
+                if sz(3) == 3
+                    p_i = Tiff.Photometric.RGB;
+                else
+                    p_i = Tiff.Photometric.MinIsBlack;
+                end
+                tags = Utility.default_tags(sz(1), sz(2), sz(3), p_i);
                 bt.setTag(tags);
                 currentImage = squeeze(imgs{n});
                 bt.write(currentImage);
@@ -123,10 +138,10 @@ classdef Utility
             bt.close();
         end
 
-        function tags = default_tags(h, w, spp) 
+        function tags = default_tags(h, w, spp, p_i) 
             tags.ImageLength         = h;
             tags.ImageWidth          = w;
-            tags.Photometric         = Tiff.Photometric.MinIsBlack;
+            tags.Photometric         = p_i;
             tags.BitsPerSample       = 16;
             tags.SamplesPerPixel     = spp;
             tags.TileWidth           = 128;

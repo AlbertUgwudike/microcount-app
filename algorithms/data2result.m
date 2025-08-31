@@ -28,14 +28,20 @@ function [result, img, cross_matrix] = data2result(data)
 
     cd68_adj = imadjust(uint16(data.cd68), [0.001; 0.005], []);
     cd68_adj = repmat(cd68_adj, 1, 1, 3);
-    
+
     poly_mask = uint16(data.poly_mask);
-    poly_mask = imdilate(poly_mask, strel('disk', 2, 0));
+%     poly_mask = imdilate(poly_mask, strel('disk', 2, 0));
     poly_mask = Utility.color_segmentation(poly_mask);
 
-    cd68_poly = 65536 * repmat(uint16(bwperim(comboMask)), 1, 1, 3);
+    cd68_poly = 65535 * repmat(uint16(bwperim(comboMask)), 1, 1, 3);
 
-    img = { iba1_adj, cd68_adj, poly_mask, cd68_poly };
+    iba1_o = iba1_adj;
+    iba1_o(poly_mask > 0) = poly_mask(poly_mask > 0);
+
+    cd68_o = cd68_adj;
+    cd68_o(cd68_poly > 0) = cd68_poly(cd68_poly > 0);
+
+    img = { iba1_adj, cd68_adj, poly_mask, cd68_poly, iba1_o, cd68_o };
 
     cross_matrix = data.cross_matrix;
 end
