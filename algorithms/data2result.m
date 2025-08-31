@@ -36,6 +36,7 @@ function [result, img, cross_matrix] = data2result(data)
     cd68_poly = 65535 * repmat(uint16(bwperim(comboMask)), 1, 1, 3);
 
     iba1_o = iba1_adj;
+    iba1_o(:, :, 1:3) = 0;
     iba1_o(poly_mask > 0) = poly_mask(poly_mask > 0);
 
     cd68_o = cd68_adj;
