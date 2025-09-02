@@ -119,16 +119,7 @@ classdef SelectImagesController < ControllerBase
             disp("SelectImagesController::on_image_subview_moved")
             bbox = round(20 * pos);
             conv_img_fn = con.SelectedImage.ConvFn;
-            pixel_region = { [bbox(2), bbox(2) + bbox(4)], [bbox(1), bbox(1) + bbox(3)] };
-            info = imfinfo(conv_img_fn);
-            if isscalar(info)
-                conv_img = imread(conv_img_fn, PixelRegion = pixel_region);
-                conv_img = conv_img(:, :, con.CurrentChannel + 1);
-                disp("Single RGB")
-            else
-                conv_img = imread(conv_img_fn, PixelRegion = pixel_region, Index = con.CurrentChannel + 1);
-                disp("Multipanel")
-            end
+            conv_img = Utility.read_tiff(conv_img_fn, con.CurrentChannel + 1, bbox);
             con.View.ProcessedImage.ImageSource = repmat(imadjust(conv_img(:, :, 1)), 1, 1, 3);
         end
         

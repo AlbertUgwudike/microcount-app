@@ -37,7 +37,8 @@ function data = algo_dab_micro(bfr, mask, settings)
     % -----------------------
 
     r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
-    img = imread(bfr.filename, Index=CellMarkerChannel, PixelRegion=pixel_region);
+    img = Utility.read_tiff(bfr.filename, CellMarkerChannel, bbox - [0, 0, 1, 1]);
+    % img = imread(bfr.filename, Index=CellMarkerChannel, PixelRegion=pixel_region);
     min_img = min(img, [], 3);
     scl_img = double(min_img) / 65535;
     nan_img = nan_background(scl_img, r_mask);

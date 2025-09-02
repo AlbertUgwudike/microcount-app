@@ -113,7 +113,12 @@ classdef Utility
         function write_tiff(img, fn)
             bt = Tiff(fn, 'w8');
             sz = size(img);
-            setTag(bt, Utility.default_tags(sz(1), sz(2), sz(3)));
+            if sz(3) == 3
+                p_i = Tiff.Photometric.RGB;
+            else
+                p_i = Tiff.Photometric.MinIsBlack;
+            end
+            setTag(bt, Utility.default_tags(sz(1), sz(2), sz(3), p_i));
             bt.write(img)
             bt.close();
         end
@@ -160,6 +165,19 @@ classdef Utility
         function pad_vec = pad_to(vec, N, v)
             pad_vec = v * ones(1, N);
             pad_vec(1:min(numel(vec), N)) = vec(1:min(numel(vec), N));
+        end
+
+        function img = read_tiff(img_fn, idx, bbox)
+            pixel_region = { [bbox(2), bbox(2) + bbox(4)], [bbox(1), bbox(1) + bbox(3)] };
+            info = imfinfo(img_fn);
+            if isscalar(info)
+                img = imread(img_fn, PixelRegion = pixel_region);
+                img = img(:, :, idx);
+                disp("Single RGB")
+            else
+                img = imread(img_fn, PixelRegion = pixel_region, Index = idx);
+                disp("Multipanel")
+            end
         end
         
     end
