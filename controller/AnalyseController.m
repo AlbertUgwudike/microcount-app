@@ -181,7 +181,11 @@ classdef AnalyseController < ControllerBase
 
             if con.OverlayFlag(1)
                 chn = imread(proc_img_fn, PixelRegion = pixel_region, Index = 1);
-                img(:, :, 1) = img(:, :, 1) + chn(:, :, 1);
+                if size(chn, 3) == 3
+                    img = chn;
+                else
+                    img(:, :, 1) = img(:, :, 1) + chn(:, :, 1);
+                end
             end
 
             if con.OverlayFlag(2)
@@ -191,7 +195,7 @@ classdef AnalyseController < ControllerBase
 
             if con.OverlayFlag(3)
                 chn = imread(proc_img_fn, PixelRegion = pixel_region, Index = 3);
-                img(chn > 0) = chn(chn > 0);
+                img = Utility.intercalate_mask(img, chn);
             end
 
             if con.OverlayFlag(4)

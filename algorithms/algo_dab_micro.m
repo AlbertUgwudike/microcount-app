@@ -37,8 +37,8 @@ function data = algo_dab_micro(bfr, mask, settings)
     % -----------------------
 
     r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
-    img = Utility.read_tiff(bfr.filename, CellMarkerChannel, bbox - [0, 0, 1, 1]);
-    % img = imread(bfr.filename, Index=CellMarkerChannel, PixelRegion=pixel_region);
+%     img = Utility.read_tiff(bfr.filename, CellMarkerChannel, bbox - [0, 0, 1, 1]);
+    img = imread(bfr.filename, PixelRegion=pixel_region);
     min_img = min(img, [], 3);
     scl_img = double(min_img) / 65535;
     nan_img = nan_background(scl_img, r_mask);
@@ -88,7 +88,7 @@ function data = algo_dab_micro(bfr, mask, settings)
     nActivated = sum(overlap_pcs >= CD68_MIN_OVERLAP, "all");
 
     data = MicrocountData( ...
-        iba1            = uint16(65535 * iba1), ...
+        iba1            = img, ...
         cd68            = cd68, ...
         segmented       = segmented, ...
         iba1Mask        = iba1_mask, ...

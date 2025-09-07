@@ -179,6 +179,17 @@ classdef Utility
                 disp("Multipanel")
             end
         end
+
+        function out = imadjust_rgb(img)
+            cat_img = reshape(img, 1, numel(img));
+            cat_img = imadjust(cat_img);
+            out = reshape(cat_img, size(img));
+        end
+
+        function out = intercalate_mask(img, mask)
+            out  = img;
+            out(mask > 0) = mask(mask > 0) / 0.5;
+        end
         
     end
 end
