@@ -43,7 +43,7 @@ function [av_scholl_idx, cross_mat] = scholl(l_skelly, l_soma, px_dims, plot_ple
         mdl = fitlm(radii, crossings);
 
         coeffs(i) = -mdl.Coefficients.Estimate(2);
-        cross_mat{i} = y;
+        cross_mat{i} = counts;
         if plot_please
             subplot(1, 2, 1)
             bbox = bounding_box(l_skelly == i);

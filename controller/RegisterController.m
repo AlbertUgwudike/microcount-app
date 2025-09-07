@@ -145,8 +145,8 @@ classdef RegisterController < ControllerBase
             disp("RegisterController::on_workspace_updated")
             down_idx     = [con.Model.WS.Images.ConvertStatus] == ConvertStatus.CONVERTED;
             con.ImageSet = con.Model.WS.Images(down_idx);
-            checks       = Utility.apply_check([con.ImageSet.Aligned]');
-            whole_checks = Utility.apply_check([con.ImageSet.WholeAligned]');
+            checks       = Utility.check_or_none([con.ImageSet.Aligned]');
+            whole_checks = Utility.check_or_none([con.ImageSet.WholeAligned]');
             fns          = Utility.path2name([con.ImageSet.SourceFn]');
             new_data     = [fns checks whole_checks];
             con.View.AlignmentTable.Data = new_data;
