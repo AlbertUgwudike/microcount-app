@@ -477,9 +477,9 @@ classdef Model < handle
 
             end
             
-            [result, output_img, cross_matrix] = data2result(data);
+            [result, output_img, tables] = data2result(data);
             Utility.write_tiff_multi(output_img, region.ProcFn);
-            writecell(cross_matrix, region.SchollFn);
+            Utility.write_tables(region, tables);
         end
         
         function bg_run_microcount_complete(mdl, args)
