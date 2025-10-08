@@ -30,8 +30,11 @@ function data = algo_fluor_micro(bfr, mask, settings)
         fprintf("WARNING: Small Image %i X %i\n", bbox(3), bbox(4));
     end
 
-    cd68 = getPlane(bfr, 1, CHN_CD68, 1, 'ROI', bbox);
-    iba1 = getPlane(bfr, 1, CHN_IBA1, 1, 'ROI', bbox);
+    % cd68 = getPlane(bfr, 1, CHN_CD68, 1, 'ROI', bbox);
+    % iba1 = getPlane(bfr, 1, CHN_IBA1, 1, 'ROI', bbox);
+
+    cd68 = Utility.read_tiff(bfr.filename, CHN_CD68, bbox - [0, 0, 1, 1]);
+    iba1 = Utility.read_tiff(bfr.filename, CHN_IBA1, bbox - [0, 0, 1, 1]);
     
     r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
 

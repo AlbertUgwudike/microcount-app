@@ -27,7 +27,7 @@ function [result, img, cross_matrix] = data2result(data)
         iba1_adj = Utility.imadjust_rgb(uint16(data.iba1));
     else
         iba1_adj = imadjust(uint16(data.iba1)); %, [0.0714; 0.3392], []);
-        iba1_adj = repmat(iba1_adj, 1, 1, 3);
+        iba1_adj = cat(3, iba1_adj, zeros(size(iba1_adj)), zeros(size(iba1_adj)));
     end
 
     cd68_adj = imadjust(uint16(data.cd68), [0.001; 0.005], []);
