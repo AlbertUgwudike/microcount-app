@@ -1,4 +1,4 @@
-function [av_length, labelled_img, c_img] = branch_length(seg_skelly, soma_mask)
+function [lengths, labelled_img, c_img] = branch_length(seg_skelly, soma_mask)
     dirs = [ [0, 1]; [0, -1]; [-1, 0]; [1, 0]; [1, 1]; [-1, -1]; [-1, 1]; [1, -1]; ];
     [H, W] = size(seg_skelly);
 
@@ -9,7 +9,7 @@ function [av_length, labelled_img, c_img] = branch_length(seg_skelly, soma_mask)
 
     % initialise lookup cell array
     frontier = cell(N, 1);
-    out = cell(N, 1);
+    lengths = cell(N, 1);
 
     for i = 1:N
         c_pt = [flip(round(centroids(i).Centroid))];
@@ -47,7 +47,7 @@ function [av_length, labelled_img, c_img] = branch_length(seg_skelly, soma_mask)
 
                 N_neighbours = height(neighbours);
                 if N_neighbours == 0
-                    out{i} = cat(1, out{i}, curr_dist);
+                    lengths{i} = cat(2, lengths{i}, curr_dist);
                 end
 
                 for k = 1:N_neighbours
@@ -62,12 +62,7 @@ function [av_length, labelled_img, c_img] = branch_length(seg_skelly, soma_mask)
         end
         frontier = remove_empty(frontier);
     end
-
-    N_branches = sum(cellfun("length", out));
-    total_length = sum(cellfun(@(r) sum(r), out));
-    av_length = total_length / N_branches;
-
-
+    
 end
 
 function f_arr = remove_empty(c_arr)

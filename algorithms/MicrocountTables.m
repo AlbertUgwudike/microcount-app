@@ -1,0 +1,35 @@
+classdef MicrocountTables
+
+    properties
+        SchollCoefficients (:, 1) double
+        CrossMatrix cell
+        BranchLengths cell
+        BranchCounts (:, 1) double
+        SomaSizes (:, 1) double
+        Rotundities (:, 1) double
+        CellAreas (:, 1) double
+    end
+    
+    methods
+        function obj = MicrocountTables(args)
+            arguments
+                args.SchollCoefficients
+                args.CrossMatrix
+                args.BranchLengths
+                args.BranchCounts
+                args.SomaSizes
+                args.Rotundities
+                args.CellAreas
+            end
+
+            obj.SchollCoefficients = args.SchollCoefficients;
+            obj.CrossMatrix = args.CrossMatrix;
+            obj.BranchLengths = args.BranchLengths;
+            obj.BranchCounts = args.BranchCounts;
+            obj.SomaSizes = args.SomaSizes;
+            obj.Rotundities = args.Rotundities;
+            obj.CellAreas = args.CellAreas;
+        end
+    end
+end
+

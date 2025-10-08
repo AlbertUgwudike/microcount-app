@@ -190,6 +190,23 @@ classdef Utility
             out  = img;
             out(mask > 0) = mask(mask > 0) / 0.5;
         end
+
+        function write_tables(region, tables)
+            arguments
+                region Region
+                tables MicrocountTables
+            end
+
+            table_fn = region.get_scholl_fn(region.Parent.WS_Dir, region.ID);
+            writematrix(tables.SchollCoefficients, table_fn, "Sheet", "Scholl Coefficients")
+            writecell(tables.BranchLengths, table_fn, "Sheet", "Branch Lengths")
+            writematrix(tables.BranchCounts, table_fn, "Sheet", "Branch Counts")
+            writecell(tables.CrossMatrix, table_fn, "Sheet", "Scholl Crossings")
+            writematrix(tables.SomaSizes, table_fn, "Sheet", "Soma Sizes")
+            writematrix(tables.Rotundities, table_fn, "Sheet", "Rotundities")
+            writematrix(tables.CellAreas, table_fn, "Sheet", "Cell Areas")
+
+        end
         
     end
 end
