@@ -31,7 +31,7 @@ classdef MicrocountTables
             obj.SomaSizes = args.SomaSizes;
             obj.Rotundities = args.Rotundities;
             obj.CellAreas = args.CellAreas;
-            obj.Activations = args.Activations;
+            obj.Activations = args
         end
     end
 end

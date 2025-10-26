@@ -205,6 +205,7 @@ classdef Utility
             writematrix(tables.SomaSizes, table_fn, "Sheet", "Soma Sizes")
             writematrix(tables.Rotundities, table_fn, "Sheet", "Rotundities")
             writematrix(tables.CellAreas, table_fn, "Sheet", "Cell Areas")
+            writematrix(tables.Activations, table_fn, "Sheet", "Overlap Per Cell")
 
         end
         
