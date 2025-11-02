@@ -5,6 +5,7 @@ classdef AnalyseEvent
         ButtonApplySetting
         ButtonSelectUnprocessed
         ButtonProcessSelected
+        ButtonProcessPreview
         ButtonSelectAll
         ButtonExport
         ButtonCancel

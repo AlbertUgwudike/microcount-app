@@ -16,6 +16,7 @@ classdef AnalyseView < Component
                 SelectAllButton
                 SelectUnprocessedButton
                 ProcessSelectedButton
+                ProcessPreviewButton
                 CancelButton
                 ExportButton
             BottomGrid
@@ -139,7 +140,7 @@ classdef AnalyseView < Component
 
             % Create ButtonGrid
             view.ButtonGrid = uigridlayout(view.MainGrid);
-            view.ButtonGrid.ColumnWidth = {'2x', '2x', '2x', '2x', '2x'};
+            view.ButtonGrid.ColumnWidth = {'2x', '2x', '2x', '2x', '2x', '2x'};
             view.ButtonGrid.RowHeight = {'1x'};
             view.ButtonGrid.ColumnSpacing = 5;
             view.ButtonGrid.Layout.Row = 3;
@@ -166,18 +167,25 @@ classdef AnalyseView < Component
             view.ProcessSelectedButton.Layout.Column = 3;
             view.ProcessSelectedButton.Text = 'Process Selected';
 
+            % Create ProcessPreviewButton
+            view.ProcessPreviewButton = uibutton(view.ButtonGrid, 'push');
+            view.ProcessPreviewButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonProcessPreview);
+            view.ProcessPreviewButton.Layout.Row = 1;
+            view.ProcessPreviewButton.Layout.Column = 4;
+            view.ProcessPreviewButton.Text = 'Process Preview';
+
             % Create CancelButton
             view.CancelButton = uibutton(view.ButtonGrid, 'push');
             view.CancelButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonCancel);
             view.CancelButton.Layout.Row = 1;
-            view.CancelButton.Layout.Column = 4;
+            view.CancelButton.Layout.Column = 5;
             view.CancelButton.Text = 'Cancel';
 
             % Create ExportButton
             view.ExportButton = uibutton(view.ButtonGrid, 'push');
             view.ExportButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonExport);
             view.ExportButton.Layout.Row = 1;
-            view.ExportButton.Layout.Column = 5;
+            view.ExportButton.Layout.Column = 6;
             view.ExportButton.Text = 'Export Processed';
 
             % Create BottomGrid

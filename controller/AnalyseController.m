@@ -5,6 +5,7 @@ classdef AnalyseController < ControllerBase
         SelectedRegion Region
         ImageSubviewRect images.roi.Rectangle
         OverlayFlag (1, 4) logical = [false, false, false, false];
+        Preview ProcessPreview
     end
 
     methods
@@ -180,7 +181,7 @@ classdef AnalyseController < ControllerBase
             img = uint16(zeros([bbox(4) + 1, bbox(3) + 1, 3]));
 
             if con.OverlayFlag(1)
-                chn = imread(proc_img_fn, PixelRegion = pixel_region, Index = 1);
+                chn = con.get_channel(proc_img_fn, bbox, pixel_region, 1);
                 if size(chn, 3) == 3
                     img = chn;
                 else
@@ -189,22 +190,64 @@ classdef AnalyseController < ControllerBase
             end
 
             if con.OverlayFlag(2)
-                chn = imread(proc_img_fn, PixelRegion = pixel_region, Index = 2);
+                chn = con.get_channel(proc_img_fn, bbox, pixel_region, 2);
                 img(:, :, 2) = img(:, :, 2) + chn(:, :, 1);
             end
 
             if con.OverlayFlag(3)
-                chn = imread(proc_img_fn, PixelRegion = pixel_region, Index = 3);
+                chn = con.get_channel(proc_img_fn, bbox, pixel_region, 3);
                 img = Utility.intercalate_mask(img, chn);
             end
 
             if con.OverlayFlag(4)
-                chn = imread(proc_img_fn, PixelRegion = pixel_region, Index = 4);
+                chn = con.get_channel(proc_img_fn, bbox, pixel_region, 4);
                 img(chn > 0) = 0;
-                img(:, :, 3) = img(:, :, 3) + 60000 *chn(:, :, 1);
+                img(:, :, 3) = img(:, :, 3) + 60000 * chn(:, :, 1);
             end
 
             con.View.ProcessedImage.ImageSource = img;
+        end
+
+        function chn = get_channel(con, proc_img_fn, pos, pixel_region, idx)
+            if ~isempty(con.Preview) & con.Preview.matches(pos, con.SelectedRegion.ID)
+                chn = con.Preview.Images{idx};
+            elseif ~isempty(con.SelectedRegion.Result)
+                chn = imread(proc_img_fn, PixelRegion = pixel_region, Index = idx);
+            else
+                chn = uint16(zeros([pos(4) + 1, pos(3) + 1, 3]));
+            end
+        end
+
+        function process_preview(con)
+            region = con.SelectedRegion;
+            file_name_chrs = convertStringsToChars(region.Parent.ConvFn);
+            bfr_img = BioformatsImage(file_name_chrs);
+            settings = region.get_microcount_settings();
+
+            rect = round(con.ImageSubviewRect.Position * 20);
+            mask = con.Model.Atlas.create_full_size_mask(region);
+            bbox = bounding_box(mask);
+            mask = mask & false;
+            mask((rect(2) + bbox(2)):(rect(2) + bbox(2) + rect(4)), (rect(1) + bbox(1)):(rect(1) + bbox(1) + rect(3))) = true;
+
+            switch con.Model.WS.Algo
+                case Algorithm.MicroFluor
+                    data = algo_fluor_micro(bfr_img, mask, settings);
+
+                case Algorithm.MicroDab
+                    data = algo_dab_micro(bfr_img, mask, settings);
+            
+                case Algorithm.AstroFluor
+                    data = algo_fluor_astro(bfr_img, mask, settings);
+
+                case Algorithm.AstroDab
+                    data = algo_dab_astro(bfr_img, mask, settings);
+
+            end
+            disp("PROCESSED!")
+            [~, output_img, ~] = data2result(data);
+            con.Preview = ProcessPreview(output_img, region.ID, rect);
+            con.on_image_subview_moved(con.ImageSubviewRect.Position)
         end
         
     end
@@ -252,6 +295,9 @@ classdef AnalyseController < ControllerBase
 
                 case (AnalyseEvent.Overlay)
                     con.on_overlay_toggled(data)
+
+                case (AnalyseEvent.ButtonProcessPreview)
+                    con.process_preview()
             end
         end
         
