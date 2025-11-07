@@ -1,9 +1,10 @@
-function [data, c_mat] = algo_fluor_astro(bfr, mask, settings)
+function [data, c_mat] = algo_fluor_astro(bfr, mask, settings, params)
 
     arguments
         bfr BioformatsImage
         mask logical
         settings MicrocountSettings
+        params = Utility.empty_params()
     end
     MM2_PER_PIXEL       = prod(bfr.pxSize) / 1e6;
     UM_PER_PIXEL        = mean(bfr.pxSize);

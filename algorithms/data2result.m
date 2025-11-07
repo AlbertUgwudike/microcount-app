@@ -45,7 +45,7 @@ function [result, img, tables] = data2result(data)
         iba1_adj = cat(3, iba1_adj, zeros(size(iba1_adj)), zeros(size(iba1_adj)));
     end
 
-    cd68_adj = imadjust(uint16(data.cd68), [0.001; 0.005], []);
+    cd68_adj = imadjust(uint16(data.cd68));
     cd68_adj = repmat(cd68_adj, 1, 1, 3);
 
     poly_mask = uint16(data.poly_mask);

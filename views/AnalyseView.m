@@ -208,7 +208,7 @@ classdef AnalyseView < Component
             % Create Thumbnail
             view.Thumbnail = uiaxes(view.ThumbnailPanel);
             view.Thumbnail.Units = 'normalized';
-            view.Thumbnail.InnerPosition = [0, 0, 1, 1];
+%             view.Thumbnail.InnerPosition = [0, 0, 1, 1];
             view.Thumbnail.Layout.Row = 1;
             view.Thumbnail.Layout.Column = 1;
             view.Thumbnail.XTick = [];

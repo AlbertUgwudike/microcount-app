@@ -208,6 +208,51 @@ classdef Utility
             writematrix(tables.Activations, table_fn, "Sheet", "Overlap Per Cell")
 
         end
+
+        function out = get_norm(bfr, mask, settings)
+            arguments
+                bfr BioformatsImage
+                mask logical
+                settings MicrocountSettings
+            end
+
+            CHN_IBA1            = settings.ChannelIba1; 
+            CHN_CD68            = settings.ChannelCD68;
+        
+            % Crop region -----------------------------------------------
+            
+            bbox = bounding_box(mask);
+        
+            cd68 = Utility.read_tiff(bfr.filename, CHN_CD68, bbox - [0, 0, 1, 1]);
+            iba1 = Utility.read_tiff(bfr.filename, CHN_IBA1, bbox - [0, 0, 1, 1]);
+            
+            r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
+        
+            cd68(~r_mask) = 0;
+            iba1(~r_mask) = 0;
+
+            tmp       = nan_background(double(cd68), r_mask);
+            [~, C, S] = log_norm(tmp);
+
+            out.CoMarkerParams = [C, S];
+        
+            tmp = nan_background(double(iba1), r_mask);
+            [~, C, S] = log_norm(tmp);
+
+            BW = pacefilt(mat2gray(iba1), 21, 5) / 4;
+            radius = 2;
+            decomposition = 0;
+            se = strel('disk', radius, decomposition);
+            BW = imclose(BW, se);
+            sl = stretchlim(BW);
+
+            out.CellMarkerParams = [C, S, double(min(iba1, [], "all")), double(max(iba1, [], "all")), sl(1), sl(2)];
+        end
+
+        function params = empty_params() 
+            params.CoMarkerParams = [];
+            params.CellMarkerParams = [];
+        end
         
     end
 end

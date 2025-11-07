@@ -1,9 +1,10 @@
-function data = algo_fluor_micro(bfr, mask, settings)
+function data = algo_fluor_micro(bfr, mask, settings, params)
 
     arguments
         bfr BioformatsImage
         mask logical
         settings MicrocountSettings
+        params = Utility.empty_params()
     end
 
     MM2_PER_PIXEL       = prod(bfr.pxSize) / 1e6;
@@ -42,11 +43,13 @@ function data = algo_fluor_micro(bfr, mask, settings)
     iba1(~r_mask) = 0;
  
     tmp       = nan_background(double(cd68), r_mask);
-    cd68_mask = uint16(segment_activation(tmp, CD68_SENSITIVITY));
+    cd68_mask = uint16(segment_activation(tmp, CD68_SENSITIVITY, params.CoMarkerParams));
     cd68_mask = filter_size_cd68(cd68_mask, MAX_CD68_SIZE);
 
-    soma_mask = segment_somas(nan_background(double(iba1), r_mask), SOMA_THRESHOLD);
-    branches  = segment_microglia(iba1, DENDRITE_THRESHOLD);
+    tmp       = nan_background(double(iba1), r_mask);
+    soma_mask = segment_somas(tmp, SOMA_THRESHOLD, params.CellMarkerParams);
+    branches  = segment_microglia(iba1, DENDRITE_THRESHOLD, params.CellMarkerParams);
+
     iba1_mask = uint16(soma_mask + branches);
 
     [regions, segmented]        = floodfill(soma_mask, iba1_mask);

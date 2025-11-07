@@ -226,13 +226,16 @@ classdef AnalyseController < ControllerBase
 
             rect = round(con.ImageSubviewRect.Position * 20);
             mask = con.Model.Atlas.create_full_size_mask(region);
+
+            params = Utility.get_norm(bfr_img, mask, settings);
+
             bbox = bounding_box(mask);
             mask = mask & false;
             mask((rect(2) + bbox(2)):(rect(2) + bbox(2) + rect(4)), (rect(1) + bbox(1)):(rect(1) + bbox(1) + rect(3))) = true;
 
             switch con.Model.WS.Algo
                 case Algorithm.MicroFluor
-                    data = algo_fluor_micro(bfr_img, mask, settings);
+                    data = algo_fluor_micro(bfr_img, mask, settings, params);
 
                 case Algorithm.MicroDab
                     data = algo_dab_micro(bfr_img, mask, settings);
@@ -312,10 +315,18 @@ classdef AnalyseController < ControllerBase
 
             mask_fn = con.SelectedRegion.MaskFn;
             dn_mask = imread(mask_fn);
-            imshow(dn_mask, 'Parent', con.View.Thumbnail, 'InitialMagnification', 20);
+
+            if ~isempty(con.View.Thumbnail)
+                delete(con.View.Thumbnail)
+                con.View.Thumbnail = uiaxes(con.View.ThumbnailPanel);
+            end
+
+            imshow(dn_mask, 'Parent', con.View.Thumbnail);
+
             if ~isempty(con.ImageSubviewRect)
                 delete(con.ImageSubviewRect);
             end
+
             rect_r = min(size(dn_mask, 1:2)) / 5;
             con.ImageSubviewRect = drawrectangle("Position", [10, 10, rect_r, rect_r], "Parent", con.View.Thumbnail);
             con.ImageSubviewRect.addlistener('ROIMoved', @(~, e) con.on_image_subview_moved(e.CurrentPosition));
