@@ -14,8 +14,12 @@ function [BW] = segment_microglia(X, thresh, params)
     decomposition = 0;
     se = strel('disk', radius, decomposition);
     BW = imclose(BW, se);
-
-    BW = imadjust(BW, params(5:6)) > thresh;
+    
+    if isempty(params)
+        BW = imadjust(BW) > thresh;
+    else
+        BW = imadjust(BW, params(5:6)) > thresh;
+    end
 
 end
 
