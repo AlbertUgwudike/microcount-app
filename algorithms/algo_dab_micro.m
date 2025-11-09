@@ -1,9 +1,10 @@
-function data = algo_dab_micro(bfr, mask, settings)
+function data = algo_dab_micro(bfr, mask, settings, params)
 
     arguments
         bfr BioformatsImage
         mask logical
         settings MicrocountSettings
+        params = []
     end
     MM2_PER_PIXEL       = prod(bfr.pxSize) / 1e6;
     UM_PER_PIXEL        = mean(bfr.pxSize);
@@ -37,17 +38,28 @@ function data = algo_dab_micro(bfr, mask, settings)
     % -----------------------
 
     r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
-%     img = Utility.read_tiff(bfr.filename, CellMarkerChannel, bbox - [0, 0, 1, 1]);
     img = imread(bfr.filename, PixelRegion=pixel_region);
     min_img = min(img, [], 3);
     scl_img = double(min_img) / 65535;
     nan_img = nan_background(scl_img, r_mask);
-    norm_img = log_norm(nan_img);
+
+    if isempty(params)
+        norm_img = log_norm(nan_img);
+    else
+        norm_img = log_norm(nan_img, paras.FirstParam);
+    end
+
+
     adj_img = mat2gray(norm_img, [-2.5, 3.0]);
     iba1 = 1 - adj_img;
     iba1(~r_mask) = 0;
 
-    p_out = log_norm(pacefilt(iba1, 21, 5) / 4);
+    if isempty(params)
+        p_out = log_norm(pacefilt(iba1, 21, 5) / 4);
+    else
+        p_out = log_norm(pacefilt(iba1, 21, 5) / 4, params.SecondParam);
+    end
+
     branches = p_out > DENDRITE_THRESHOLD; % 0.5
 
     % ------------ Segment Activation --------------------

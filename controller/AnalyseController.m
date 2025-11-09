@@ -225,20 +225,20 @@ classdef AnalyseController < ControllerBase
             settings = region.get_microcount_settings();
 
             rect = round(con.ImageSubviewRect.Position * 20);
-            mask = con.Model.Atlas.create_full_size_mask(region);
+            full_mask = con.Model.Atlas.create_full_size_mask(region);
 
-            params = Utility.get_norm(bfr_img, mask, settings);
-
-            bbox = bounding_box(mask);
-            mask = mask & false;
+            bbox = bounding_box(full_mask);
+            mask = full_mask & false;
             mask((rect(2) + bbox(2)):(rect(2) + bbox(2) + rect(4)), (rect(1) + bbox(1)):(rect(1) + bbox(1) + rect(3))) = true;
 
             switch con.Model.WS.Algo
                 case Algorithm.MicroFluor
+                    params = Utility.get_norm_micro_fluor(bfr_img, full_mask, settings);
                     data = algo_fluor_micro(bfr_img, mask, settings, params);
 
                 case Algorithm.MicroDab
-                    data = algo_dab_micro(bfr_img, mask, settings);
+                    params = Utility.get_norm_micro_dab(bfr_img, full_mask);
+                    data = algo_dab_micro(bfr_img, mask, settings, params);
             
                 case Algorithm.AstroFluor
                     data = algo_fluor_astro(bfr_img, mask, settings);

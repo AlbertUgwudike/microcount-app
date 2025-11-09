@@ -209,7 +209,7 @@ classdef Utility
 
         end
 
-        function out = get_norm(bfr, mask, settings)
+        function out = get_norm_micro_fluor(bfr, mask, settings)
             arguments
                 bfr BioformatsImage
                 mask logical
@@ -247,6 +247,40 @@ classdef Utility
             sl = stretchlim(BW);
 
             out.CellMarkerParams = [C, S, double(min(iba1, [], "all")), double(max(iba1, [], "all")), sl(1), sl(2)];
+        end
+
+
+
+        function out = get_norm_micro_dab(bfr, mask)
+            arguments
+                bfr BioformatsImage
+                mask logical
+            end
+            
+            bbox = bounding_box(mask);
+        
+            pixel_region = { 
+                [bbox(2), (bbox(2) + bbox(4) - 1)];
+                [bbox(1), (bbox(1) + bbox(3) - 1)]
+            };
+        
+            % -----------------------
+        
+            r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
+            img = imread(bfr.filename, PixelRegion=pixel_region);
+            min_img = min(img, [], 3);
+            scl_img = double(min_img) / 65535;
+            nan_img = nan_background(scl_img, r_mask);
+
+            [norm_img, C, S] = log_norm(nan_img); % <------
+            out.FirstParam = [C, S];
+
+            adj_img = mat2gray(norm_img, [-2.5, 3.0]);
+            iba1 = 1 - adj_img;
+            iba1(~r_mask) = 0;
+        
+            [~, C, S] = log_norm(pacefilt(iba1, 21, 5) / 4); % <-----
+            out.SecondParam = [C, S];
         end
 
         function params = empty_params() 
