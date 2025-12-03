@@ -313,43 +313,8 @@ classdef Utility
             iba1(~r_mask) = 0;
         
             pp_out = nan_background(pacefilt(iba1, 21, 5) / 4, r_mask);
-            [~, C, S] = log_norm(pp_out);
-            out.SecondParam = [C, S];
-        end
+            p_out = log_norm(pp_out);
 
-        function out = get_norm_astro_fluor(bfr, mask)
-            bbox = bounding_box(mask);
-        
-            pixel_region = { 
-                [bbox(2), (bbox(2) + bbox(4) - 1)];
-                [bbox(1), (bbox(1) + bbox(3) - 1)]
-            };
-
-            r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
-            img = imread(bfr.filename, Index=CellMarkerChannel, PixelRegion=pixel_region);
-            scl_img = double(img) / 65535;
-            nan_img = nan_background(scl_img, r_mask);
-
-            [norm_img, C, S] = log_norm(nan_img); % <------
-            out.FirstParam = [C, S];
-
-            iba1 = mat2gray(norm_img, [-2, 2]);
-            iba1(~r_mask) = 0;
-        
-            % ------------ Segment Cells --------------------
-            [~, C, S] = log_norm(pacefilt(iba1, 21, 5) / 4);
-            out.SecondParam = [C, S];
-        
-            % ------------ Segment Activation --------------------
-            cd68 = imread(bfr.filename, Index=CoMarkerChannel, PixelRegion=pixel_region);
-            cd68(~r_mask) = 0;
-
-            tmp = nan_background(double(cd68), r_mask);
-            [~, C, S] = log_norm(tmp);
-            out.ThirdParam = [C, S];
-
-            ad_img = adapthisteq(img, 'clipLimit', 0.02, 'Distribution', 'rayleigh');
-            out.FourthParam = [double(min(iba1, [], "all")), double(max(iba1, [], "all"))];
         end
 
         function params = empty_params() 

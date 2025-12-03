@@ -241,10 +241,12 @@ classdef AnalyseController < ControllerBase
                     data = algo_dab_micro(bfr_img, mask, settings, params);
             
                 case Algorithm.AstroFluor
-                    data = algo_fluor_astro(bfr_img, mask, settings);
+                    params = Utility.get_norm_astro_fluor(bfr_img, full_mask);
+                    data = algo_fluor_astro(bfr_img, mask, settings, params);
 
                 case Algorithm.AstroDab
-                    data = algo_dab_astro(bfr_img, mask, settings);
+                    params = Utility.get_norm_astro_dab(bfr_img, full_mask);
+                    data = algo_dab_astro(bfr_img, mask, settings, params);
 
             end
             disp("PROCESSED!")
