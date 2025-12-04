@@ -4,7 +4,7 @@ function [data, c_mat] = algo_fluor_astro(bfr, mask, settings, params)
         bfr BioformatsImage
         mask logical
         settings MicrocountSettings
-        params = Utility.empty_params()
+        params = []
     end
     MM2_PER_PIXEL       = prod(bfr.pxSize) / 1e6;
     UM_PER_PIXEL        = mean(bfr.pxSize);
@@ -57,13 +57,20 @@ function [data, c_mat] = algo_fluor_astro(bfr, mask, settings, params)
     else
         p_out = log_norm(pacefilt(iba1, 21, 5) / 4, params.SecondParam);
     end
+
     branches = p_out > DENDRITE_THRESHOLD;
 
     % ------------ Segment Activation --------------------
     cd68 = imread(bfr.filename, Index=CoMarkerChannel, PixelRegion=pixel_region);
     cd68(~r_mask) = 0;
     tmp = nan_background(double(cd68), r_mask);
-    cd68_mask = uint16(segment_activation(tmp, CD68_SENSITIVITY, params.ThirdParam));
+
+    if isempty(params)
+        cd68_mask = uint16(segment_activation(tmp, CD68_SENSITIVITY));
+    else
+        cd68_mask = uint16(segment_activation(tmp, CD68_SENSITIVITY, params.ThirdParam));
+    end
+
     cd68_mask = filter_size_cd68(cd68_mask, MAX_CD68_SIZE);
 
     % ------------ Segment Somas --------------------
@@ -71,7 +78,12 @@ function [data, c_mat] = algo_fluor_astro(bfr, mask, settings, params)
 %     mask = imbinarize(img, T);
 
     ad_img = adapthisteq(img, 'clipLimit', 0.02, 'Distribution', 'rayleigh');
-    mask = mat2gray(ad_img, params.FourthParam) > SOMA_THRESHOLD;
+    
+    if isempty(params)
+        mask = mat2gray(ad_img) > SOMA_THRESHOLD;
+    else
+        mask = mat2gray(ad_img, params.FourthParam) > SOMA_THRESHOLD;
+    end
     
     mask = imfill(mask, "holes");
     soma_mask = imopen(mask, strel('disk', 5, 0));

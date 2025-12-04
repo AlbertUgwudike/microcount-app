@@ -317,7 +317,16 @@ classdef Utility
             out.SecondParam = [C, S];
         end
 
-        function out = get_norm_astro_fluor(bfr, mask)
+        function out = get_norm_astro_fluor(bfr, mask, settings)
+            arguments
+                bfr BioformatsImage
+                mask logical
+                settings MicrocountSettings
+            end
+
+            CoMarkerChannel     = settings.ChannelCD68;
+            CellMarkerChannel   = settings.ChannelIba1;
+
             bbox = bounding_box(mask);
         
             pixel_region = { 
@@ -349,7 +358,7 @@ classdef Utility
             out.ThirdParam = [C, S];
 
             ad_img = adapthisteq(img, 'clipLimit', 0.02, 'Distribution', 'rayleigh');
-            out.FourthParam = [double(min(iba1, [], "all")), double(max(iba1, [], "all"))];
+            out.FourthParam = [double(min(ad_img, [], "all")), double(max(ad_img, [], "all"))];
         end
 
         function params = empty_params() 
