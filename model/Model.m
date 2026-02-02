@@ -85,8 +85,9 @@ classdef Model < handle
             end
             
             mdl.WS = ws;
+            mdl.WS.DirName = dir_name;
             
-            mdl.call_registrars(ModelEvents.WorkspaceUpdated)
+            mdl.save_and_update();
         end
         
         function io_add_image(mdl)
@@ -146,15 +147,17 @@ classdef Model < handle
             bool_idx(idx) = true;
             
             not_converted = [mdl.WS.Images.ConvertStatus] ~= ConvertStatus.CONVERTED;
-            not_file_exists = arrayfun(@(img) ~isfile(img_md.compute_conv_fn(mdl.WS.DirName)), mdl.WS.Images)';
+            not_file_exists = arrayfun(@(img) ~isfile(img.compute_conv_fn(mdl.WS.DirName)), mdl.WS.Images)';
             
             convert_idx = bool_idx & not_converted & not_file_exists;
 
             imgs = mdl.WS.Images(convert_idx);
-            app_dir_vec = repmat(mdl.AppDir, 1, numel(imgs));
-            ws_dir_vec = repmat(mdl.WS.DirName,1 , numel(imgs));
+            % app_dir_vec = repmat(mdl.AppDir, 1, numel(imgs));
+            % ws_dir_vec = repmat(mdl.WS.DirName,1 , numel(imgs));
 
-            args = cat(2, img, app_dir_vec ,ws_dir_vec);
+            % args = cat(2, num2cell(imgs), num2cell(app_dir_vec), num2cell(ws_dir_vec));
+            args = arrayfun(@(i) {imgs(i), mdl.AppDir, mdl.WS.DirName}, 1:numel(imgs), UniformOutput=false);
+            disp(args)
             
             mdl.ThreadPool.dispatch_batch_monitored( ...
                 @mdl.io_mark_image_as_converting, ...
@@ -170,7 +173,7 @@ classdef Model < handle
                 mdl Model
                 img_md ImageMetadata
             end
-            if ~isfile(img_md.img_md.compute_down_fn(mdl.WS.DirName))
+            if ~isfile(img_md.compute_down_fn(mdl.WS.DirName))
                 mdl.panic(Error.INVALID_FN)
                 img = zeros(10, 10);
                 return
@@ -277,7 +280,7 @@ classdef Model < handle
             end
             
             for i = 1:numel(regions_to_add)
-                img_md.add_region_save_mask(regions_to_add(i), mdl.Atlas);
+                img_md.add_region_save_mask(regions_to_add(i), mdl.Atlas, mdl.WS.DirName);
             end
             
             mdl.save_and_update()
@@ -410,10 +413,10 @@ classdef Model < handle
             mdl.save_and_update_analyse_tab()
         end
         
-        function io_mark_image_as_converting(mdl, pairs)
-            img_mds = arrayfun(@(p) p.Left, pairs);
-            for i = 1:numel(img_mds)
-                img_mds(i).ConvertStatus = ConvertStatus.CONVERTING;
+        function io_mark_image_as_converting(mdl, args)
+            for i = 1:height(args)
+                arg = args{i}{1};
+                arg.ConvertStatus = ConvertStatus.CONVERTING;
             end
             mdl.save_and_update()
         end
@@ -430,7 +433,7 @@ classdef Model < handle
                 img_md.ConvertStatus = ConvertStatus.UNCONVERTED;
             else
                 fprintf("Convert and Downsample: Image %s completed after: %s\n", img_id, args{3});
-                img_md.set_metadata()
+                img_md.set_metadata(mdl.WS.DirName);
                 img_md.ConvertStatus = ConvertStatus.CONVERTED;
             end
             
@@ -552,9 +555,9 @@ classdef Model < handle
             msg = "Complete --";
             
             for i = 1:numel(arg_cell)
-                img_md  = arg_cell{i, 1};
-                app_dir = arg_cell{i, 2};
-                ws_dir = arg_cell{i, 3};
+                img_md  = arg_cell{i}{1};
+                app_dir = arg_cell{i}{2};
+                ws_dir = arg_cell{i}{3};
                 msg = msg + " " + img_md.ID;
 
                 try
@@ -573,7 +576,7 @@ classdef Model < handle
             if ismember(ext, [".tif", ".tiff"])
                 copyfile(img_md.SourceFn, img_md.compute_conv_fn(ws_dir));
             else
-                err = lof2tiff(app_dir, img_md.compute_conv_fn(ws_dir));
+                err = lof2tiff(app_dir, img_md.SourceFn, img_md.compute_conv_fn(ws_dir));
                 if err == 1
                     err_msg = sprintf("Conversion failed for image: %s\n", img_md.SourceFn);
                     throw(MException("Model:ConvDown", err_msg))
@@ -584,7 +587,7 @@ classdef Model < handle
         function bg_down_img(img_md, ws_dir)
             arguments
                 img_md ImageMetadata
-                ws_dir String
+                ws_dir string
             end
             RESIZE = 20;
             conv_fn = img_md.compute_conv_fn(ws_dir);
@@ -607,8 +610,8 @@ classdef Model < handle
         end
         
         function msg = bg_monitor_progress(args)
-            img_mds = arrayfun(@(p) p{1}, args{1});
-            ws_dirs = arrayfun(@(p) p{3}, args{1});
+            img_mds = arrayfun(@(i) args{1}{i}{1}, 1:numel(args{1}));
+            ws_dirs = arrayfun(@(i) args{1}{i}{3}, 1:numel(args{1}));
 
             q = args{2};
 
