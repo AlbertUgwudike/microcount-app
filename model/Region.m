@@ -70,6 +70,50 @@ classdef Region < handle
 
         end
 
+        function fn = compute_proc_fn(region, ws_dir)
+            arguments
+                region Region
+                ws_dir string
+            end
+
+            fn = sprintf( ...
+                "%s/%s/%s.tiff", ...
+                ws_dir, ...
+                Constants.DIR_SLUG_PROC, ...
+                region.ID ...
+            );
+        end
+        
+        function mask_fn = compute_mask_fn(region, ws_dir)
+
+            arguments
+                region Region
+                ws_dir string
+            end
+
+            mask_fn = sprintf( ...
+                "%s/%s/%s.tiff", ...
+                ws_dir, ...
+                Constants.DIR_SLUG_MASK, ...
+                region.ID ...
+            );
+        end
+
+        function mask_fn = compute_scholl_fn(region, ws_dir)
+
+            arguments
+                region Region
+                ws_dir string
+            end
+
+            mask_fn = sprintf( ...
+                "%s/%s/%s.xlsx", ...
+                ws_dir, ...
+                Constants.DIR_SLUG_SCHOLL, ...
+                region.ID ...
+            );
+        end
+
     end
 
     methods (Static)

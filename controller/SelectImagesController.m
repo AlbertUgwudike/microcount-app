@@ -84,7 +84,9 @@ classdef SelectImagesController < ControllerBase
             end
             idx = con.View.ImageTable.Selection(1);
             con.SelectedImage = con.Model.WS.Images(idx);
-            if (~isfile(con.SelectedImage.ConvFn) || ~isfile(con.SelectedImage.DownFn))
+            conv_fn = con.SelectedImage.compute_conv_fn(con.Model.WS.DirName);
+            down_fn = con.SelectedImage.compute_down_fn(con.Model.WS.DirName);
+            if (~isfile(conv_fn) || ~isfile(down_fn))
                 con.View.ProcessedImage.ImageSource = zeros(3, 3, 3);
                 imshow(zeros(1, 1), 'Parent', con.View.Thumbnail);
             else
@@ -118,7 +120,7 @@ classdef SelectImagesController < ControllerBase
         function on_image_subview_moved(con, pos)
             disp("SelectImagesController::on_image_subview_moved")
             bbox = round(20 * pos);
-            conv_img_fn = con.SelectedImage.ConvFn;
+            conv_img_fn = con.SelectedImage.compute_conv_fn(con.Model.WS.DirName);
             conv_img = Utility.read_tiff(conv_img_fn, con.CurrentChannel + 1, bbox);
             con.View.ProcessedImage.ImageSource = repmat(imadjust(conv_img(:, :, 1)), 1, 1, 3);
         end
@@ -170,7 +172,7 @@ classdef SelectImagesController < ControllerBase
     methods (Access=private)
 
         function draw_image_subview(con)
-            down_fn = con.SelectedImage.DownFn;
+            down_fn = con.SelectedImage.compute_down_fn(con.Model.WS.DirName);
             dn_mask = imread(down_fn);
             dn_mask = dn_mask(:, :, con.CurrentChannel + 1);
             imshow(dn_mask, 'Parent', con.View.Thumbnail, 'InitialMagnification', 20);

@@ -188,7 +188,7 @@ classdef Utility
 
         function out = intercalate_mask(img, mask)
             out  = img;
-            out(mask > 0) = mask(mask > 0) / 0.5;
+            out(mask > 0) = mask(mask > 0);
         end
 
         function write_tables(region, tables)

@@ -147,7 +147,7 @@ classdef RegisterController < ControllerBase
             con.ImageSet = con.Model.WS.Images(down_idx);
             checks       = Utility.check_or_none([con.ImageSet.Aligned]');
             whole_checks = Utility.check_or_none([con.ImageSet.WholeAligned]');
-            fns          = Utility.path2name([con.ImageSet.SourceFn]');
+            fns          = Utility.path2name([con.ImageSet.ID]');
             new_data     = [fns checks whole_checks];
             con.View.AlignmentTable.Data = new_data;
         end

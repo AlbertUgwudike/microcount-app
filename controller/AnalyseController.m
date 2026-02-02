@@ -196,7 +196,13 @@ classdef AnalyseController < ControllerBase
 
             if con.OverlayFlag(3)
                 chn = con.get_channel(proc_img_fn, bbox, pixel_region, 3);
-                img = Utility.intercalate_mask(img, chn);
+                mask = 65535 * uint16(max(chn, [], 3) > 0);
+                col = [3, 86, 252];
+                for i = 1:3
+                    c_img = img(:, :, i);
+                    c_img(mask > 0) = 0;
+                    img(:, :, i) = Utility.intercalate_mask(c_img, (col(i) / 255) * mask);
+                end
             end
 
             if con.OverlayFlag(4)
@@ -220,7 +226,8 @@ classdef AnalyseController < ControllerBase
 
         function process_preview(con)
             region = con.SelectedRegion;
-            file_name_chrs = convertStringsToChars(region.Parent.ConvFn);
+            conv_fn = region.Parent.compute_conv_fn(con.Model.WS.DirName);
+            file_name_chrs = convertStringsToChars(conv_fn);
             bfr_img = BioformatsImage(file_name_chrs);
             settings = region.get_microcount_settings();
 

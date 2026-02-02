@@ -146,13 +146,15 @@ classdef Model < handle
             bool_idx(idx) = true;
             
             not_converted = [mdl.WS.Images.ConvertStatus] ~= ConvertStatus.CONVERTED;
-            not_file_exists = arrayfun(@(img) ~isfile(img.ConvFn), mdl.WS.Images)';
+            not_file_exists = arrayfun(@(img) ~isfile(img_md.compute_conv_fn(mdl.WS.DirName)), mdl.WS.Images)';
             
             convert_idx = bool_idx & not_converted & not_file_exists;
+
             imgs = mdl.WS.Images(convert_idx);
-            
             app_dir_vec = repmat(mdl.AppDir, 1, numel(imgs));
-            args = Utility.zip(imgs, app_dir_vec);
+            ws_dir_vec = repmat(mdl.WS.DirName,1 , numel(imgs));
+
+            args = cat(2, img, app_dir_vec ,ws_dir_vec);
             
             mdl.ThreadPool.dispatch_batch_monitored( ...
                 @mdl.io_mark_image_as_converting, ...
@@ -168,13 +170,13 @@ classdef Model < handle
                 mdl Model
                 img_md ImageMetadata
             end
-            if ~isfile(img_md.DownFn)
+            if ~isfile(img_md.img_md.compute_down_fn(mdl.WS.DirName))
                 mdl.panic(Error.INVALID_FN)
                 img = zeros(10, 10);
                 return
             end
             reg_ch = img_md.RegistrationChannel;
-            raw_img = tiffreadVolume(img_md.DownFn);
+            raw_img = tiffreadVolume(img_md.compute_down_fn(mdl.WS.DirName));
             img = uint16(raw_img(:, :, reg_ch));
             if ~isempty(img_md.TransformationData)
                 img = imrotate(img, img_md.TransformationData.Direction.to_angle());
@@ -368,17 +370,18 @@ classdef Model < handle
                     bbox = bounding_box(mask);
                     pixel_region = { [bbox(2), bbox(2) + bbox(4) - 1], [bbox(1), bbox(1) + bbox(3) - 1] };
 
-                    info = imfinfo(img_md.ConvFn);
+                    info = imfinfo(img_md.compute_conv_fn(mdl.WS.DirName));
+                    conv_fn = img_md.compute_conv_fn(mdl.WS.DirName);
 
                     if numel(info) == 1
-                        img = imread(img_md.ConvFn, PixelRegion = pixel_region);
+                        img = imread(conv_fn, PixelRegion = pixel_region);
                         com_img = img(:, :, img_md.CoMarkerChannel);
                         cell_img = img(:, :, img_md.CellMarkerChannel);
                         reg_img = img(:, :, img_md.RegistrationChannel);
                     else
-                        com_img  = imread(img_md.ConvFn, PixelRegion = pixel_region, Index = img_md.CoMarkerChannel);
-                        cell_img = imread(img_md.ConvFn, PixelRegion = pixel_region, Index = img_md.CellMarkerChannel);
-                        reg_img = imread(img_md.ConvFn, PixelRegion = pixel_region, Index = img_md.RegistrationChannel);
+                        com_img  = imread(conv_fn, PixelRegion = pixel_region, Index = img_md.CoMarkerChannel);
+                        cell_img = imread(conv_fn, PixelRegion = pixel_region, Index = img_md.CellMarkerChannel);
+                        reg_img = imread(conv_fn, PixelRegion = pixel_region, Index = img_md.RegistrationChannel);
                     end
                     
                     r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
@@ -458,7 +461,7 @@ classdef Model < handle
             end
             
             mask = mdl.Atlas.create_full_size_mask(region);
-            file_name_chrs = convertStringsToChars(region.Parent.ConvFn);
+            file_name_chrs = convertStringsToChars(region.Parent.compute_conv_fn(mdl.WS.DirName));
             bfr_img = BioformatsImage(file_name_chrs);
             settings = region.get_microcount_settings();
 
@@ -545,18 +548,19 @@ classdef Model < handle
         
         function msg = bg_conv_down_img(args)
             q     = args{1};
-            pairs = args{2};
+            arg_cell = args{2};
             msg = "Complete --";
             
-            for i = 1:numel(pairs)
-                img_md  = pairs(i).Left;
-                app_dir = pairs(i).Right;
+            for i = 1:numel(arg_cell)
+                img_md  = arg_cell{i, 1};
+                app_dir = arg_cell{i, 2};
+                ws_dir = arg_cell{i, 3};
                 msg = msg + " " + img_md.ID;
 
                 try
                     tic
-                    Model.bg_conv_img(img_md, app_dir);
-                    Model.bg_down_img(img_md);
+                    Model.bg_conv_img(img_md, app_dir, ws_dir);
+                    Model.bg_down_img(img_md, ws_dir);
                     send(q, {true, img_md.ID, string(toc)});
                 catch e
                     send(q, {false, img_md.ID, e});
@@ -564,12 +568,12 @@ classdef Model < handle
             end
         end
         
-        function bg_conv_img(img_md, app_dir)
+        function bg_conv_img(img_md, app_dir, ws_dir)
             [~, ~, ext] = fileparts(img_md.SourceFn);
             if ismember(ext, [".tif", ".tiff"])
-                copyfile(img_md.SourceFn, img_md.ConvFn);
+                copyfile(img_md.SourceFn, img_md.compute_conv_fn(ws_dir));
             else
-                err = lof2tiff(app_dir, img_md.SourceFn, img_md.ConvFn);
+                err = lof2tiff(app_dir, img_md.compute_conv_fn(ws_dir));
                 if err == 1
                     err_msg = sprintf("Conversion failed for image: %s\n", img_md.SourceFn);
                     throw(MException("Model:ConvDown", err_msg))
@@ -577,33 +581,37 @@ classdef Model < handle
             end
         end
         
-        function bg_down_img(img_md)
+        function bg_down_img(img_md, ws_dir)
             arguments
                 img_md ImageMetadata
+                ws_dir String
             end
             RESIZE = 20;
-            info = imfinfo(img_md.ConvFn);
+            conv_fn = img_md.compute_conv_fn(ws_dir);
+            info = imfinfo(conv_fn);
             H = [info.Height]; W = [info.Width];
             pixel_region = { [1 RESIZE H(1)], [1 RESIZE W(1)] };
             
             if info(1).SamplesPerPixel == 1
                 N = numel(info);
-                reader_fcn = @(i) imadjust(uint16(imread(img_md.ConvFn, "PixelRegion", pixel_region, "Index", i)));
+                reader_fcn = @(i) imadjust(uint16(imread(conv_fn, "PixelRegion", pixel_region, "Index", i)));
                 channels = arrayfun(reader_fcn, 1:N, 'UniformOutput', false);
             else
-                img = imread(img_md.ConvFn, "PixelRegion", pixel_region);
+                img = imread(conv_fn, "PixelRegion", pixel_region);
                 N = size(img, 3);
                 channels = arrayfun(@(i) imadjust(uint16(img(:, :, i))), 1:N, "UniformOutput", false);
             end
             
             down_img = cat(3, channels{:});
-            Utility.write_tiff(down_img, img_md.DownFn);
+            Utility.write_tiff(down_img, img_md.compute_down_fn(ws_dir));
         end
         
         function msg = bg_monitor_progress(args)
-            img_mds = arrayfun(@(p) p.Left, args{1});
+            img_mds = arrayfun(@(p) p{1}, args{1});
+            ws_dirs = arrayfun(@(p) p{3}, args{1});
+
             q = args{2};
-            
+
             ori_szs = arrayfun(@(img_md) dir(img_md.SourceFn).bytes, img_mds);
             pcs = zeros(size(img_mds));
             
@@ -615,8 +623,10 @@ classdef Model < handle
                 
                 for i = 1:numel(img_mds)
                     img_md = img_mds(i);
-                    if isfile(img_md.ConvFn)
-                        curr_size = dir(img_md.ConvFn).bytes;
+                    ws_dir = ws_dirs(i); %-- always the same btw
+                    conv_fn = img_md.compute_conv_fn(ws_dir);
+                    if isfile(conv_fn)
+                        curr_size = dir(conv_fn).bytes;
                         pcs(i) = min(100, round(100 * curr_size / ori_szs(i), 2));
                     end
                 end
