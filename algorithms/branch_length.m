@@ -28,7 +28,7 @@ function [lengths, labelled_img, c_img] = branch_length(seg_skelly, soma_mask)
 
     c_img = labelled_img > 0;
 
-    while ~isempty(frontier)
+    while ~is_empty(frontier)
         for i = 1:numel(frontier)
             pts = frontier{i};
             new_pts = [];
@@ -60,14 +60,13 @@ function [lengths, labelled_img, c_img] = branch_length(seg_skelly, soma_mask)
             end
             frontier{i} = new_pts;
         end
-        frontier = remove_empty(frontier);
     end
     
 end
 
-function f_arr = remove_empty(c_arr)
+function flag = is_empty(c_arr)
     idx = cellfun("isempty", c_arr);
-    f_arr = c_arr(~idx);
+    flag = all(idx);
 end
 
 function flag = in_bounds(pt, H, W)
