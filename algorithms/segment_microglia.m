@@ -1,6 +1,12 @@
-function [BW] = segment_microglia(X, thresh)
+function [BW] = segment_microglia(X, thresh, params)
 
-    norm_X = mat2gray(X);
+    if isempty(params)
+        disp("Auto gray!")
+        norm_X = mat2gray(X);
+    else
+        disp("Manual gray!")
+        norm_X = mat2gray(X, params(3:4));
+    end
 
     BW = pacefilt(norm_X, 21, 5) / 4;
     
@@ -8,8 +14,12 @@ function [BW] = segment_microglia(X, thresh)
     decomposition = 0;
     se = strel('disk', radius, decomposition);
     BW = imclose(BW, se);
-
-    BW = imadjust(BW) > thresh;
+    
+    if isempty(params)
+        BW = imadjust(BW) > thresh;
+    else
+        BW = imadjust(BW, params(5:6)) > thresh;
+    end
 
 end
 

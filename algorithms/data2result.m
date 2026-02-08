@@ -1,10 +1,7 @@
-function [result, img, cross_matrix] = data2result(data, type_str)
+function [result, img, tables] = data2result(data)
     arguments
         data MicrocountData
-        type_str string = "micro"
     end
-
-    MASK_INTENSITY = 65535;
 
     imageArea = data.nPixels * data.mm2_per_pixel;
     comboMask = (data.segmented > 0) & data.cd68Mask;
@@ -13,90 +10,57 @@ function [result, img, cross_matrix] = data2result(data, type_str)
     soma_area = sum(data.soma_mask, 'all') * data.mm2_per_pixel * 1e6;
     total_branches = double(sum(data.detected, 'all'));
 
+    N_branches = sum(cellfun("length", data.branch_lengths));
+    total_length = sum(cellfun(@(r) sum(r), data.branch_lengths));
+
     result = MicrocountResult( ...
         MicrogliaDensity = perc(data.nMicroglia, imageArea) / 100, ...
         PercentageIba1Area = perc(iba1Area, imageArea), ...
         PercentageCD68Area = perc(totalActivatedArea, iba1Area), ...
         PercentageActivatedMicroglia = perc(data.nActivated, data.nMicroglia), ...
-        AverageRotundity = perc(data.avRotundity, 1), ...
+        AverageRotundity = mean(data.rotundities, "omitnan"), ...
         AverageSomaSizeUm = perc(soma_area, data.nMicroglia) / 100, ...
         AverageBranchCount = perc(total_branches, data.nMicroglia) / 100, ...
-        AverageBranchLengthUm = data.av_length * data.um_per_pixel, ...
-        AverageSchollIndex = data.av_scholl_idx ...
+        AverageBranchLengthUm = (total_length / N_branches) * data.um_per_pixel, ...
+        AverageSchollIndex = mean(data.scholl_coeffs, "omitnan") ...
+        );
+
+    % -----------------------------------------------------------------
+    tables = MicrocountTables( ...
+        SchollCoefficients = data.scholl_coeffs, ...
+        CrossMatrix = data.scholl_cross_matrix, ...
+        BranchLengths = data.branch_lengths, ...
+        BranchCounts = data.branch_counts, ...
+        SomaSizes = data.soma_areas, ...
+        Rotundities = data.rotundities, ...
+        CellAreas = data.cell_areas, ...
+        Activations = reshape(data.overlap_pcs, [], 1) ...
     );
     
     % generate output image -------------------------------------------
-    switch type_str
-        case "micro"
-            cd68_adj = imadjust(data.cd68, [0.001; 0.005], []);
-            iba1_adj = imadjust(data.iba1); %, [0.0714; 0.3392], []);
-
-            poly_mask = data.poly_mask;
-            poly_mask = poly_mask * MASK_INTENSITY;
-
-            cd68_perim = bwperim(comboMask);
-            cd68_poly = MASK_INTENSITY * uint16(cd68_perim);
-
-            red = iba1_adj + poly_mask;
-            red(cd68_perim) = cd68_poly(cd68_perim) / 50;
-
-            green = cd68_adj + poly_mask;
-            green(cd68_perim) = cd68_poly(cd68_perim) / 25;
-
-            blue = poly_mask;
-            blue(cd68_perim) = cd68_poly(cd68_perim) / 1.4;
-
-            tmp = cat(3, red, green, blue);
-
-
-        case "dab_micro"
-            poly_mask = imdilate(data.poly_mask, strel('disk', 1, 0));
-            poly_mask = uint16(label2rgb(poly_mask, 'jet', 'k', 'shuffle')) * 256;
-            tmp = uint16(data.cd68) * 64;
-            tmp(poly_mask > 0) = poly_mask(poly_mask > 0);
-
-        case "dab_astro"
-            poly_mask = imdilate(data.poly_mask, strel('disk', 1, 0));
-            poly_mask = uint16(label2rgb(poly_mask, 'jet', 'k', 'shuffle')) * 256;
-            tmp = uint16(repmat(data.iba1, 1, 1, 3)) * 256;
-            tmp(poly_mask > 0) = poly_mask(poly_mask > 0);
-
-        case "fluor_astro"
-            % --------------------------------------------------
-            poly_mask = imdilate(data.poly_mask, strel('disk', 1, 0));
-            poly_mask = uint16(label2rgb(poly_mask, 'jet', 'k', 'shuffle')) * 256;
-            tmp = uint16(repmat(data.iba1, 1, 1, 3)) * 256;
-            tmp(poly_mask > 0) = poly_mask(poly_mask > 0);
-            % ------------------------------------------------------------
-
-%             cd68_adj = imadjust(data.cd68, [0.001; 0.005], []);
-%             iba1_adj = imadjust(data.iba1); %, [0.0714; 0.3392], []);
-%             
-%             poly_mask = data.poly_mask;
-%             poly_mask = poly_mask * MASK_INTENSITY;
-% 
-%             cd68_perim = bwperim(comboMask);
-%             cd68_poly = MASK_INTENSITY * uint16(cd68_perim);
-% 
-%             red = iba1_adj + poly_mask;
-%             red(cd68_perim) = cd68_poly(cd68_perim) / 50;
-% 
-%             green = cd68_adj + poly_mask;
-%             green(cd68_perim) = cd68_poly(cd68_perim) / 25;
-% 
-%             blue = poly_mask;
-%             blue(cd68_perim) = cd68_poly(cd68_perim) / 1.4;
-% 
-%             tmp = cat(3, red, green, blue);
-
-        case "fluor_neun"
-            poly_mask = imdilate(data.poly_mask, strel('disk', 1, 0));
-            poly_mask = uint16(label2rgb(poly_mask, 'jet', 'k', 'shuffle')) * 256;
-            tmp = uint16(data.cd68) * 256;
-            tmp(poly_mask > 0) = poly_mask(poly_mask > 0);
+    if size(data.iba1, 3) == 3
+        iba1_adj = Utility.imadjust_rgb(uint16(data.iba1));
+    else
+        iba1_adj = imadjust(uint16(data.iba1)); %, [0.0714; 0.3392], []);
+        iba1_adj = cat(3, iba1_adj, zeros(size(iba1_adj)), zeros(size(iba1_adj)));
     end
 
-    img = uint16(tmp);
-    cross_matrix = data.cross_matrix;
+    cd68_adj = imadjust(uint16(data.cd68));
+    cd68_adj = repmat(cd68_adj, 1, 1, 3);
+
+    poly_mask = uint16(data.poly_mask);
+%     poly_mask = imdilate(poly_mask, strel('disk', 2, 0));
+    poly_mask = Utility.color_segmentation(poly_mask);
+
+    cd68_poly = 65535 * repmat(uint16(bwperim(comboMask)), 1, 1, 3);
+
+    iba1_o = iba1_adj;
+%     iba1_o(:, :, 1:2) = 0;
+    iba1_o(poly_mask > 0) = poly_mask(poly_mask > 0);
+
+    cd68_o = cd68_adj;
+    cd68_o(cd68_poly > 0) = cd68_poly(cd68_poly > 0);
+
+    img = { iba1_adj, cd68_adj, poly_mask, cd68_poly, iba1_o, cd68_o };
 end
 

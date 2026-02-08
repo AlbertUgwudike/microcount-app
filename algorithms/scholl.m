@@ -1,4 +1,4 @@
-function [av_scholl_idx, cross_mat] = scholl(l_skelly, l_soma, px_dims, plot_please)
+function [coeffs, cross_mat] = scholl(l_skelly, l_soma, px_dims, plot_please)
     arguments
         l_skelly, 
         l_soma,
@@ -12,6 +12,8 @@ function [av_scholl_idx, cross_mat] = scholl(l_skelly, l_soma, px_dims, plot_ple
     N = max(l_skelly, [], "all");
     coeffs = zeros(N, 1);
     cross_mat = cell(N, 1);
+
+    px_dims = min(px_dims, [1, 1]);
 
     for i = 1:N
 
@@ -31,6 +33,8 @@ function [av_scholl_idx, cross_mat] = scholl(l_skelly, l_soma, px_dims, plot_ple
 %                     sprintf("MaxDist = [%d, %d], N = %d, i = %d, pts = [%d, %d]", px_dims(1), px_dims(2), sum(l_soma, "all"), i, I(1), J(1)) ...
 %                 ) ...
 %             )
+            coeffs(i) = nan;
+            cross_mat{i} = [];
             continue;
         end
 
@@ -43,7 +47,7 @@ function [av_scholl_idx, cross_mat] = scholl(l_skelly, l_soma, px_dims, plot_ple
         mdl = fitlm(radii, crossings);
 
         coeffs(i) = -mdl.Coefficients.Estimate(2);
-        cross_mat{i} = y;
+        cross_mat{i} = counts;
         if plot_please
             subplot(1, 2, 1)
             bbox = bounding_box(l_skelly == i);
@@ -56,8 +60,6 @@ function [av_scholl_idx, cross_mat] = scholl(l_skelly, l_soma, px_dims, plot_ple
             pause(2);
         end
     end
-    av_scholl_idx = mean(coeffs, 'omitnan');
-%     disp(coeffs)
 end
 
 function pt = center_of_mass(b_img)

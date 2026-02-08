@@ -40,8 +40,9 @@ classdef ImageMetadata < handle
             disp(img_md.WS_Dir)
         end
 
-        function set_metadata(img_md)
-            info = imfinfo(img_md.ConvFn);
+        function set_metadata(img_md, ws_dir)
+            conv_fn = img_md.compute_conv_fn(ws_dir);
+            info = imfinfo(conv_fn);
             H = [info.Height];
             W = [info.Width];
             img_md.Size = [H(1), W(1)];
@@ -51,17 +52,19 @@ classdef ImageMetadata < handle
             img_md.CellMarkerChannel = 1 + mod(1, img_md.ChannelCount);
             img_md.CoMarkerChannel = 1 + mod(2, img_md.ChannelCount);
 
-            info = imfinfo(img_md.DownFn);
+            down_fn = img_md.compute_down_fn(ws_dir);
+            info = imfinfo(down_fn);
             H = [info.Height];
             W = [info.Width];
             img_md.DownSize = [H(1), W(1)];
         end
 
-        function add_region_save_mask(img_md, region, atlas)
+        function add_region_save_mask(img_md, region, atlas, ws_dir)
             arguments
                 img_md ImageMetadata
                 region Region
                 atlas Atlas
+                ws_dir string
             end
 
             dn_mask = atlas.create_dn_size_mask(region);
@@ -76,7 +79,8 @@ classdef ImageMetadata < handle
 
             img_md.Regions = cat(1, img_md.Regions, region);
 
-            dn_img = imread(img_md.DownFn);
+            down_fn = img_md.compute_down_fn(ws_dir);
+            dn_img = imread(down_fn);
             c_mask = imcrop(dn_mask, bbox);
             r_mask = repmat(c_mask, 1, 1, size(dn_img, 3));
 
@@ -84,7 +88,8 @@ classdef ImageMetadata < handle
             dn_region(r_mask == 0) = 0;
             dn_region = cat(3, dn_region(:, :, img_md.CellMarkerChannel), dn_region(:, :, img_md.CoMarkerChannel), zeros(size(c_mask)));
 
-            imwrite(dn_region, region.MaskFn);
+            mask_fn = region.compute_mask_fn(ws_dir);
+            imwrite(dn_region, mask_fn);
         end
 
 
@@ -111,6 +116,38 @@ classdef ImageMetadata < handle
             img_md.RegistrationChannel = reg_ch;
             img_md.CellMarkerChannel   = cell_ch;
             img_md.CoMarkerChannel     = co_ch;
+        end
+
+        function down_fn = compute_down_fn(md, ws_dir)
+
+            arguments
+                md ImageMetadata
+                ws_dir string
+            end
+
+            down_fn = sprintf( ...
+                "%s/%s/%s_%s.tiff", ...
+                ws_dir, ...
+                Constants.DIR_SLUG_DOWN, ...
+                md.ID, ...
+                "down" ...
+            );
+        end
+
+        function conv_fn = compute_conv_fn(md, ws_dir)
+
+            arguments
+                md ImageMetadata
+                ws_dir string
+            end
+
+            conv_fn = sprintf( ...
+                "%s/%s/%s_%s.tiff", ...
+                ws_dir, ...
+                Constants.DIR_SLUG_CONVERT, ...
+                md.ID, ...
+                "conv" ...
+            );
         end
         
     end

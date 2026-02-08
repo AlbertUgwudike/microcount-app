@@ -9,29 +9,37 @@ classdef AnalyseView < Component
                 MaxSizeEditField
                 OverlapEditField
                 SomaThresholdEditField
-                MagicButton
+%                 MagicButton
+                AlgoSelector
             RegionTable matlab.ui.control.Table
             ButtonGrid
                 SelectAllButton
                 SelectUnprocessedButton
                 ProcessSelectedButton
+                ProcessPreviewButton
                 CancelButton
                 ExportButton
             BottomGrid
                 ThumbnailPanel 
-                Thumbnail matlab.ui.control.UIAxes
+                    Thumbnail matlab.ui.control.UIAxes
                 ProcessedImagePanel 
-                ProcessedImage 
+                    ProcessedGrid
+                        ProcessedImage 
+                        ProcessedButtonGrid
+                            ToggleCellMarkerButton
+                            ToggleCoMarkerButton
+                            ToggleCellPolyButton
+                            ToggleCoMarkerPolyButton
                 ResultsPanel 
-                ResultGrid
-                    PercentageCellAreaLabel
-                    CellCountLabel
-                    PercentageCoMarkerAreaLabel
-                    PercentageCoMarkerNumLabel
-                    BranchCountLabel
-                    ConvexityLabel
-                    BranchLengthLabel
-                    SchollLabel
+                    ResultGrid
+                        PercentageCellAreaLabel
+                        CellCountLabel
+                        PercentageCoMarkerAreaLabel
+                        PercentageCoMarkerNumLabel
+                        BranchCountLabel
+                        ConvexityLabel
+                        BranchLengthLabel
+                        SchollLabel
     end
 
     methods
@@ -103,11 +111,19 @@ classdef AnalyseView < Component
             view.SomaThresholdEditField.Layout.Column = 6;
 
             % Create MagicButton
-            view.MagicButton = uibutton(view.SettingGrid, 'push');
-            view.MagicButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonMagic);
-            view.MagicButton.Layout.Row = 1;
-            view.MagicButton.Layout.Column = 7;
-            view.MagicButton.Text = 'Magic';
+%             view.MagicButton = uibutton(view.SettingGrid, 'push');
+%             view.MagicButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonMagic);
+%             view.MagicButton.Layout.Row = 1;
+%             view.MagicButton.Layout.Column = 7;
+%             view.MagicButton.Text = 'Magic';
+
+            % Create AlgoSelector
+            view.AlgoSelector = uidropdown(view.SettingGrid);
+            view.AlgoSelector.Items = ["Fluorescent Microglia", "DAB-Stained Microglia", "Fluorescent Astrocytes", "DAB-Stained Astrocytes"];
+            view.AlgoSelector.ItemsData = [Algorithm.MicroFluor, Algorithm.MicroDab, Algorithm.AstroFluor, Algorithm.AstroDab];
+            view.AlgoSelector.ValueChangedFcn = @(~, ~) view.call_registrar(AnalyseEvent.AlgoSelected);
+            view.AlgoSelector.Layout.Row = 1;
+            view.AlgoSelector.Layout.Column = 7;
 
             % Create RegionTable
             view.RegionTable = uitable(view.MainGrid);
@@ -124,7 +140,7 @@ classdef AnalyseView < Component
 
             % Create ButtonGrid
             view.ButtonGrid = uigridlayout(view.MainGrid);
-            view.ButtonGrid.ColumnWidth = {'2x', '2x', '2x', '2x', '2x'};
+            view.ButtonGrid.ColumnWidth = {'2x', '2x', '2x', '2x', '2x', '2x'};
             view.ButtonGrid.RowHeight = {'1x'};
             view.ButtonGrid.ColumnSpacing = 5;
             view.ButtonGrid.Layout.Row = 3;
@@ -151,18 +167,25 @@ classdef AnalyseView < Component
             view.ProcessSelectedButton.Layout.Column = 3;
             view.ProcessSelectedButton.Text = 'Process Selected';
 
+            % Create ProcessPreviewButton
+            view.ProcessPreviewButton = uibutton(view.ButtonGrid, 'push');
+            view.ProcessPreviewButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonProcessPreview);
+            view.ProcessPreviewButton.Layout.Row = 1;
+            view.ProcessPreviewButton.Layout.Column = 4;
+            view.ProcessPreviewButton.Text = 'Process Preview';
+
             % Create CancelButton
             view.CancelButton = uibutton(view.ButtonGrid, 'push');
             view.CancelButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonCancel);
             view.CancelButton.Layout.Row = 1;
-            view.CancelButton.Layout.Column = 4;
+            view.CancelButton.Layout.Column = 5;
             view.CancelButton.Text = 'Cancel';
 
             % Create ExportButton
             view.ExportButton = uibutton(view.ButtonGrid, 'push');
             view.ExportButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.ButtonExport);
             view.ExportButton.Layout.Row = 1;
-            view.ExportButton.Layout.Column = 5;
+            view.ExportButton.Layout.Column = 6;
             view.ExportButton.Text = 'Export Processed';
 
             % Create BottomGrid
@@ -185,7 +208,7 @@ classdef AnalyseView < Component
             % Create Thumbnail
             view.Thumbnail = uiaxes(view.ThumbnailPanel);
             view.Thumbnail.Units = 'normalized';
-            view.Thumbnail.InnerPosition = [0, 0, 1, 1];
+%             view.Thumbnail.InnerPosition = [0, 0, 1, 1];
             view.Thumbnail.Layout.Row = 1;
             view.Thumbnail.Layout.Column = 1;
             view.Thumbnail.XTick = [];
@@ -202,11 +225,55 @@ classdef AnalyseView < Component
             view.ProcessedImagePanel.BackgroundColor = [0, 0, 0];
             view.ProcessedImagePanel.Padding = 1;
 
+            % Create ProcessedGrid
+            view.ProcessedGrid = uigridlayout(view.ProcessedImagePanel);
+            view.ProcessedGrid.ColumnWidth = {'1x'};
+            view.ProcessedGrid.RowHeight = {'8x', '1x'};
+            view.ProcessedGrid.Padding = [1 1 1 1];
+            view.ProcessedGrid.BackgroundColor = [0, 0, 0];
+
             % Create ProcessedImage
-            view.ProcessedImage = uiimage(view.ProcessedImagePanel);
+            view.ProcessedImage = uiimage(view.ProcessedGrid);
             view.ProcessedImage.Layout.Row = 1;
             view.ProcessedImage.Layout.Column = 1;
             view.ProcessedImage.ImageSource = zeros(3, 3, 3);
+
+            % Create ProcessedButtonGrid
+            view.ProcessedButtonGrid = uigridlayout(view.ProcessedGrid);
+            view.ProcessedButtonGrid.ColumnWidth = {'1x', '1x', '1x'};
+            view.ProcessedButtonGrid.RowHeight = {'1x'};
+            view.ProcessedButtonGrid.Padding = [5,5,5,5];
+            view.ProcessedButtonGrid.Layout.Row = 2;
+            view.ProcessedButtonGrid.Layout.Column = 1;
+            view.ProcessedButtonGrid.BackgroundColor = [0, 0, 0];
+
+            % Create ToggleCellMarkerButton
+            view.ToggleCellMarkerButton = uibutton(view.ProcessedButtonGrid, 'push');
+            view.ToggleCellMarkerButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.Overlay, 1);
+            view.ToggleCellMarkerButton.Layout.Row = 1;
+            view.ToggleCellMarkerButton.Layout.Column = 1;
+            view.ToggleCellMarkerButton.Text = 'Cell Marker';
+
+            % Create ToggleCoMarkerButton
+            view.ToggleCoMarkerButton = uibutton(view.ProcessedButtonGrid, 'push');
+            view.ToggleCoMarkerButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.Overlay, 2);
+            view.ToggleCoMarkerButton.Layout.Row = 1;
+            view.ToggleCoMarkerButton.Layout.Column = 2;
+            view.ToggleCoMarkerButton.Text = 'CoMarker';
+
+            % Create ToggleCellPolyButton
+            view.ToggleCellPolyButton = uibutton(view.ProcessedButtonGrid, 'push');
+            view.ToggleCellPolyButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.Overlay, 3);
+            view.ToggleCellPolyButton.Layout.Row = 1;
+            view.ToggleCellPolyButton.Layout.Column = 3;
+            view.ToggleCellPolyButton.Text = 'Cell Marker Poly';
+
+            % Create ToggleCoMarkerPolyButton
+            view.ToggleCoMarkerPolyButton = uibutton(view.ProcessedButtonGrid, 'push');
+            view.ToggleCoMarkerPolyButton.ButtonPushedFcn = @(~, ~) view.call_registrar(AnalyseEvent.Overlay, 4);
+            view.ToggleCoMarkerPolyButton.Layout.Row = 1;
+            view.ToggleCoMarkerPolyButton.Layout.Column = 4;
+            view.ToggleCoMarkerPolyButton.Text = 'CoMarker Poly';
 
             % Creat ResultsPanel
             view.ResultsPanel = uipanel(view.BottomGrid);

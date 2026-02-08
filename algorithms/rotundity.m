@@ -1,8 +1,9 @@
-function [avRotundity, poly_mask] = rotundity(region_pts, soma_mask)
+function [rotundities, cell_areas, soma_areas, poly_mask] = rotundity(region_pts, soma_mask)
 
-    total_rotundity = 0;
-    n = 0;
     N = height(region_pts);
+    rotundities = zeros(N, 1);
+    cell_areas = zeros(N, 1);
+    soma_areas = zeros(N, 1);
     poly_mask = zeros(size(soma_mask));
 
     for i = 1:N
@@ -15,17 +16,17 @@ function [avRotundity, poly_mask] = rotundity(region_pts, soma_mask)
         mask = zeros(H, W);
         indices = sub2ind([H, W], I, J);
         mask(indices) = true;
+        cell_areas(i) = height(pts);
        
         % compute rotundity ----------------
         try
             K = convhull(I, J);
             vertices = cat(2, J(K), I(K));
             solid_poly = poly2mask(vertices(:, 1), vertices(:, 2), H, W);
-            total_rotundity = total_rotundity + height(pts) / sum(solid_poly, "all");
-            n = n + 1;
+            rotundities(i) = height(pts) / sum(solid_poly, "all");
         catch e
             fprintf("Rotundity, convex hull failed: %s\n", e.message)
-            continue
+            rotundities(i) = nan;
         end
         % ----------------------------------
 
@@ -42,10 +43,10 @@ function [avRotundity, poly_mask] = rotundity(region_pts, soma_mask)
         idx = sub2ind(size(soma_mask), perim_pts(:, 1), perim_pts(:, 2));
         
         poly_mask(idx) = i;
+        soma_areas(i) = sum(soma_region > 0, "all");
         % ----------------------------------
 
     end
-    
-    avRotundity = total_rotundity / n;
+
 end
 

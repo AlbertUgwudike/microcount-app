@@ -5,6 +5,7 @@ classdef AppView < Component
         SelectTab matlab.ui.container.Tab
         RegisterTab matlab.ui.container.Tab
         RegionsTab matlab.ui.container.Tab
+        SelectAlgoTab matlab.ui.container.Tab
         AnalyseTab matlab.ui.container.Tab
         TabGroup matlab.ui.container.TabGroup
     end

@@ -4,6 +4,8 @@ classdef AnalyseController < ControllerBase
         RegionSet (:, 1) Region
         SelectedRegion Region
         ImageSubviewRect images.roi.Rectangle
+        OverlayFlag (1, 4) logical = [false, false, false, false];
+        Preview ProcessPreview
     end
 
     methods
@@ -117,6 +119,13 @@ classdef AnalyseController < ControllerBase
             end
         end
 
+        function on_algo_selected(con)
+            disp("AnalyseController::on_algo_selected")
+            con.Model.WS.Algo = con.View.AlgoSelector.Value;
+            con.Model.io_save();
+            disp(con.Model.WS.Algo)
+        end
+
         function on_cancel_button_pushed(con) 
             disp("AnalyseController::on_cancel_button_pushed")
             con.Model.io_cancel_microcount_processes()
@@ -144,6 +153,7 @@ classdef AnalyseController < ControllerBase
             soma_col        = [con.RegionSet.SomaThreshold]';
             pro_col         = string([con.RegionSet.ProcessStatus]');
             con.View.RegionTable.Data = [region_ids iba1_col cd68_col max_col act_col soma_col, pro_col];
+            con.View.AlgoSelector.Value = con.Model.WS.Algo;
 
             if height(con.RegionSet) == 0
                 return
@@ -156,13 +166,100 @@ classdef AnalyseController < ControllerBase
             con.on_region_selected()
         end
 
+        function on_overlay_toggled(con, idx) 
+            disp("AnalyseController::on_overlay_toggled")
+            con.OverlayFlag(idx) = ~con.OverlayFlag(idx);
+            con.on_image_subview_moved(con.ImageSubviewRect.Position);
+        end
+
         function on_image_subview_moved(con, pos)
             disp("AnalyseController::on_image_subview_moved")
             bbox = round(20 * pos);
-            proc_img_fn = con.SelectedRegion.ProcFn;
+            proc_img_fn = con.SelectedRegion.compute_proc_fn(con.Model.WS.DirName);
             pixel_region = { [bbox(2), bbox(2) + bbox(4)], [bbox(1), bbox(1) + bbox(3)] };
-            proc_img = imread(proc_img_fn, PixelRegion = pixel_region);
-            con.View.ProcessedImage.ImageSource = proc_img;
+
+            img = uint16(zeros([bbox(4) + 1, bbox(3) + 1, 3]));
+
+            if con.OverlayFlag(1)
+                chn = con.get_channel(proc_img_fn, bbox, pixel_region, 1);
+                if size(chn, 3) == 3
+                    img = chn;
+                else
+                    img(:, :, 1) = img(:, :, 1) + chn(:, :, 1);
+                end
+            end
+
+            if con.OverlayFlag(2)
+                chn = con.get_channel(proc_img_fn, bbox, pixel_region, 2);
+                img(:, :, 2) = img(:, :, 2) + chn(:, :, 1);
+            end
+
+            if con.OverlayFlag(3)
+                chn = con.get_channel(proc_img_fn, bbox, pixel_region, 3);
+                mask = 65535 * uint16(max(chn, [], 3) > 0);
+                col = [3, 86, 252];
+                for i = 1:3
+                    c_img = img(:, :, i);
+                    c_img(mask > 0) = 0;
+                    img(:, :, i) = Utility.intercalate_mask(c_img, (col(i) / 255) * mask);
+                end
+            end
+
+            if con.OverlayFlag(4)
+                chn = con.get_channel(proc_img_fn, bbox, pixel_region, 4);
+                img(chn > 0) = 0;
+                img(:, :, 3) = img(:, :, 3) + 60000 * chn(:, :, 1);
+            end
+
+            con.View.ProcessedImage.ImageSource = img;
+        end
+
+        function chn = get_channel(con, proc_img_fn, pos, pixel_region, idx)
+            if ~isempty(con.Preview) & con.Preview.matches(pos, con.SelectedRegion.ID)
+                chn = con.Preview.Images{idx};
+            elseif ~isempty(con.SelectedRegion.Result)
+                chn = imread(proc_img_fn, PixelRegion = pixel_region, Index = idx);
+            else
+                chn = uint16(zeros([pos(4) + 1, pos(3) + 1, 3]));
+            end
+        end
+
+        function process_preview(con)
+            region = con.SelectedRegion;
+            conv_fn = region.Parent.compute_conv_fn(con.Model.WS.DirName);
+            file_name_chrs = convertStringsToChars(conv_fn);
+            bfr_img = BioformatsImage(file_name_chrs);
+            settings = region.get_microcount_settings();
+
+            rect = round(con.ImageSubviewRect.Position * 20);
+            full_mask = con.Model.Atlas.create_full_size_mask(region);
+
+            bbox = bounding_box(full_mask);
+            mask = full_mask & false;
+            mask((rect(2) + bbox(2)):(rect(2) + bbox(2) + rect(4)), (rect(1) + bbox(1)):(rect(1) + bbox(1) + rect(3))) = true;
+
+            switch con.Model.WS.Algo
+                case Algorithm.MicroFluor
+                    params = Utility.get_norm_micro_fluor(bfr_img, full_mask, settings);
+                    data = algo_fluor_micro(bfr_img, mask, settings, params);
+
+                case Algorithm.MicroDab
+                    params = Utility.get_norm_micro_dab(bfr_img, full_mask);
+                    data = algo_dab_micro(bfr_img, mask, settings, params);
+            
+                case Algorithm.AstroFluor
+                    params = Utility.get_norm_astro_fluor(bfr_img, full_mask, settings);
+                    data = algo_fluor_astro(bfr_img, mask, settings, params);
+
+                case Algorithm.AstroDab
+                    params = Utility.get_norm_astro_dab(bfr_img, full_mask);
+                    data = algo_dab_astro(bfr_img, mask, settings, params);
+
+            end
+            disp("PROCESSED!")
+            [~, output_img, ~] = data2result(data);
+            con.Preview = ProcessPreview(output_img, region.ID, rect);
+            con.on_image_subview_moved(con.ImageSubviewRect.Position)
         end
         
     end
@@ -204,6 +301,15 @@ classdef AnalyseController < ControllerBase
 
                 case (AnalyseEvent.ButtonMagic)
                     % con.on_magic_button_pushed()
+
+                case (AnalyseEvent.AlgoSelected)
+                    con.on_algo_selected()
+
+                case (AnalyseEvent.Overlay)
+                    con.on_overlay_toggled(data)
+
+                case (AnalyseEvent.ButtonProcessPreview)
+                    con.process_preview()
             end
         end
         
@@ -216,12 +322,20 @@ classdef AnalyseController < ControllerBase
                 con AnalyseController
             end
 
-            mask_fn = con.SelectedRegion.MaskFn;
+            mask_fn = con.SelectedRegion.compute_mask_fn(con.Model.WS.DirName);
             dn_mask = imread(mask_fn);
-            imshow(dn_mask, 'Parent', con.View.Thumbnail, 'InitialMagnification', 20);
+
+            if ~isempty(con.View.Thumbnail)
+                delete(con.View.Thumbnail)
+                con.View.Thumbnail = uiaxes(con.View.ThumbnailPanel);
+            end
+
+            imshow(dn_mask, 'Parent', con.View.Thumbnail);
+
             if ~isempty(con.ImageSubviewRect)
                 delete(con.ImageSubviewRect);
             end
+
             rect_r = min(size(dn_mask, 1:2)) / 5;
             con.ImageSubviewRect = drawrectangle("Position", [10, 10, rect_r, rect_r], "Parent", con.View.Thumbnail);
             con.ImageSubviewRect.addlistener('ROIMoved', @(~, e) con.on_image_subview_moved(e.CurrentPosition));

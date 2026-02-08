@@ -1,11 +1,12 @@
-function BW = segment_somas(X, soma_thresh, radius)
+function BW = segment_somas(X, soma_thresh, params, radius)
     arguments
         X
         soma_thresh = 0.5
-        radius = 8
+        params = []
+        radius = 7
     end
 
-    norm_X = log_norm(X);
+    norm_X = log_norm(X, params);
     BW = norm_X > soma_thresh;
 
     decomposition = 0;

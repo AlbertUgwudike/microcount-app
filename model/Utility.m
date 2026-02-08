@@ -83,13 +83,13 @@ classdef Utility
             export_table.percentage_comarker_num = [results.PercentageActivatedMicroglia]';
             export_table.average_convexity = [results.AverageRotundity]';
             export_table.average_soma_size = [results.AverageSomaSizeUm]';
-            export_table.average_branch_count = [results.AverageBranchCount]';
+            export_table.average_branch_point_count = [results.AverageBranchCount]';
             export_table.average_branch_length = [results.AverageBranchLengthUm]';
             export_table.average_scholl_index = [results.AverageSchollIndex]';
             
             export_table = struct2table(export_table);
         end
-        
+
         function out = color_segmentation(seg)
             out = uint16(zeros([size(seg) 3]));
             N = max(seg, [], "all");
@@ -100,6 +100,11 @@ classdef Utility
             end
         end
         
+        function out = color_segmentation_(seg)
+            out = label2rgb(seg, "winter", [0, 0, 0], "shuffle");
+            out = uint16(out) * 256;
+        end
+        
         function out = zip(arr1, arr2)
             idxs = 1:min(numel(arr1), numel(arr2));
             out = arrayfun(@(i) Pair(arr1(i), arr2(i)), idxs);
@@ -107,18 +112,48 @@ classdef Utility
         
         function write_tiff(img, fn)
             bt = Tiff(fn, 'w8');
-            tags.ImageLength         = size(img,1);
-            tags.ImageWidth          = size(img,2);
-            tags.Photometric         = Tiff.Photometric.LinearRaw;
+            sz = size(img);
+            if sz(3) == 3
+                p_i = Tiff.Photometric.RGB;
+            else
+                p_i = Tiff.Photometric.MinIsBlack;
+            end
+            setTag(bt, Utility.default_tags(sz(1), sz(2), sz(3), p_i));
+            bt.write(img)
+            bt.close();
+        end
+
+        function write_tiff_multi(imgs, fn)
+            bt = Tiff(fn, 'w8');
+
+            for n = 1:numel(imgs)
+                sz = size(imgs{n});
+                if sz(3) == 3
+                    p_i = Tiff.Photometric.RGB;
+                else
+                    p_i = Tiff.Photometric.MinIsBlack;
+                end
+                tags = Utility.default_tags(sz(1), sz(2), sz(3), p_i);
+                bt.setTag(tags);
+                currentImage = squeeze(imgs{n});
+                bt.write(currentImage);
+                bt.writeDirectory();
+            end
+
+            bt.close();
+        end
+
+        function tags = default_tags(h, w, spp, p_i) 
+            tags.ImageLength         = h;
+            tags.ImageWidth          = w;
+            tags.Photometric         = p_i;
             tags.BitsPerSample       = 16;
-            tags.SamplesPerPixel     = size(img,3);
+            tags.SamplesPerPixel     = spp;
             tags.TileWidth           = 128;
             tags.TileLength          = 128;
             tags.PlanarConfiguration = Tiff.PlanarConfiguration.Chunky;
             tags.Software            = 'MATLAB';
-            
-            setTag(bt, tags);
-            bt.write(img)
+            tags.Compression         = 1; 
         end
 
         function out = imcrop(img, bbox)
@@ -130,6 +165,205 @@ classdef Utility
         function pad_vec = pad_to(vec, N, v)
             pad_vec = v * ones(1, N);
             pad_vec(1:min(numel(vec), N)) = vec(1:min(numel(vec), N));
+        end
+
+        function img = read_tiff(img_fn, idx, bbox)
+            pixel_region = { [bbox(2), bbox(2) + bbox(4)], [bbox(1), bbox(1) + bbox(3)] };
+            info = imfinfo(img_fn);
+            if isscalar(info)
+                img = imread(img_fn, PixelRegion = pixel_region);
+                img = img(:, :, idx);
+                disp("Single RGB")
+            else
+                img = imread(img_fn, PixelRegion = pixel_region, Index = idx);
+                disp("Multipanel")
+            end
+        end
+
+        function out = imadjust_rgb(img)
+            cat_img = reshape(img, 1, numel(img));
+            cat_img = imadjust(cat_img);
+            out = reshape(cat_img, size(img));
+        end
+
+        function out = intercalate_mask(img, mask)
+            out  = img;
+            out(mask > 0) = mask(mask > 0);
+        end
+
+        function write_tables(region, tables)
+            arguments
+                region Region
+                tables MicrocountTables
+            end
+
+            table_fn = region.get_scholl_fn(region.Parent.WS_Dir, region.ID);
+            writematrix(tables.SchollCoefficients, table_fn, "Sheet", "Scholl Coefficients")
+            writecell(tables.BranchLengths, table_fn, "Sheet", "Branch Lengths")
+            writematrix(tables.BranchCounts, table_fn, "Sheet", "Branch Counts")
+            writecell(tables.CrossMatrix, table_fn, "Sheet", "Scholl Crossings")
+            writematrix(tables.SomaSizes, table_fn, "Sheet", "Soma Sizes")
+            writematrix(tables.Rotundities, table_fn, "Sheet", "Rotundities")
+            writematrix(tables.CellAreas, table_fn, "Sheet", "Cell Areas")
+            writematrix(tables.Activations, table_fn, "Sheet", "Overlap Per Cell")
+
+        end
+
+        function out = get_norm_micro_fluor(bfr, mask, settings)
+            arguments
+                bfr BioformatsImage
+                mask logical
+                settings MicrocountSettings
+            end
+
+            CHN_IBA1            = settings.ChannelIba1; 
+            CHN_CD68            = settings.ChannelCD68;
+        
+            % Crop region -----------------------------------------------
+            
+            bbox = bounding_box(mask);
+        
+            cd68 = Utility.read_tiff(bfr.filename, CHN_CD68, bbox - [0, 0, 1, 1]);
+            iba1 = Utility.read_tiff(bfr.filename, CHN_IBA1, bbox - [0, 0, 1, 1]);
+            
+            r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
+        
+            cd68(~r_mask) = 0;
+            iba1(~r_mask) = 0;
+
+            tmp       = nan_background(double(cd68), r_mask);
+            [~, C, S] = log_norm(tmp);
+
+            out.CoMarkerParams = [C, S];
+        
+            tmp = nan_background(double(iba1), r_mask);
+            [~, C, S] = log_norm(tmp);
+
+            BW = pacefilt(mat2gray(iba1), 21, 5) / 4;
+            radius = 2;
+            decomposition = 0;
+            se = strel('disk', radius, decomposition);
+            BW = imclose(BW, se);
+            sl = stretchlim(BW);
+
+            out.CellMarkerParams = [C, S, double(min(iba1, [], "all")), double(max(iba1, [], "all")), sl(1), sl(2)];
+        end
+
+
+
+        function out = get_norm_micro_dab(bfr, mask)
+            arguments
+                bfr BioformatsImage
+                mask logical
+            end
+            
+            bbox = bounding_box(mask);
+        
+            pixel_region = { 
+                [bbox(2), (bbox(2) + bbox(4) - 1)];
+                [bbox(1), (bbox(1) + bbox(3) - 1)]
+            };
+        
+            % -----------------------
+        
+            r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
+            img = imread(bfr.filename, PixelRegion=pixel_region);
+            min_img = min(img, [], 3);
+            scl_img = double(min_img) / 65535;
+            nan_img = nan_background(scl_img, r_mask);
+
+            [norm_img, C, S] = log_norm(nan_img); % <------
+            out.FirstParam = [C, S];
+
+            adj_img = mat2gray(norm_img, [-2.5, 3.0]);
+            iba1 = 1 - adj_img;
+            iba1(~r_mask) = 0;
+        
+            [~, C, S] = log_norm(pacefilt(iba1, 21, 5) / 4); % <-----
+            out.SecondParam = [C, S];
+        end
+
+        function out = get_norm_astro_dab(bfr, mask)
+            arguments
+                bfr BioformatsImage
+                mask logical
+            end
+            bbox = bounding_box(mask);
+        
+            pixel_region = { 
+                [bbox(2), (bbox(2) + bbox(4) - 1)];
+                [bbox(1), (bbox(1) + bbox(3) - 1)]
+            };
+        
+            % -----------------------
+        
+            r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
+        
+            img = imread(bfr.filename, Index=1, PixelRegion=pixel_region);
+            min_img = min(img, [], 3);
+            filt_img = wiener2(min_img, [10, 10]);
+            scl_img = double(filt_img) / 65535;
+            nan_img = nan_background(scl_img, r_mask);
+
+            [norm_img, C, S] = log_norm(nan_img); % <------
+            out.FirstParam = [C, S];
+
+            adj_img = mat2gray(norm_img, [-2.5, 3.0]);
+            iba1 = 1 - adj_img;
+            iba1(~r_mask) = 0;
+        
+            pp_out = nan_background(pacefilt(iba1, 21, 5) / 4, r_mask);
+            [~, C, S] = log_norm(pp_out);
+            out.SecondParam = [C, S];
+        end
+
+        function out = get_norm_astro_fluor(bfr, mask, settings)
+            arguments
+                bfr BioformatsImage
+                mask logical
+                settings MicrocountSettings
+            end
+
+            CoMarkerChannel     = settings.ChannelCD68;
+            CellMarkerChannel   = settings.ChannelIba1;
+
+            bbox = bounding_box(mask);
+        
+            pixel_region = { 
+                [bbox(2), (bbox(2) + bbox(4) - 1)];
+                [bbox(1), (bbox(1) + bbox(3) - 1)]
+            };
+
+            r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
+            img = imread(bfr.filename, Index=CellMarkerChannel, PixelRegion=pixel_region);
+            scl_img = double(img) / 65535;
+            nan_img = nan_background(scl_img, r_mask);
+
+            [norm_img, C, S] = log_norm(nan_img); % <------
+            out.FirstParam = [C, S];
+
+            iba1 = mat2gray(norm_img, [-2, 2]);
+            iba1(~r_mask) = 0;
+        
+            % ------------ Segment Cells --------------------
+            [~, C, S] = log_norm(pacefilt(iba1, 21, 5) / 4);
+            out.SecondParam = [C, S];
+        
+            % ------------ Segment Activation --------------------
+            cd68 = imread(bfr.filename, Index=CoMarkerChannel, PixelRegion=pixel_region);
+            cd68(~r_mask) = 0;
+
+            tmp = nan_background(double(cd68), r_mask);
+            [~, C, S] = log_norm(tmp);
+            out.ThirdParam = [C, S];
+
+            ad_img = adapthisteq(img, 'clipLimit', 0.02, 'Distribution', 'rayleigh');
+            out.FourthParam = [double(min(ad_img, [], "all")), double(max(ad_img, [], "all"))];
+        end
+
+        function params = empty_params() 
+            params.CoMarkerParams = [];
+            params.CellMarkerParams = [];
         end
         
     end

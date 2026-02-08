@@ -74,7 +74,7 @@ classdef ThreadPool < handle
         end
 
         function n_workers = get_n_workers(~)
-            n_workers = 1;
+            n_workers = 2;
         end
     end
 
@@ -102,7 +102,7 @@ classdef ThreadPool < handle
         function batch_complete(fut)
             if ~isempty(fut.Error)
                 fprintf("Batch stopped after event: %s\n", fut.Error.message);
-                disp([fut.Error.remotecause{1}]);
+                disp([fut.Error.remotecause{1}.stack]);
             else
                 fprintf("Batch completed after: %s\n", fut.RunningDuration);
                 fprintf("Batch completed after: %s\n", fut.OutputArguments{1});

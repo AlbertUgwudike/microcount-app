@@ -5,10 +5,13 @@ classdef AnalyseEvent
         ButtonApplySetting
         ButtonSelectUnprocessed
         ButtonProcessSelected
+        ButtonProcessPreview
         ButtonSelectAll
         ButtonExport
         ButtonCancel
         ButtonMagic
+        AlgoSelected
+        Overlay
     end
 end
 
