@@ -484,7 +484,7 @@ classdef Model < handle
             end
             
             [result, output_img, tables] = data2result(data);
-            Utility.write_tiff_multi(output_img, region.ProcFn);
+            Utility.write_tiff_multi(output_img, region.compute_proc_fn(mdl.WS.DirName));
             Utility.write_tables(region, tables);
         end
         
