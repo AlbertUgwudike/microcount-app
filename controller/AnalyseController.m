@@ -217,7 +217,7 @@ classdef AnalyseController < ControllerBase
         function chn = get_channel(con, proc_img_fn, pos, pixel_region, idx)
             if ~isempty(con.Preview) & con.Preview.matches(pos, con.SelectedRegion.ID)
                 chn = con.Preview.Images{idx};
-            elseif ~isempty(con.SelectedRegion.Result)
+            elseif ~isempty(con.SelectedRegion.Result) & isfile(proc_img_fn) % <---- where there are pre-exisitng old results (images deleted)
                 chn = imread(proc_img_fn, PixelRegion = pixel_region, Index = idx);
             else
                 chn = uint16(zeros([pos(4) + 1, pos(3) + 1, 3]));
