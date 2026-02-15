@@ -191,13 +191,12 @@ classdef Utility
             out(mask > 0) = mask(mask > 0);
         end
 
-        function write_tables(region, tables)
+        function write_tables(tables, table_fn)
             arguments
-                region Region
                 tables MicrocountTables
+                table_fn string
             end
 
-            table_fn = region.get_scholl_fn(region.Parent.WS_Dir, region.ID);
             writematrix(tables.SchollCoefficients, table_fn, "Sheet", "Scholl Coefficients")
             writecell(tables.BranchLengths, table_fn, "Sheet", "Branch Lengths")
             writematrix(tables.BranchCounts, table_fn, "Sheet", "Branch Counts")

@@ -482,10 +482,13 @@ classdef Model < handle
                     data = algo_dab_astro(bfr_img, mask, settings);
 
             end
+
+            proc_fn = region.compute_proc_fn(mdl.WS.DirName);
+            scholl_fn = region.compute_scholl_fn(mdl.WS.DirName);
             
             [result, output_img, tables] = data2result(data);
-            Utility.write_tiff_multi(output_img, region.compute_proc_fn(mdl.WS.DirName));
-            Utility.write_tables(region, tables);
+            Utility.write_tiff_multi(output_img, proc_fn);
+            Utility.write_tables(tables, scholl_fn);
         end
         
         function bg_run_microcount_complete(mdl, args)
