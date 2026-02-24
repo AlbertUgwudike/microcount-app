@@ -8,6 +8,7 @@ classdef ImageMetadata < handle
         ID (1, 1) string
 
         Size (1, 2) uint16
+        PixelDims (1, 2) double = [1, 1]
         DownSize (1, 2) uint16
 
         ChannelCount (1, 1) uint16 = 0
@@ -57,6 +58,9 @@ classdef ImageMetadata < handle
             H = [info.Height];
             W = [info.Width];
             img_md.DownSize = [H(1), W(1)];
+
+            bfr = BioformatsImage(convertStringsToChars(conv_fn));
+            img_md.PixelDims = bfr.pxSize;
         end
 
         function add_region_save_mask(img_md, region, atlas, ws_dir)

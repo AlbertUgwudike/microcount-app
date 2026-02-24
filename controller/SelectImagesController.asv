@@ -110,11 +110,11 @@ classdef SelectImagesController < ControllerBase
             reg_chs     = [img_mds.RegistrationChannel];
             cell_chs    = [img_mds.CellMarkerChannel];
             co_chs      = [img_mds.CoMarkerChannel];
-            px_height   = arrayfun(@(k) k.PixelDims(1), img_mds);
-            px_width    = arrayfun(@(k) k.PixelDims(2), img_mds);
+            px_height   = arrayfun(@(k) k.dims(1), d);
+            px_width    = [img_mds.PixelDims(2)];
             downsampled = string([img_mds.ConvertStatus]);
             progress    = string([img_mds.ConversionProgress]) + "%";
-            new_data    = [source_fns reg_chs' cell_chs' co_chs' px_height px_width downsampled' progress'];
+            new_data    = [source_fns reg_chs' cell_chs' co_chs' px_height' px_width' downsampled' progress'];
             con.View.ImageTable.Data = new_data;
         end
 

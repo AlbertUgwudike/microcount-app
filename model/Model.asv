@@ -157,7 +157,11 @@ classdef Model < handle
 
             % args = cat(2, num2cell(imgs), num2cell(app_dir_vec), num2cell(ws_dir_vec));
             args = arrayfun(@(i) {imgs(i), mdl.AppDir, mdl.WS.DirName}, 1:numel(imgs), UniformOutput=false);
-
+            disp("Yeeetery")
+            disp(bool_idx)
+            disp(bool_idx)
+            disp(bool_idx)
+            disp("Yeeeterek")
             mdl.ThreadPool.dispatch_batch_monitored( ...
                 @mdl.io_mark_image_as_converting, ...
                 @Model.bg_conv_down_img, args, ...
@@ -485,7 +489,7 @@ classdef Model < handle
             proc_fn = region.compute_proc_fn(mdl.WS.DirName);
             scholl_fn = region.compute_scholl_fn(mdl.WS.DirName);
             
-            [result, output_img, tables] = data2result(data, region.Parent.PixelDims);
+            [result, output_img, tables] = data2result(data);
             Utility.write_tiff_multi(output_img, proc_fn);
             Utility.write_tables(tables, scholl_fn);
         end
