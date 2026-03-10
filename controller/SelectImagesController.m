@@ -58,7 +58,6 @@ classdef SelectImagesController < ControllerBase
                 original_indices = [original_chn_idxs, img_md.PixelDims(1), img_md.PixelDims(2)];
                 con.View.ImageTable.Data(idx, 2:6) = original_indices;
             else
-            disp(data)
                 con.Model.update_channel_indices(idx, data);
                 con.Model.io_save()
             end
@@ -116,7 +115,6 @@ classdef SelectImagesController < ControllerBase
             cell_chs    = [img_mds.CellMarkerChannel];
             co_chs      = [img_mds.CoMarkerChannel];
             px_height   = arrayfun(@(k) k.PixelDims(1), img_mds);
-            disp(px_height)
             px_width    = arrayfun(@(k) k.PixelDims(2), img_mds);
             downsampled = string([img_mds.ConvertStatus]);
             progress    = string([img_mds.ConversionProgress]) + "%";
