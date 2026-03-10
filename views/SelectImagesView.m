@@ -81,7 +81,7 @@ classdef SelectImagesView < Component
             view.CoMarkerChannelField.Layout.Column = 4;
 
             % Create PixelHeightField
-            view.PixelHeightField = uieditfield(view.ChannelOrderGrid, 'numeric');
+            view.PixelHeightField = uieditfield(view.ChannelOrderGrid, 'numeric', 'RoundFractionalValues', 'off');
             view.PixelHeightField.Layout.Row = 1;
             view.PixelHeightField.Layout.Column = 5;
 

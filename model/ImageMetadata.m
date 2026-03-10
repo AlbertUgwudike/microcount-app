@@ -110,16 +110,15 @@ classdef ImageMetadata < handle
         end
 
 
-        function set_channel_indices(img_md, reg_ch, cell_ch, co_ch)
+        function set_channel_indices(img_md, arr)
             arguments
                 img_md ImageMetadata
-                reg_ch uint16
-                cell_ch uint16
-                co_ch uint16
+                arr (:, 1) double
             end
-            img_md.RegistrationChannel = reg_ch;
-            img_md.CellMarkerChannel   = cell_ch;
-            img_md.CoMarkerChannel     = co_ch;
+            img_md.RegistrationChannel = uint16(arr(1));
+            img_md.CellMarkerChannel   = uint16(arr(2));
+            img_md.CoMarkerChannel     = uint16(arr(3));
+            img_md.PixelDims = [arr(4), arr(5)];
         end
 
         function down_fn = compute_down_fn(md, ws_dir)
@@ -190,15 +189,13 @@ classdef ImageMetadata < handle
             );
         end
 
-        function v = valid_channel_indices(reg_ch, cell_ch, co_ch, N)
+        function v = valid_channel_indices(arr, N)
             arguments
-                reg_ch uint16
-                cell_ch uint16
-                co_ch uint16
+                arr (1, :) uint16
                 N
             end
-            arr = [reg_ch, cell_ch, co_ch];
-            v = all(arr > 0) & all(arr <= N);
+            chn = arr(1:3);
+            v = all(chn > 0) & all(chn <= N);
         end
 
     end

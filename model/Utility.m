@@ -86,6 +86,8 @@ classdef Utility
             export_table.average_branch_point_count = [results.AverageBranchCount]';
             export_table.average_branch_length = [results.AverageBranchLengthUm]';
             export_table.average_scholl_index = [results.AverageSchollIndex]';
+            export_table.percentage_branch_area = [results.PercentageBranchArea]';
+            export_table.process_length_um_per_mm2 = [results.ProcessLengthUmPerMm2]';
             
             export_table = struct2table(export_table);
         end
@@ -205,6 +207,8 @@ classdef Utility
             writematrix(tables.Rotundities, table_fn, "Sheet", "Rotundities")
             writematrix(tables.CellAreas, table_fn, "Sheet", "Cell Areas")
             writematrix(tables.Activations, table_fn, "Sheet", "Overlap Per Cell")
+            writematrix(tables.BranchAreas, table_fn, "Sheet", "Branch Areas")
+            writematrix(tables.BranchLengthAv, table_fn, "Sheet", "Average Branch Length per Cell")
 
         end
 

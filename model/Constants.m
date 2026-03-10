@@ -4,7 +4,7 @@ classdef Constants < handle
         DIR_SLUG_DOWN char = 'ws_downsampled';
         DIR_SLUG_PROC char = 'ws_processed';
         DIR_SLUG_MASK char = 'ws_masks';
-        DIR_SLUG_SCHOLL char = 'ws_single_cell_outputs';
+        DIR_SLUG_SCHOLL char = 'ws_scholl';
         FILE_WS_MAT char = 'ws.mat';
 
         PAD (1, 1) uint16 = 100

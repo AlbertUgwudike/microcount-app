@@ -132,11 +132,11 @@ classdef Model < handle
             mdl.save_and_update();
         end
         
-        function update_channel_indices(mdl, idx, reg_ch, cell_ch, co_ch)
+        function update_channel_indices(mdl, idx, arr)
             img_md = mdl.WS.Images(idx);
-            valid_order = ImageMetadata.valid_channel_indices(reg_ch, cell_ch, co_ch, img_md.ChannelCount);
+            valid_order = ImageMetadata.valid_channel_indices(uint16(arr(1:3)), img_md.ChannelCount);
             if valid_order
-                img_md.set_channel_indices(reg_ch, cell_ch, co_ch);
+                img_md.set_channel_indices(arr);
             end
             mdl.save_and_update();
         end
