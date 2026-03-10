@@ -48,15 +48,18 @@ classdef SelectImagesController < ControllerBase
         function on_channel_order_edited(con, event)
             disp("SelectImagesController::on_channel_order_edited")
             idx = event.Indices(1);
-            data = uint16(str2double(con.View.ImageTable.Data(idx, 2:4)));
+            chns = uint16(str2double(con.View.ImageTable.Data(idx, 2:4)));
+            data = [double(chns) str2double(con.View.ImageTable.Data(idx, 5:6))];
             img_md = con.Model.WS.Images(idx);
 
             % TODO: Move this to model --------
-            if ~ImageMetadata.valid_channel_indices(data(1), data(2), data(3), img_md.ChannelCount)
-                original_indices = [img_md.RegistrationChannel, img_md.CellMarkerChannel, img_md.CoMarkerChannel];
-                con.View.ImageTable.Data(idx, 2:4) = original_indices;
+            if ~ImageMetadata.valid_channel_indices(chns, img_md.ChannelCount)
+                original_chn_idxs = double([img_md.RegistrationChannel, img_md.CellMarkerChannel, img_md.CoMarkerChannel]);
+                original_indices = [original_chn_idxs, img_md.PixelDims(1), img_md.PixelDims(2)];
+                con.View.ImageTable.Data(idx, 2:6) = original_indices;
             else
-                con.Model.update_channel_indices(idx, data(1), data(2), data(3));
+            disp(data)
+                con.Model.update_channel_indices(idx, data);
                 con.Model.io_save()
             end
         end
@@ -66,9 +69,11 @@ classdef SelectImagesController < ControllerBase
             reg_ch  = uint16(con.View.RegistrationChannelField.Value);
             cell_ch = uint16(con.View.CellMarkerChannelField.Value);
             co_ch   = uint16(con.View.CoMarkerChannelField.Value);
+            h       = double(con.View.PixelHeightField.Value);
+            w       = double(con.View.PixelWidthField.Value);
             idx = con.View.ImageTable.Selection;
             for i = 1:numel(idx)
-                con.Model.update_channel_indices(idx(i), reg_ch, cell_ch, co_ch);
+                con.Model.update_channel_indices(idx(i), [reg_ch, cell_ch, co_ch, h, w]);
             end
         end
 
@@ -110,9 +115,12 @@ classdef SelectImagesController < ControllerBase
             reg_chs     = [img_mds.RegistrationChannel];
             cell_chs    = [img_mds.CellMarkerChannel];
             co_chs      = [img_mds.CoMarkerChannel];
+            px_height   = arrayfun(@(k) k.PixelDims(1), img_mds);
+            disp(px_height)
+            px_width    = arrayfun(@(k) k.PixelDims(2), img_mds);
             downsampled = string([img_mds.ConvertStatus]);
             progress    = string([img_mds.ConversionProgress]) + "%";
-            new_data    = [source_fns reg_chs' cell_chs' co_chs' downsampled' progress'];
+            new_data    = [source_fns reg_chs' cell_chs' co_chs' px_height px_width downsampled' progress'];
             con.View.ImageTable.Data = new_data;
         end
 

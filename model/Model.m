@@ -132,11 +132,11 @@ classdef Model < handle
             mdl.save_and_update();
         end
         
-        function update_channel_indices(mdl, idx, reg_ch, cell_ch, co_ch)
+        function update_channel_indices(mdl, idx, arr)
             img_md = mdl.WS.Images(idx);
-            valid_order = ImageMetadata.valid_channel_indices(reg_ch, cell_ch, co_ch, img_md.ChannelCount);
+            valid_order = ImageMetadata.valid_channel_indices(uint16(arr(1:3)), img_md.ChannelCount);
             if valid_order
-                img_md.set_channel_indices(reg_ch, cell_ch, co_ch);
+                img_md.set_channel_indices(arr);
             end
             mdl.save_and_update();
         end
@@ -157,8 +157,7 @@ classdef Model < handle
 
             % args = cat(2, num2cell(imgs), num2cell(app_dir_vec), num2cell(ws_dir_vec));
             args = arrayfun(@(i) {imgs(i), mdl.AppDir, mdl.WS.DirName}, 1:numel(imgs), UniformOutput=false);
-            disp(args)
-            
+
             mdl.ThreadPool.dispatch_batch_monitored( ...
                 @mdl.io_mark_image_as_converting, ...
                 @Model.bg_conv_down_img, args, ...
@@ -414,7 +413,7 @@ classdef Model < handle
         end
         
         function io_mark_image_as_converting(mdl, args)
-            for i = 1:height(args)
+            for i = 1:numel(args)
                 arg = args{i}{1};
                 arg.ConvertStatus = ConvertStatus.CONVERTING;
             end
@@ -486,7 +485,7 @@ classdef Model < handle
             proc_fn = region.compute_proc_fn(mdl.WS.DirName);
             scholl_fn = region.compute_scholl_fn(mdl.WS.DirName);
             
-            [result, output_img, tables] = data2result(data);
+            [result, output_img, tables] = data2result(data, region.Parent.PixelDims);
             Utility.write_tiff_multi(output_img, proc_fn);
             Utility.write_tables(tables, scholl_fn);
         end

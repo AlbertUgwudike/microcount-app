@@ -8,6 +8,8 @@ classdef SelectImagesView < Component
                 RegistrationChannelField
                 CellMarkerChannelField
                 CoMarkerChannelField
+                PixelHeightField
+                PixelWidthField
             ImageTable
             ButtonGrid
                 AddImagesButton
@@ -51,7 +53,7 @@ classdef SelectImagesView < Component
 
             % Create ChannelOrderGrid
             view.ChannelOrderGrid = uigridlayout(view.MainGrid);
-            view.ChannelOrderGrid.ColumnWidth = {'1x', '1x', '1x', '1x', '1x', '1x'};
+            view.ChannelOrderGrid.ColumnWidth = {'1x', '1x', '1x', '1x', '1x', '1x', '1x', '1x'};
             view.ChannelOrderGrid.RowHeight = {'1x'};
             view.ChannelOrderGrid.Layout.Row = 1;
             view.ChannelOrderGrid.Layout.Column = 1;
@@ -78,12 +80,22 @@ classdef SelectImagesView < Component
             view.CoMarkerChannelField.Layout.Row = 1;
             view.CoMarkerChannelField.Layout.Column = 4;
 
+            % Create PixelHeightField
+            view.PixelHeightField = uieditfield(view.ChannelOrderGrid, 'numeric', 'RoundFractionalValues', 'off');
+            view.PixelHeightField.Layout.Row = 1;
+            view.PixelHeightField.Layout.Column = 5;
+
+            % Create PixelWidthField
+            view.PixelWidthField = uieditfield(view.ChannelOrderGrid, 'numeric');
+            view.PixelWidthField.Layout.Row = 1;
+            view.PixelWidthField.Layout.Column = 6;
+
             % Create ImageTable
             view.ImageTable = uitable(view.MainGrid);
-            view.ImageTable.ColumnName = {'Image'; 'Registration'; 'Cell Marker'; 'Co-Marker'; 'Converted'; 'Progress'};
-            view.ImageTable.ColumnWidth = {'4x', '4x', '4x', '4x', '4x', '4x'};
+            view.ImageTable.ColumnName = {'Image'; 'Registration'; 'Cell Marker'; 'Co-Marker'; 'Pixel Height (μm)'; 'Pixel Width (μm)'; 'Converted'; 'Progress'};
+            view.ImageTable.ColumnWidth = {'1x', '1x', '1x', '1x', '1x', '1x', '1x', '1x'};
             view.ImageTable.RowName = {};
-            view.ImageTable.ColumnEditable = [false true true true false, false];
+            view.ImageTable.ColumnEditable = [false true true true true true false false];
             view.ImageTable.Layout.Row = 2;
             view.ImageTable.Layout.Column = 1;
             view.ImageTable.Multiselect = 'on';

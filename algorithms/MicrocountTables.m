@@ -9,6 +9,8 @@ classdef MicrocountTables
         Rotundities (:, 1) double
         CellAreas (:, 1) double
         Activations (:, 1) double
+        BranchAreas (:, 1) double
+        BranchLengthAv (:, 1) double
     end
     
     methods
@@ -22,6 +24,8 @@ classdef MicrocountTables
                 args.Rotundities
                 args.CellAreas
                 args.Activations
+                args.BranchAreas
+                args.BranchLengthAv
             end
 
             obj.SchollCoefficients = args.SchollCoefficients;
@@ -32,6 +36,8 @@ classdef MicrocountTables
             obj.Rotundities = args.Rotundities;
             obj.CellAreas = args.CellAreas;
             obj.Activations = args.Activations;
+            obj.BranchAreas = args.BranchAreas;
+            obj.BranchLengthAv = args.BranchLengthAv;
         end
     end
 end
