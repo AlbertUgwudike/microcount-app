@@ -131,6 +131,12 @@ classdef Model < handle
             mdl.WS.Images = mdl.WS.Images(all_idx);
             mdl.save_and_update();
         end
+
+        function refresh_metadata(mdl, idx)
+            img_md = mdl.WS.Images(idx);
+            img_md.set_metadata(mdl.WS.DirName);
+            mdl.save_and_update();
+        end
         
         function update_channel_indices(mdl, idx, arr)
             img_md = mdl.WS.Images(idx);

@@ -14,6 +14,7 @@ classdef SelectImagesView < Component
             ButtonGrid
                 AddImagesButton
                 SelectAllButton
+                RefreshMetadataButton
                 RemoveSelectedButton
                 ConvertSelectedButton
                 CancelButton
@@ -89,6 +90,13 @@ classdef SelectImagesView < Component
             view.PixelWidthField = uieditfield(view.ChannelOrderGrid, 'numeric');
             view.PixelWidthField.Layout.Row = 1;
             view.PixelWidthField.Layout.Column = 6;
+
+            % Create RefreshMetadataButton
+            view.RefreshMetadataButton = uibutton(view.ChannelOrderGrid, 'push');
+            view.RefreshMetadataButton.Layout.Row = 1;
+            view.RefreshMetadataButton.Layout.Column = 8;
+            view.RefreshMetadataButton.Text = 'Refresh Metadata';
+            view.RefreshMetadataButton.ButtonPushedFcn = @(~, ~) view.call_registrar(SelectImagesEvent.ButtonRefreshMetadata);
 
             % Create ImageTable
             view.ImageTable = uitable(view.MainGrid);

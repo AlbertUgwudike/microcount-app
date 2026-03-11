@@ -22,6 +22,13 @@ classdef SelectImagesController < ControllerBase
     
     methods ( Access = private )
 
+        function onRefreshMetadata(con)
+            idx = con.View.ImageTable.Selection;
+            for i = 1:numel(idx)
+                con.Model.refresh_metadata(idx(i));
+            end
+        end
+
         function onSelectAllButtonPushed(con)
             disp("SelectImagesController::onSelectAllButtonPushed")
             N = height(con.View.ImageTable.Data);
@@ -65,9 +72,9 @@ classdef SelectImagesController < ControllerBase
 
         function on_apply_channel_order_button_pushed(con)
             disp("SelectImagesController::on_apply_channel_order_button_pushed")
-            reg_ch  = uint16(con.View.RegistrationChannelField.Value);
-            cell_ch = uint16(con.View.CellMarkerChannelField.Value);
-            co_ch   = uint16(con.View.CoMarkerChannelField.Value);
+            reg_ch  = double(con.View.RegistrationChannelField.Value);
+            cell_ch = double(con.View.CellMarkerChannelField.Value);
+            co_ch   = double(con.View.CoMarkerChannelField.Value);
             h       = double(con.View.PixelHeightField.Value);
             w       = double(con.View.PixelWidthField.Value);
             idx = con.View.ImageTable.Selection;
@@ -140,6 +147,9 @@ classdef SelectImagesController < ControllerBase
 
                 case (SelectImagesEvent.ButtonSelectAll)
                     con.onSelectAllButtonPushed()
+
+                case (SelectImagesEvent.ButtonRefreshMetadata)
+                    con.onRefreshMetadata()
 
                 case (SelectImagesEvent.ButtonRemoveSelected)
                     con.onRemoveButtonPushed()

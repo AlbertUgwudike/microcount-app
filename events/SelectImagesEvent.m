@@ -1,6 +1,7 @@
 classdef SelectImagesEvent
     enumeration
         ButtonSelectAll
+        ButtonRefreshMetadata
         ButtonRemoveSelected
         ButtonConvert
         ButtonAddImages
