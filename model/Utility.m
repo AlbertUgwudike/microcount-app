@@ -86,8 +86,11 @@ classdef Utility
             export_table.average_branch_point_count = [results.AverageBranchCount]';
             export_table.average_branch_length = [results.AverageBranchLengthUm]';
             export_table.average_scholl_index = [results.AverageSchollIndex]';
+            export_table.average_branch_aread_um2 = [results.AverageBranchAreaUm2]';
+            export_table.average_total_branch_length_um = [results.AverageTotalBranchLengthUm]';
             export_table.percentage_branch_area = [results.PercentageBranchArea]';
             export_table.process_length_um_per_mm2 = [results.ProcessLengthUmPerMm2]';
+            export_table.region_area_mm2 = [results.RegionAreaMm2]';
             
             export_table = struct2table(export_table);
         end

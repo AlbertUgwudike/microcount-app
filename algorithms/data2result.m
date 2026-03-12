@@ -6,6 +6,7 @@ function [result, img, tables] = data2result(data, pixel_dims)
 
     MM2_PER_PIXEL       = prod(pixel_dims) / 1e6;
     UM_PER_PIXEL        = mean(pixel_dims);
+    UM2_PER_PIXEL       = prod(pixel_dims);
 
     imageArea = data.nPixels * MM2_PER_PIXEL;
     comboMask = (data.segmented > 0) & data.cd68Mask;
@@ -22,6 +23,8 @@ function [result, img, tables] = data2result(data, pixel_dims)
     branch_areas_per_cell = arrayfun(@(i) data.cell_areas(i) - data.soma_areas(i), 1:numel(data.cell_areas));
     av_process_per_cell = cellfun(@(r) sum(r) / numel(r), data.branch_lengths);
 
+    av_total_process_length = total_length
+
     percentage_process_area = sum(branch_areas_per_cell) / data.nPixels;
     process_length_per_mm2 = total_length * UM_PER_PIXEL / imageArea;
 
@@ -35,8 +38,11 @@ function [result, img, tables] = data2result(data, pixel_dims)
         AverageBranchCount           = perc(total_branches, data.nMicroglia) / 100, ...
         AverageBranchLengthUm        = (total_length / N_branches) * UM_PER_PIXEL, ...
         AverageSchollIndex           = mean(data.scholl_coeffs, "omitnan"), ...
+        AverageBranchAreaUm2         = mean(branch_areas_per_cell) * UM2_PER_PIXEL, ...
+        AverageTotalBranchLengthUm   = (total_length / data.nMicroglia) * UM_PER_PIXEL, ...
         PercentageBranchArea         = perc(percentage_process_area, 1), ...
-        ProcessLengthUmPerMm2        = process_length_per_mm2 ...
+        ProcessLengthUmPerMm2        = process_length_per_mm2, ...
+        RegionAreaMm2                = imageArea ...
     );
 
     % -----------------------------------------------------------------
