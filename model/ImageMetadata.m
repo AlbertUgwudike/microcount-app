@@ -60,7 +60,10 @@ classdef ImageMetadata < handle
             img_md.DownSize = [H(1), W(1)];
 
             bfr = BioformatsImage(convertStringsToChars(conv_fn));
-            img_md.PixelDims = bfr.pxSize;
+            
+            if isfield(bfr, 'pxSize')
+                img_md.PixelDims = bfr.pxSize;
+            end
         end
 
         function add_region_save_mask(img_md, region, atlas, ws_dir)
