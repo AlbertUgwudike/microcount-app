@@ -23,8 +23,6 @@ function [result, img, tables] = data2result(data, pixel_dims)
     branch_areas_per_cell = arrayfun(@(i) data.cell_areas(i) - data.soma_areas(i), 1:numel(data.cell_areas));
     av_process_per_cell = cellfun(@(r) sum(r) / numel(r), data.branch_lengths);
 
-    av_total_process_length = total_length
-
     percentage_process_area = sum(branch_areas_per_cell) / data.nPixels;
     process_length_per_mm2 = total_length * UM_PER_PIXEL / imageArea;
 
