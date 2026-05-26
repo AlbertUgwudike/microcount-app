@@ -133,6 +133,7 @@ classdef SelectImagesController < ControllerBase
         function on_image_subview_moved(con, pos)
             disp("SelectImagesController::on_image_subview_moved")
             bbox = round(20 * pos);
+            disp(bbox)
             conv_img_fn = con.SelectedImage.compute_conv_fn(con.Model.WS.DirName);
             conv_img = Utility.read_tiff(conv_img_fn, con.CurrentChannel + 1, bbox);
             con.View.ProcessedImage.ImageSource = repmat(imadjust(conv_img(:, :, 1)), 1, 1, 3);

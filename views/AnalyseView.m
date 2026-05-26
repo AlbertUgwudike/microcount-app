@@ -127,7 +127,7 @@ classdef AnalyseView < Component
 
             % Create RegionTable
             view.RegionTable = uitable(view.MainGrid);
-            view.RegionTable.ColumnName = {'RegionID'; 'Branc Threshold'; 'CoMarker Threshold'; 'Max CoMarker Size'; 'Overlap Percentage'; 'Soma Threshold'; 'Processed'};
+            view.RegionTable.ColumnName = {'RegionID'; 'Branch Threshold'; 'CoMarker Threshold'; 'Max CoMarker Size'; 'Overlap Percentage'; 'Soma Threshold'; 'Processed'};
             view.RegionTable.ColumnWidth = {'4x', '4x', '4x', '4x', '4x', '4x', '4x'};
             view.RegionTable.RowName = {};
             view.RegionTable.Layout.Row = 2;

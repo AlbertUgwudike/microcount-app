@@ -69,7 +69,7 @@ function [result, img, tables] = data2result(data, pixel_dims)
     cd68_adj = repmat(cd68_adj, 1, 1, 3);
 
     poly_mask = uint16(data.poly_mask);
-%     poly_mask = imdilate(poly_mask, strel('disk', 2, 0));
+%     poly_mask = imdilate(poly_mask, strel('disk', 1, 0));
     poly_mask = Utility.color_segmentation(poly_mask);
 
     cd68_poly = 65535 * repmat(uint16(bwperim(comboMask)), 1, 1, 3);

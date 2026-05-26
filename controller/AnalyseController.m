@@ -198,6 +198,7 @@ classdef AnalyseController < ControllerBase
                 chn = con.get_channel(proc_img_fn, bbox, pixel_region, 3);
                 mask = 65535 * uint16(max(chn, [], 3) > 0);
                 col = [3, 86, 252];
+                col = [255, 255, 255];
                 for i = 1:3
                     c_img = img(:, :, i);
                     c_img(mask > 0) = 0;
