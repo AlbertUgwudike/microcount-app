@@ -613,7 +613,13 @@ classdef Model < handle
                 channels = arrayfun(@(i) imadjust(uint16(img(:, :, i))), 1:N, "UniformOutput", false);
             end
             
-            down_img = cat(3, channels{:});
+            if numel(channels) < 3
+                for i = 1:(3 - numel(channels))
+                    channels = [channels, channels{i} * 0];
+                end
+            end
+       
+            down_img = cat(3, channels{1:3});
             Utility.write_tiff(down_img, img_md.compute_down_fn(ws_dir));
         end
         

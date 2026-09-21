@@ -197,11 +197,21 @@ classdef AnalyseController < ControllerBase
             if con.OverlayFlag(3)
                 chn = con.get_channel(proc_img_fn, bbox, pixel_region, 3);
                 mask = 65535 * uint16(max(chn, [], 3) > 0);
+
+                soma = con.get_channel(proc_img_fn, bbox, pixel_region, 7);
+                soma = 65535 * (soma(:, :, 1) > 0);
+
                 col = [3, 86, 252];
+                soma_col = [0, 255, 0];
+
                 for i = 1:3
                     c_img = img(:, :, i);
+
                     c_img(mask > 0) = 0;
-                    img(:, :, i) = Utility.intercalate_mask(c_img, (col(i) / 255) * mask);
+                    c_img = Utility.intercalate_mask(c_img, (col(i) / 255) * mask);
+
+                    c_img(soma > 0) = 0;
+                    img(:, :, i) = Utility.intercalate_mask(c_img, (soma_col(i) / 255) * soma);
                 end
             end
 

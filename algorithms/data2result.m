@@ -72,6 +72,9 @@ function [result, img, tables] = data2result(data, pixel_dims)
 %     poly_mask = imdilate(poly_mask, strel('disk', 2, 0));
     poly_mask = Utility.color_segmentation(poly_mask);
 
+    soma_mask = bwperim(data.soma_mask);
+    soma_mask = uint16(repmat(soma_mask, 1, 1, 3));
+
     cd68_poly = 65535 * repmat(uint16(bwperim(comboMask)), 1, 1, 3);
 
     iba1_o = iba1_adj;
@@ -81,6 +84,6 @@ function [result, img, tables] = data2result(data, pixel_dims)
     cd68_o = cd68_adj;
     cd68_o(cd68_poly > 0) = cd68_poly(cd68_poly > 0);
 
-    img = { iba1_adj, cd68_adj, poly_mask, cd68_poly, iba1_o, cd68_o };
+    img = { iba1_adj, cd68_adj, poly_mask, cd68_poly, iba1_o, cd68_o, soma_mask };
 end
 
