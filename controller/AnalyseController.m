@@ -201,6 +201,7 @@ classdef AnalyseController < ControllerBase
                 soma = con.get_channel(proc_img_fn, bbox, pixel_region, 7);
                 soma = 65535 * (soma(:, :, 1) > 0);
 
+                % col = [255, 255, 255];
                 col = [3, 86, 252];
                 soma_col = [0, 255, 0];
 

@@ -64,7 +64,7 @@ classdef RegisterView < Component
             
             % Create AlignmentTable
             view.AlignmentTable = uitable(view.TopGrid);
-            view.AlignmentTable.ColumnName = {'Image'; 'Atlas Aligned'; 'Whole Aligned'};
+            view.AlignmentTable.ColumnName = {'Image'; 'Atlas Aligned'; 'Skip registration'};
             view.AlignmentTable.ColumnWidth = {'4x', '1x', '1x'};
             view.AlignmentTable.RowName = {};
             view.AlignmentTable.SelectionType = 'row';
@@ -171,21 +171,21 @@ classdef RegisterView < Component
             view.AlignColorButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegisterEvent.ButtonAlignColor);
             view.AlignColorButton.Layout.Row = 1;
             view.AlignColorButton.Layout.Column = 1;
-            view.AlignColorButton.Text = 'Register (Auto)';
+            view.AlignColorButton.Text = 'Register (Automatic)';
 
             % Create AlignControlButton
             view.AlignControlButton = uibutton(view.HistologyButtonGrid, 'push');
             view.AlignControlButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegisterEvent.ButtonAlignControl);
             view.AlignControlButton.Layout.Row = 1;
             view.AlignControlButton.Layout.Column = 2;
-            view.AlignControlButton.Text = 'Register (CP)';
+            view.AlignControlButton.Text = 'Register (Control Points)';
 
             % Create AlignWholeButton
             view.AlignWholeButton = uibutton(view.HistologyButtonGrid, 'push');
             view.AlignWholeButton.ButtonPushedFcn = @(~, ~) view.call_registrar(RegisterEvent.ButtonAlignWhole);
             view.AlignWholeButton.Layout.Row = 1;
             view.AlignWholeButton.Layout.Column = 3;
-            view.AlignWholeButton.Text = 'Register (WI)';
+            view.AlignWholeButton.Text = 'Skip Registration';
 
             % Create HistSliceAxes
             view.HistSliceAxes = uiaxes(view.HistologyGrid);
