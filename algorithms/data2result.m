@@ -82,5 +82,6 @@ function [result, img, tables] = data2result(data, pixel_dims)
     cd68_o(cd68_poly > 0) = cd68_poly(cd68_poly > 0);
 
     img = { iba1_adj, cd68_adj, poly_mask, cd68_poly, iba1_o, cd68_o };
+    disp(sum(data.poly_mask, "all"))
 end
 

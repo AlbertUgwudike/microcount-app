@@ -603,7 +603,11 @@ classdef Model < handle
             H = [info.Height]; W = [info.Width];
             pixel_region = { [1 RESIZE H(1)], [1 RESIZE W(1)] };
             
-            if info(1).SamplesPerPixel == 1
+            if numel(info) < 3 && info(1).SamplesPerPixel == 1
+                N = numel(info);
+                reader_fcn = @(i) imadjust(uint16(imread(conv_fn, "PixelRegion", pixel_region, "Index", mod(i - 1, N) + 1)));
+                channels = arrayfun(reader_fcn, 1:3, 'UniformOutput', false);
+            elseif info(1).SamplesPerPixel == 1
                 N = numel(info);
                 reader_fcn = @(i) imadjust(uint16(imread(conv_fn, "PixelRegion", pixel_region, "Index", i)));
                 channels = arrayfun(reader_fcn, 1:N, 'UniformOutput', false);
