@@ -208,8 +208,9 @@ classdef AnalyseController < ControllerBase
 
             if con.OverlayFlag(4)
                 chn = con.get_channel(proc_img_fn, bbox, pixel_region, 4);
+                chn = repmat(imdilate(chn(:, :, 1), strel('disk', 2, 0)), 1, 1, 3);
                 img(chn > 0) = 0;
-                img(:, :, 3) = img(:, :, 3) + 60000 * chn(:, :, 1);
+                img = img + 60000 * chn;
             end
 
             con.View.ProcessedImage.ImageSource = img;
@@ -256,9 +257,17 @@ classdef AnalyseController < ControllerBase
                     params = Utility.get_norm_astro_dab(bfr_img, full_mask);
                     data = algo_dab_astro(bfr_img, mask, settings, params);
 
+                case Algorithm.MicroPlaque
+                    params = Utility.get_norm_micro_fluor(bfr_img, full_mask, settings);
+                    data = algo_plaque_micro(bfr_img, mask, settings, params);
+                    [data, ~] = plaque_partition(data);
+
+                case Algorithm.AstroSingle
+                    data = algo_single_astro(bfr_img, mask, settings);
+
             end
             disp("PROCESSED!")
-            [~, output_img, ~] = data2result(data, region.Parent.PixelDims);
+            [~, output_img, ~] = data2result(data, region.Parent.PixelDims, false);
             con.Preview = ProcessPreview(output_img, region.ID, rect);
             con.on_image_subview_moved(con.ImageSubviewRect.Position)
         end

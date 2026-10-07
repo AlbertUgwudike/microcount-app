@@ -119,8 +119,8 @@ classdef AnalyseView < Component
 
             % Create AlgoSelector
             view.AlgoSelector = uidropdown(view.SettingGrid);
-            view.AlgoSelector.Items = ["Fluorescent Microglia", "DAB-Stained Microglia", "Fluorescent Astrocytes", "DAB-Stained Astrocytes"];
-            view.AlgoSelector.ItemsData = [Algorithm.MicroFluor, Algorithm.MicroDab, Algorithm.AstroFluor, Algorithm.AstroDab];
+            view.AlgoSelector.Items = ["Fluorescent Microglia", "DAB-Stained Microglia", "Fluorescent Astrocytes", "DAB-Stained Astrocytes", "Fluorescent Microglia + Plaques", "Single Astrocyte"];
+            view.AlgoSelector.ItemsData = [Algorithm.MicroFluor, Algorithm.MicroDab, Algorithm.AstroFluor, Algorithm.AstroDab, Algorithm.MicroPlaque, Algorithm.AstroSingle];
             view.AlgoSelector.ValueChangedFcn = @(~, ~) view.call_registrar(AnalyseEvent.AlgoSelected);
             view.AlgoSelector.Layout.Row = 1;
             view.AlgoSelector.Layout.Column = 7;

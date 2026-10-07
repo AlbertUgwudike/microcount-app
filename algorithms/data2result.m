@@ -1,15 +1,21 @@
-function [result, img, tables] = data2result(data, pixel_dims)
+function [result, img, tables] = data2result(data, pixel_dims, combo_flag)
     arguments
         data MicrocountData
         pixel_dims (1, 2) double
+        combo_flag (1, 1) logical = true
     end
 
     MM2_PER_PIXEL       = prod(pixel_dims) / 1e6;
     UM_PER_PIXEL        = mean(pixel_dims);
     UM2_PER_PIXEL       = prod(pixel_dims);
 
+    if combo_flag
+        comboMask = (data.segmented > 0) & data.cd68Mask;
+    else
+        comboMask = data.cd68Mask;
+    end
+
     imageArea = data.nPixels * MM2_PER_PIXEL;
-    comboMask = (data.segmented > 0) & data.cd68Mask;
     totalActivatedArea = sum(comboMask, 'all') * MM2_PER_PIXEL;
     iba1Area = sum(data.iba1Mask, 'all') * MM2_PER_PIXEL;
     soma_area = sum(data.soma_mask, 'all') * MM2_PER_PIXEL * 1e6;
@@ -82,6 +88,6 @@ function [result, img, tables] = data2result(data, pixel_dims)
     cd68_o(cd68_poly > 0) = cd68_poly(cd68_poly > 0);
 
     img = { iba1_adj, cd68_adj, poly_mask, cd68_poly, iba1_o, cd68_o };
-    disp(sum(data.poly_mask, "all"))
+    disp(sum(data.cd68Mask, "all"))
 end
 

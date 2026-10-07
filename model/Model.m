@@ -486,14 +486,28 @@ classdef Model < handle
                 case Algorithm.AstroDab
                     data = algo_dab_astro(bfr_img, mask, settings);
 
+                case Algorithm.MicroPlaque
+                    data = algo_plaque_micro(bfr_img, mask, settings);
+
+                case Algorithm.AstroSingle
+                    data = algo_single_astro(bfr_img, mask, settings);
+
             end
 
             proc_fn = region.compute_proc_fn(mdl.WS.DirName);
             scholl_fn = region.compute_scholl_fn(mdl.WS.DirName);
             
-            [result, output_img, tables] = data2result(data, region.Parent.PixelDims);
-            Utility.write_tiff_multi(output_img, proc_fn);
+            if mdl.WS.Algo == Algorithm.MicroPlaque
+                [data, out_data] = plaque_partition(data);
+
+                [~, output_img, tables] = data2result(out_data, region.Parent.PixelDims, false);
+                Utility.write_tables(tables, Utility.suffix_fn(scholl_fn, "_out_plaque"));
+                Utility.write_tiff_multi(output_img, Utility.suffix_fn(proc_fn, "_out_plaque"));
+            end
+
+            [result, output_img, tables] = data2result(data, region.Parent.PixelDims, false);
             Utility.write_tables(tables, scholl_fn);
+            Utility.write_tiff_multi(output_img, proc_fn);
         end
         
         function bg_run_microcount_complete(mdl, args)

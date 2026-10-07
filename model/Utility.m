@@ -255,8 +255,6 @@ classdef Utility
             out.CellMarkerParams = [C, S, double(min(iba1, [], "all")), double(max(iba1, [], "all")), sl(1), sl(2)];
         end
 
-
-
         function out = get_norm_micro_dab(bfr, mask)
             arguments
                 bfr BioformatsImage
@@ -370,6 +368,14 @@ classdef Utility
         function params = empty_params() 
             params.CoMarkerParams = [];
             params.CellMarkerParams = [];
+        end
+
+        function new_fn = suffix_fn(fn, suffix)
+            suffix = convertStringsToChars(suffix);
+            fn = convertStringsToChars(fn);
+            [a, b, c] = fileparts(fn);
+            new_fn = fullfile(a, [b suffix c]);
+            new_fn = convertCharsToStrings(new_fn);
         end
         
     end
