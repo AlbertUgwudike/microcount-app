@@ -6,8 +6,8 @@ function [data, c_mat] = algo_dab_astro(bfr, mask, settings, params)
         settings MicrocountSettings
         params = []
     end
-    MM2_PER_PIXEL       = prod(bfr.pxSize) / 1e6;
-    UM_PER_PIXEL        = mean(bfr.pxSize);
+    MM2_PER_PIXEL       = prod(settings.PixelDimensions) / 1e6;
+    UM_PER_PIXEL        = mean(settings.PixelDimensions);
     MAX_CD68_SIZE       = settings.MaxCD68Size;
     CD68_SENSITIVITY    = settings.CD68Threshold;
     CD68_MIN_OVERLAP    = settings.MinOverlap;
@@ -84,7 +84,7 @@ function [data, c_mat] = algo_dab_astro(bfr, mask, settings, params)
     [branch_lengths, dists_img, ~] = branch_length(l_skelly, soma_mask);
 
     l_soma           = uint16(soma_mask) .* segmented;
-    [coeffs, c_mat]  = scholl(l_skelly, l_soma, bfr.pxSize);
+    [coeffs, c_mat]  = scholl(l_skelly, l_soma, settings.PixelDimensions);
 
     nMicroglia = max(segmented, [], "all");
 

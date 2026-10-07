@@ -72,6 +72,7 @@ classdef Utility
             export_table.region_ID = [regions.ID]';
             export_table.branch_threshold = [regions.Iba1Threshold]';
             export_table.comarker_threshold = [regions.CD68Threshold]';
+            export_table.soma_threshold = [regions.SomaThreshold]';
             export_table.max_comarker_size = [regions.MaxCD68Size]';
             export_table.min_comarker_overlap_percentage = [regions.OverlapPercentage]';
             

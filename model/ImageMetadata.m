@@ -61,8 +61,10 @@ classdef ImageMetadata < handle
 
             bfr = BioformatsImage(convertStringsToChars(conv_fn));
             
-            if isfield(bfr, 'pxSize')
+            try 
                 img_md.PixelDims = bfr.pxSize;
+            catch e
+                disp("No Pixel Dims, setting default")
             end
         end
 
