@@ -13,6 +13,9 @@ function plaque_mask = segment_plaques(plaque_signal, threshold, params)
     kernel = strel('disk', 100, 0).Neighborhood;
     linked_mask = conv2(double(clean_mask), kernel, 'same');
 
+    % radius = 201;
+    % linked_mask = smoothdata2(double(clean_mask), 'movmean', [radius, radius]) * radius * radius;
+
     plaque_mask = linked_mask > threshold * 1000;
 end
 
