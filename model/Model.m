@@ -505,7 +505,7 @@ classdef Model < handle
                 Utility.write_tiff_multi(output_img, Utility.suffix_fn(proc_fn, "_out_plaque"));
             end
 
-            [result, output_img, tables] = data2result(data, region.Parent.PixelDims, false);
+            [result, output_img, tables] = data2result(data, region.Parent.PixelDims, true);
             Utility.write_tables(tables, scholl_fn);
             Utility.write_tiff_multi(output_img, proc_fn);
         end
