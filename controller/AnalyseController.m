@@ -230,7 +230,13 @@ classdef AnalyseController < ControllerBase
             if ~isempty(con.Preview) & con.Preview.matches(pos, con.SelectedRegion.ID)
                 chn = con.Preview.Images{idx};
             elseif ~isempty(con.SelectedRegion.Result) & isfile(proc_img_fn) % <---- where there are pre-exisitng old results (images deleted)
-                chn = imread(proc_img_fn, PixelRegion = pixel_region, Index = idx);
+                infos = imfinfo(proc_img_fn);
+                if idx > numel(infos) % <--- added for compatibility with old image series without soma image (idx == 7)
+                    chn = uint16(zeros([pos(4) + 1, pos(3) + 1, 3]));
+                else
+                    chn = imread(proc_img_fn, PixelRegion = pixel_region, Index = idx);
+                end
+
             else
                 chn = uint16(zeros([pos(4) + 1, pos(3) + 1, 3]));
             end
