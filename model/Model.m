@@ -131,7 +131,7 @@ classdef Model < handle
             mdl.WS.Images = mdl.WS.Images(all_idx);
             mdl.save_and_update();
         end
-
+        
         function refresh_metadata(mdl, idx)
             img_md = mdl.WS.Images(idx);
             img_md.set_metadata(mdl.WS.DirName);
@@ -156,21 +156,21 @@ classdef Model < handle
             not_file_exists = arrayfun(@(img) ~isfile(img.compute_conv_fn(mdl.WS.DirName)), mdl.WS.Images)';
             
             convert_idx = bool_idx & not_converted & not_file_exists;
-
+            
             imgs = mdl.WS.Images(convert_idx);
             % app_dir_vec = repmat(mdl.AppDir, 1, numel(imgs));
             % ws_dir_vec = repmat(mdl.WS.DirName,1 , numel(imgs));
-
+            
             % args = cat(2, num2cell(imgs), num2cell(app_dir_vec), num2cell(ws_dir_vec));
             args = arrayfun(@(i) {imgs(i), mdl.AppDir, mdl.WS.DirName}, 1:numel(imgs), UniformOutput=false);
-
+            
             mdl.ThreadPool.dispatch_batch_monitored( ...
                 @mdl.io_mark_image_as_converting, ...
                 @Model.bg_conv_down_img, args, ...
                 @mdl.bg_conv_down_img_complete, ...
                 @Model.bg_monitor_progress, ...
                 @mdl.update_progress ...
-            )
+                )
         end
         
         function img = io_get_down_img(mdl, img_md)
@@ -235,7 +235,7 @@ classdef Model < handle
             img_md.Aligned = true;
             mdl.save_and_update()
         end
-
+        
         function io_align_whole_image(mdl, img_md)
             img_md.WholeAligned = true;
             mdl.save_and_update()
@@ -323,14 +323,14 @@ classdef Model < handle
                 mdl Model
                 regions (:, 1) Region
             end
-
+            
             disp(mdl.WS.Algo)
             
             mdl.ThreadPool.dispatch_batch( ...
                 @(batch) mdl.io_set_processing_status(batch, ProcessStatus.PROCESSING), ...
                 @mdl.bg_run_microcount_batch, regions, ...
                 @mdl.bg_run_microcount_complete ...
-            );
+                );
         end
         
         function io_cancel_microcount_processes(mdl)
@@ -360,27 +360,27 @@ classdef Model < handle
             export_table = Utility.region2export(regions);
             writetable(export_table, export_fn);
         end
-
+        
         function io_export_regions(mdl, img_mds)
             arguments
                 mdl Model
                 img_mds (:, 1) ImageMetadata
             end
-
+            
             dir_name = uigetdir('', 'Select Export Directory');
-
+            
             for i = 1:numel(img_mds)
                 img_md = img_mds(i);
                 for j = 1:numel(img_md.Regions)
                     region = img_md.Regions(j);
                     mask = mdl.Atlas.create_full_size_mask(region);
-
+                    
                     bbox = bounding_box(mask);
                     pixel_region = { [bbox(2), bbox(2) + bbox(4) - 1], [bbox(1), bbox(1) + bbox(3) - 1] };
-
+                    
                     info = imfinfo(img_md.compute_conv_fn(mdl.WS.DirName));
                     conv_fn = img_md.compute_conv_fn(mdl.WS.DirName);
-
+                    
                     if numel(info) == 1
                         img = imread(conv_fn, PixelRegion = pixel_region);
                         com_img = img(:, :, img_md.CoMarkerChannel);
@@ -393,18 +393,18 @@ classdef Model < handle
                     end
                     
                     r_mask = imcrop(mask, bbox - [0, 0, 1, 1]);
-                
+                    
                     com_img(~r_mask) = 0;
                     cell_img(~r_mask) = 0;
                     reg_img(~r_mask) = 0;
-
+                    
                     out_img = uint16(cat(3, cell_img, com_img, reg_img));
                     out_fn = sprintf("%s/%s.tiff", dir_name, region.ID);
-
+                    
                     imwrite(out_img, out_fn);
                 end
             end
-
+            
         end
         
     end
@@ -469,42 +469,41 @@ classdef Model < handle
             end
             
             mask = mdl.Atlas.create_full_size_mask(region);
-            file_name_chrs = convertStringsToChars(region.Parent.compute_conv_fn(mdl.WS.DirName));
-            bfr_img = BioformatsImage(file_name_chrs);
+            file_name = region.Parent.compute_conv_fn(mdl.WS.DirName);
             settings = region.get_microcount_settings();
-
+            
             switch mdl.WS.Algo
                 case Algorithm.MicroFluor
-                    data = algo_fluor_micro(bfr_img, mask, settings);
-
+                    data = algo_fluor_micro(file_name, mask, settings);
+                    
                 case Algorithm.MicroDab
-                    data = algo_dab_micro(bfr_img, mask, settings);
-            
+                    data = algo_dab_micro(file_name, mask, settings);
+                    
                 case Algorithm.AstroFluor
-                    data = algo_fluor_astro(bfr_img, mask, settings);
-
+                    data = algo_fluor_astro(file_name, mask, settings);
+                    
                 case Algorithm.AstroDab
-                    data = algo_dab_astro(bfr_img, mask, settings);
-
+                    data = algo_dab_astro(file_name, mask, settings);
+                    
                 case Algorithm.MicroPlaque
-                    data = algo_plaque_micro(bfr_img, mask, settings);
-
+                    data = algo_plaque_micro(file_name, mask, settings);
+                    
                 case Algorithm.AstroSingle
-                    data = algo_single_astro(bfr_img, mask, settings);
-
+                    data = algo_single_astro(file_name, mask, settings);
+                    
             end
-
+            
             proc_fn = region.compute_proc_fn(mdl.WS.DirName);
             scholl_fn = region.compute_scholl_fn(mdl.WS.DirName);
             
             if mdl.WS.Algo == Algorithm.MicroPlaque
                 [data, out_data] = plaque_partition(data);
-
+                
                 [~, output_img, tables] = data2result(out_data, region.Parent.PixelDims, false);
                 Utility.write_tables(tables, Utility.suffix_fn(scholl_fn, "_out_plaque"));
                 Utility.write_tiff_multi(output_img, Utility.suffix_fn(proc_fn, "_out_plaque"));
             end
-
+            
             [result, output_img, tables] = data2result(data, region.Parent.PixelDims, true);
             Utility.write_tables(tables, scholl_fn);
             Utility.write_tiff_multi(output_img, proc_fn);
@@ -547,7 +546,7 @@ classdef Model < handle
             mdl.io_save()
             mdl.call_registrars(ModelEvents.WorkspaceUpdated)
         end
-
+        
         function save_and_update_analyse_tab(mdl)
             mdl.io_save()
             mdl.call_registrars(ModelEvents.UpdateAnaylseTab)
@@ -581,7 +580,7 @@ classdef Model < handle
                 app_dir = arg_cell{i}{2};
                 ws_dir = arg_cell{i}{3};
                 msg = msg + " " + img_md.ID;
-
+                
                 try
                     tic
                     Model.bg_conv_img(img_md, app_dir, ws_dir);
@@ -636,7 +635,7 @@ classdef Model < handle
                     channels = [channels, channels{i} * 0];
                 end
             end
-       
+            
             down_img = cat(3, channels{1:3});
             Utility.write_tiff(down_img, img_md.compute_down_fn(ws_dir));
         end
@@ -644,9 +643,9 @@ classdef Model < handle
         function msg = bg_monitor_progress(args)
             img_mds = arrayfun(@(i) args{1}{i}{1}, 1:numel(args{1}));
             ws_dirs = arrayfun(@(i) args{1}{i}{3}, 1:numel(args{1}));
-
+            
             q = args{2};
-
+            
             ori_szs = arrayfun(@(img_md) dir(img_md.SourceFn).bytes, img_mds);
             pcs = zeros(size(img_mds));
             

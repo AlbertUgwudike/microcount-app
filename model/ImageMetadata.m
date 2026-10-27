@@ -6,17 +6,17 @@ classdef ImageMetadata < handle
         ConvFn (1, 1) string
         WS_Dir (1, 1) string
         ID (1, 1) string
-
+        
         Size (1, 2) uint16
         PixelDims (1, 2) double = [1, 1]
         DownSize (1, 2) uint16
-
+        
         ChannelCount (1, 1) uint16 = 0
         RegistrationChannel (1, 1) uint16
         CellMarkerChannel (1, 1) uint16
         CoMarkerChannel (1, 1) uint16
     end
-
+    
     properties
         ConvertStatus (1, 1) ConvertStatus = ConvertStatus.UNCONVERTED
         ConversionProgress (1, 1) double = 0;
@@ -40,34 +40,35 @@ classdef ImageMetadata < handle
             img_md.WS_Dir = ws_dir;
             disp(img_md.WS_Dir)
         end
-
+        
         function set_metadata(img_md, ws_dir)
             conv_fn = img_md.compute_conv_fn(ws_dir);
             info = imfinfo(conv_fn);
             H = [info.Height];
             W = [info.Width];
             img_md.Size = [H(1), W(1)];
-
+            
             img_md.ChannelCount = max([info.SamplesPerPixel, numel(info)]);
             img_md.RegistrationChannel = 1;
             img_md.CellMarkerChannel = 1 + mod(1, img_md.ChannelCount);
             img_md.CoMarkerChannel = 1 + mod(2, img_md.ChannelCount);
 
+            try
+                x_dims = [info.XResolution];
+                y_dims = [info.YResolution];
+                img_md.PixelDims = [1 / x_dims(1) * 10000, 1 / y_dims(1) * 10000];
+                disp(img_md.PixelDims)
+            catch e
+                disp("No Pixel Dims, setting default")
+            end
+            
             down_fn = img_md.compute_down_fn(ws_dir);
             info = imfinfo(down_fn);
             H = [info.Height];
             W = [info.Width];
             img_md.DownSize = [H(1), W(1)];
-
-            bfr = BioformatsImage(convertStringsToChars(conv_fn));
-            
-            try 
-                img_md.PixelDims = bfr.pxSize;
-            catch e
-                disp("No Pixel Dims, setting default")
-            end
         end
-
+        
         function add_region_save_mask(img_md, region, atlas, ws_dir)
             arguments
                 img_md ImageMetadata
@@ -75,46 +76,46 @@ classdef ImageMetadata < handle
                 atlas Atlas
                 ws_dir string
             end
-
+            
             dn_mask = atlas.create_dn_size_mask(region);
             bbox = bounding_box(dn_mask);
-
+            
             if isempty(bbox)
                 fprintf("Region::add_region_save_mask - bbox empty - %s\n", region.ID)
                 return;
             end
-
+            
             bbox = bbox - [0, 0, 1, 1];
-
+            
             img_md.Regions = cat(1, img_md.Regions, region);
-
+            
             down_fn = img_md.compute_down_fn(ws_dir);
             dn_img = imread(down_fn);
             c_mask = imcrop(dn_mask, bbox);
             r_mask = repmat(c_mask, 1, 1, size(dn_img, 3));
-
+            
             dn_region = Utility.imcrop(dn_img, bbox);
             dn_region(r_mask == 0) = 0;
             dn_region = cat(3, dn_region(:, :, img_md.CellMarkerChannel), dn_region(:, :, img_md.CoMarkerChannel), zeros(size(c_mask)));
-
+            
             mask_fn = region.compute_mask_fn(ws_dir);
             imwrite(dn_region, mask_fn);
         end
-
-
+        
+        
         function locs = all_locations(img_md)
             arguments
                 img_md ImageMetadata
             end
-
+            
             locs = [img_md.Regions.Location];
-
+            
             if (isempty(locs))
                 locs = Location.empty;
             end
         end
-
-
+        
+        
         function set_channel_indices(img_md, arr)
             arguments
                 img_md ImageMetadata
@@ -125,75 +126,75 @@ classdef ImageMetadata < handle
             img_md.CoMarkerChannel     = uint16(arr(3));
             img_md.PixelDims = [arr(4), arr(5)];
         end
-
+        
         function down_fn = compute_down_fn(md, ws_dir)
-
+            
             arguments
                 md ImageMetadata
                 ws_dir string
             end
-
+            
             down_fn = sprintf( ...
                 "%s/%s/%s_%s.tiff", ...
                 ws_dir, ...
                 Constants.DIR_SLUG_DOWN, ...
                 md.ID, ...
                 "down" ...
-            );
+                );
         end
-
+        
         function conv_fn = compute_conv_fn(md, ws_dir)
-
+            
             arguments
                 md ImageMetadata
                 ws_dir string
             end
-
+            
             conv_fn = sprintf( ...
                 "%s/%s/%s_%s.tiff", ...
                 ws_dir, ...
                 Constants.DIR_SLUG_CONVERT, ...
                 md.ID, ...
                 "conv" ...
-            );
+                );
         end
         
     end
-
+    
     methods (Static)
-
+        
         function down_fn = get_down_fn(id, ws_dir)
-
+            
             arguments
                 id string
                 ws_dir string
             end
-
+            
             down_fn = sprintf( ...
                 "%s/%s/%s_%s.tiff", ...
                 ws_dir, ...
                 Constants.DIR_SLUG_DOWN, ...
                 id, ...
                 "down" ...
-            );
+                );
         end
-
+        
         function conv_fn = get_conv_fn(id, ws_dir)
-
+            
             arguments
                 id string
                 ws_dir string
             end
-
+            
             conv_fn = sprintf( ...
                 "%s/%s/%s_%s.tiff", ...
                 ws_dir, ...
                 Constants.DIR_SLUG_CONVERT, ...
                 id, ...
                 "conv" ...
-            );
+                );
         end
-
+        
         function v = valid_channel_indices(arr, N)
             arguments
                 arr (1, :) uint16
@@ -202,7 +203,7 @@ classdef ImageMetadata < handle
             chn = arr(1:3);
             v = all(chn > 0) & all(chn <= N);
         end
-
+        
     end
 end
 
