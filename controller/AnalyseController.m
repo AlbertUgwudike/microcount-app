@@ -281,7 +281,10 @@ classdef AnalyseController < ControllerBase
                     
             end
             disp("PROCESSED!")
-            [~, output_img, ~] = data2result(data, region.Parent.PixelDims, false);
+
+            [~, output_img, ~] = data2result(data, region.Parent.PixelDims, true);
+
+
             con.Preview = ProcessPreview(output_img, region.ID, rect);
             con.on_image_subview_moved(con.ImageSubviewRect.Position)
         end
